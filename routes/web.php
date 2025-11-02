@@ -15,7 +15,9 @@ use App\Http\Controllers\Dashboard\PartnerDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
 use App\Http\Controllers\Dashboard\StudentDashboardController;
 use App\Http\Controllers\Partner\DashboardController;
+use App\Http\Controllers\Partner\JobPostingController;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -201,6 +203,16 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
 
         // Job Postings
         Route::resource('job-postings', JobPostingController::class);
+        Route::get('/', [JobPostingController::class, 'index'])->name('index');
+        Route::get('/create', [JobPostingController::class, 'create'])->name('create');
+        Route::post('/', [JobPostingController::class, 'store'])->name('store');
+        Route::get('/{jobPosting}', [JobPostingController::class, 'show'])->name('show');
+        Route::get('/{jobPosting}/edit', [JobPostingController::class, 'edit'])->name('edit');
+        Route::put('/{jobPosting}', [JobPostingController::class, 'update'])->name('update');
+        Route::post('/{jobPosting}/pause', [JobPostingController::class, 'pause'])->name('pause');
+        Route::post('/{jobPosting}/resume', [JobPostingController::class, 'resume'])->name('resume');
+        Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])->name('close');
+        Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])->name('applications');
 
         // Partnerships
         Route::resource('partnerships', PartnershipController::class);
