@@ -20,7 +20,7 @@ Route::get('/', function () {
 // AUTHENTICATION ROUTES (from Laravel Breeze)
 // =====================================================
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // =====================================================
 // AUTHENTICATED ROUTES (Require Auth + Password Changed + Active)
@@ -46,7 +46,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
-        return match($user->role) {
+        return match ($user->role) {
             'admin' => redirect()->route('admin.dashboard'),
             'staff' => redirect()->route('staff.dashboard'),
             'partner' => redirect()->route('partner.dashboard'),
@@ -59,6 +59,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // =====================================================
     // ADMIN DASHBOARD ROUTES
     // =====================================================
+
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
 
@@ -84,7 +85,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::post('/users/bulk-import', [AdminDashboardController::class, 'bulkImport'])
             ->name('users.bulk-import');
 
-        // Approvals
+        // Approvals - Jobs
         Route::get('/approvals/jobs', [AdminDashboardController::class, 'approveJobs'])
             ->name('approvals.jobs');
         Route::post('/approvals/jobs/{id}/approve', [AdminDashboardController::class, 'approveJob'])
@@ -92,6 +93,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::post('/approvals/jobs/{id}/reject', [AdminDashboardController::class, 'rejectJob'])
             ->name('approvals.jobs.reject');
 
+        // Approvals - Events
         Route::get('/approvals/events', [AdminDashboardController::class, 'approveEvents'])
             ->name('approvals.events');
         Route::post('/approvals/events/{id}/approve', [AdminDashboardController::class, 'approveEvent'])
@@ -99,13 +101,15 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::post('/approvals/events/{id}/reject', [AdminDashboardController::class, 'rejectEvent'])
             ->name('approvals.events.reject');
 
+        // Approvals - News
         Route::get('/approvals/news', [AdminDashboardController::class, 'approveNews'])
             ->name('approvals.news');
-        Route::post('/approvals/news/{id}/approve', [AdminDashboardController::class, 'approveNews'])
+        Route::post('/approvals/news/{id}/approve', [AdminDashboardController::class, 'approveNewsArticle']) // FIXED METHOD NAME
             ->name('approvals.news.approve');
         Route::post('/approvals/news/{id}/reject', [AdminDashboardController::class, 'rejectNews'])
             ->name('approvals.news.reject');
 
+        // Approvals - Partnerships
         Route::get('/approvals/partnerships', [AdminDashboardController::class, 'approvePartnerships'])
             ->name('approvals.partnerships');
         Route::post('/approvals/partnerships/{id}/approve', [AdminDashboardController::class, 'approvePartnership'])
@@ -118,7 +122,16 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             ->name('activity-logs');
         Route::get('/reports', [AdminDashboardController::class, 'reports'])
             ->name('reports');
+
+        // Settings & Profile
+        Route::get('/settings', function () {
+            return view('users.admin.settings');
+        })->name('settings');
+        Route::get('/profile', function () {
+            return view('users.admin.profile');
+        })->name('profile');
     });
+
 
     // =====================================================
     // STAFF DASHBOARD ROUTES

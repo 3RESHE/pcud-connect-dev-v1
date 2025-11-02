@@ -23,11 +23,10 @@ class AdminDashboardController extends Controller
             'active_users' => User::where('is_active', true)->count(),
             'pending_approvals' => $this->getPendingApprovalsCount(),
             'total_jobs' => JobPosting::count(),
-            'total_events' => Event::count(),
-            'recent_activity' => ActivityLog::latest()->limit(10)->get(),
+            'recent_activity' => ActivityLog::with('user')->latest()->limit(10)->get(),
         ];
 
-        return view('users.admin.dashboard', $stats);
+        return view('users.admin.dashboard', $stats); // ✅ Keep this as is
     }
 
     /**
@@ -51,7 +50,7 @@ class AdminDashboardController extends Controller
         $users = User::with(['department', 'adminProfile', 'staffProfile', 'partnerProfile', 'studentProfile', 'alumniProfile'])
             ->paginate(20);
 
-        return view('users.admin.users.index', ['users' => $users]);
+        return view('users.admin.users.index', compact('users'));
     }
 
     /**
@@ -62,10 +61,7 @@ class AdminDashboardController extends Controller
         $departments = \App\Models\Department::all();
         $roles = ['admin', 'staff', 'partner', 'alumni', 'student'];
 
-        return view('users.admin.users.create', [
-            'departments' => $departments,
-            'roles' => $roles,
-        ]);
+        return view('users.admin.users.create', compact('departments', 'roles'));
     }
 
     /**
@@ -139,11 +135,7 @@ class AdminDashboardController extends Controller
         $departments = \App\Models\Department::all();
         $roles = ['admin', 'staff', 'partner', 'alumni', 'student'];
 
-        return view('users.admin.users.edit', [
-            'user' => $user,
-            'departments' => $departments,
-            'roles' => $roles,
-        ]);
+        return view('users.admin.users.edit', compact('user', 'departments', 'roles'));
     }
 
     /**
@@ -234,7 +226,7 @@ class AdminDashboardController extends Controller
             ->with('partner')
             ->paginate(20);
 
-        return view('users.admin.approvals.jobs', ['jobs' => $jobs]);
+        return view('users.admin.approvals.jobs', compact('jobs'));
     }
 
     /**
@@ -289,7 +281,7 @@ class AdminDashboardController extends Controller
             ->with('creator')
             ->paginate(20);
 
-        return view('users.admin.approvals.events', ['events' => $events]);
+        return view('users.admin.approvals.events', compact('events'));
     }
 
     /**
@@ -344,13 +336,13 @@ class AdminDashboardController extends Controller
             ->with('creator')
             ->paginate(20);
 
-        return view('users.admin.approvals.news', ['articles' => $articles]);
+        return view('users.admin.approvals.news', compact('articles'));
     }
 
     /**
      * Approve news article.
      */
-    public function approveNewsArticle($id)
+    public function approveNewsArticle($id) // ✅ FIXED METHOD NAME
     {
         $article = NewsArticle::findOrFail($id);
         $article->approve(auth()->id());
@@ -399,7 +391,7 @@ class AdminDashboardController extends Controller
             ->with('partner')
             ->paginate(20);
 
-        return view('users.admin.approvals.partnerships', ['partnerships' => $partnerships]);
+        return view('users.admin.approvals.partnerships', compact('partnerships'));
     }
 
     /**
@@ -459,7 +451,7 @@ class AdminDashboardController extends Controller
             ->latest()
             ->paginate(50);
 
-        return view('users.admin.activity-logs', ['logs' => $logs]);
+        return view('users.admin.activity-logs', compact('logs'));
     }
 
     /**

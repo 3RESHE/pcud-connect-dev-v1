@@ -1,65 +1,68 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('title', 'Admin Dashboard')
+@section('page-title', 'Dashboard')
 
 @section('content')
-<div>
-    <h1 class="text-3xl font-bold mb-8">Admin Dashboard</h1>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white p-6 rounded shadow">
-            <div class="text-gray-600">Total Users</div>
-            <div class="text-3xl font-bold">{{ $total_users }}</div>
-        </div>
-        <div class="bg-white p-6 rounded shadow">
-            <div class="text-gray-600">Active Users</div>
-            <div class="text-3xl font-bold">{{ $active_users }}</div>
-        </div>
-        <div class="bg-white p-6 rounded shadow">
-            <div class="text-gray-600">Pending Approvals</div>
-            <div class="text-3xl font-bold text-yellow-600">{{ $pending_approvals }}</div>
-        </div>
-        <div class="bg-white p-6 rounded shadow">
-            <div class="text-gray-600">Total Jobs</div>
-            <div class="text-3xl font-bold">{{ $total_jobs }}</div>
-        </div>
+<div class="space-y-6">
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        @include('users.admin._stats-card', [
+            'title' => 'Total Users',
+            'value' => $total_users,
+            'icon' => 'users',
+            'color' => 'blue',
+        ])
+        @include('users.admin._stats-card', [
+            'title' => 'Active Users',
+            'value' => $active_users,
+            'icon' => 'check-circle',
+            'color' => 'green',
+        ])
+        @include('users.admin._stats-card', [
+            'title' => 'Pending Approvals',
+            'value' => $pending_approvals,
+            'icon' => 'clock',
+            'color' => 'yellow',
+        ])
+        @include('users.admin._stats-card', [
+            'title' => 'Total Jobs',
+            'value' => $total_jobs,
+            'icon' => 'briefcase',
+            'color' => 'purple',
+        ])
     </div>
 
     <!-- Quick Actions -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <a href="{{ route('admin.users.create') }}" class="bg-blue-600 text-white p-4 rounded text-center hover:bg-blue-700">
-            Create User
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <a href="{{ route('admin.users.create') }}" class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow hover:shadow-lg transition">
+            <h3 class="font-semibold mb-2">+ Create User</h3>
+            <p class="text-sm text-blue-100">Add a new user to the system</p>
         </a>
-        <a href="{{ route('admin.approvals.jobs') }}" class="bg-green-600 text-white p-4 rounded text-center hover:bg-green-700">
-            Approve Jobs
+        <a href="{{ route('admin.approvals.jobs') }}" class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg shadow hover:shadow-lg transition">
+            <h3 class="font-semibold mb-2">Review Jobs</h3>
+            <p class="text-sm text-green-100">{{ $pending_approvals }} items pending</p>
         </a>
-        <a href="{{ route('admin.activity-logs') }}" class="bg-purple-600 text-white p-4 rounded text-center hover:bg-purple-700">
-            View Activity Logs
+        <a href="{{ route('admin.activity-logs') }}" class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow hover:shadow-lg transition">
+            <h3 class="font-semibold mb-2">Activity Logs</h3>
+            <p class="text-sm text-purple-100">View system activities</p>
         </a>
     </div>
 
     <!-- Recent Activity -->
-    <div class="bg-white p-6 rounded shadow">
-        <h2 class="text-xl font-bold mb-4">Recent Activity</h2>
-        <table class="w-full">
-            <thead>
-                <tr class="border-b">
-                    <th class="text-left py-2">User</th>
-                    <th class="text-left py-2">Action</th>
-                    <th class="text-left py-2">Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($recent_activity as $log)
-                    <tr class="border-b">
-                        <td class="py-2">{{ $log->user->full_name ?? 'System' }}</td>
-                        <td class="py-2">{{ $log->getActionDisplay() }}</td>
-                        <td class="py-2">{{ $log->getCreatedAtDiffForHumans() }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b">
+            <h3 class="text-lg font-semibold">Recent Activity</h3>
+        </div>
+        <div class="divide-y">
+            @forelse($recent_activity as $log)
+                @include('users.admin._activity-item', ['log' => $log])
+            @empty
+                <div class="p-6 text-center text-gray-500">
+                    No recent activity
+                </div>
+            @endforelse
+        </div>
     </div>
 </div>
 @endsection

@@ -1,0 +1,17 @@
+<div class="p-6 flex items-center justify-between hover:bg-gray-50 transition">
+    <div class="flex items-center space-x-4">
+        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+            <span class="text-sm font-bold text-gray-600">
+                {{ substr($log->user->first_name ?? 'S', 0, 1) }}
+            </span>
+        </div>
+        <div>
+            <p class="font-semibold text-gray-900">{{ $log->user->full_name ?? 'System' }}</p>
+            <p class="text-sm text-gray-600">{{ $log->description ?? $log->getActionDisplay() }}</p>
+            <p class="text-xs text-gray-500">{{ $log->getCreatedAtDiffForHumans() }}</p>
+        </div>
+    </div>
+    <span class="text-xs px-3 py-1 rounded-full bg-blue-100 text-blue-800">
+        {{ $log->getActionDisplay() }}
+    </span>
+</div>
