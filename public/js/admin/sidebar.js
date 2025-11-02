@@ -1,49 +1,75 @@
-function toggleSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
+// Sidebar toggle functionality
+const sidebar = document.getElementById("sidebar");
+const openSidebar = document.getElementById("openSidebar");
+const closeSidebar = document.getElementById("closeSidebar");
+const sidebarOverlay = document.getElementById("sidebarOverlay");
 
-    sidebar.classList.toggle('-translate-x-full');
-    overlay.classList.toggle('hidden');
+function showSidebar() {
+    sidebar.classList.remove("-translate-x-full");
+    sidebarOverlay.classList.remove("hidden");
 }
 
-function toggleSubmenu(submenuId) {
-    const submenu = document.getElementById(submenuId);
-    const arrow = submenu.previousElementSibling.querySelector('svg:last-child');
+function hideSidebar() {
+    sidebar.classList.add("-translate-x-full");
+    sidebarOverlay.classList.add("hidden");
+}
 
-    submenu.classList.toggle('hidden');
+openSidebar?.addEventListener("click", showSidebar);
+closeSidebar?.addEventListener("click", hideSidebar);
+sidebarOverlay?.addEventListener("click", hideSidebar);
 
-    if (arrow) {
-        arrow.classList.toggle('rotate-180');
+// Dropdown functionality
+function toggleDropdown(dropdownId) {
+    const menu = document.getElementById(dropdownId + "-menu");
+    const arrow = document.getElementById(dropdownId + "-arrow");
+
+    if (menu.classList.contains("hidden")) {
+        menu.classList.remove("hidden");
+        arrow.classList.add("rotate-180");
+    } else {
+        menu.classList.add("hidden");
+        arrow.classList.remove("rotate-180");
     }
 }
 
-// Close sidebar when clicking on a link (mobile)
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebarLinks = document.querySelectorAll('#sidebar a');
-    sidebarLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            if (window.innerWidth < 1024) {
-                toggleSidebar();
-            }
-        });
-    });
+function toggleUserMenu() {
+    const menu = document.getElementById("userMenu");
+    menu.classList.toggle("hidden");
+}
 
-    // Open submenus if current route matches
-    const currentRoute = window.location.pathname;
+function logout() {
+    if (confirm("Are you sure you want to logout?")) {
+        document.querySelector('form[action*="logout"]').submit();
+    }
+}
 
-    if (currentRoute.includes('/admin/users')) {
-        document.getElementById('usersSubmenu').classList.remove('hidden');
+function approveItem(type, id) {
+    if (confirm(`Are you sure you want to approve this ${type}?`)) {
+        alert(`${type.charAt(0).toUpperCase() + type.slice(1)} #${id} approved successfully!`);
+        location.reload();
     }
-    if (currentRoute.includes('/admin/approvals/jobs')) {
-        document.getElementById('jobsSubmenu').classList.remove('hidden');
+}
+
+function rejectItem(type, id) {
+    if (confirm(`Are you sure you want to reject this ${type}?`)) {
+        alert(`${type.charAt(0).toUpperCase() + type.slice(1)} #${id} rejected.`);
+        location.reload();
     }
-    if (currentRoute.includes('/admin/approvals/events')) {
-        document.getElementById('eventsSubmenu').classList.remove('hidden');
+}
+
+// Close user menu when clicking outside
+document.addEventListener("click", function (event) {
+    const menu = document.getElementById("userMenu");
+    const button = event.target.closest("button");
+
+    if (!button || button.onclick !== toggleUserMenu) {
+        menu.classList.add("hidden");
     }
-    if (currentRoute.includes('/admin/approvals/news')) {
-        document.getElementById('newsSubmenu').classList.remove('hidden');
-    }
-    if (currentRoute.includes('/admin/approvals/partnerships')) {
-        document.getElementById('partnershipsSubmenu').classList.remove('hidden');
+});
+
+// Close sidebar on window resize
+window.addEventListener("resize", function () {
+    if (window.innerWidth >= 1024) {
+        hideSidebar();
     }
 });
