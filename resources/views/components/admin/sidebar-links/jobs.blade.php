@@ -22,7 +22,7 @@
     <!-- Jobs Submenu -->
     <div id="jobsSubmenu" class="pl-4 space-y-1 hidden">
         <a
-            href="{{ route('admin.approvals.jobs') }}"
+            href="{{ route('admin.approvals.events.index') }}"
             class="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg
             @if(Route::currentRouteName() === 'admin.approvals.jobs') text-primary font-semibold @endif"
         >
@@ -33,7 +33,7 @@
             Pending Review
         </a>
         <a
-            href="{{ route('admin.approvals.jobs') }}?status=approved"
+            href="{{ route('admin.approvals.events.index') }}?status=approved"
             class="flex items-center px-4 py-2 text-sm text-gray-600 hover:bg-blue-50 rounded-lg"
         >
             <svg class="w-4 h-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
