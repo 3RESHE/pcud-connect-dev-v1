@@ -65,7 +65,7 @@
                                 <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
                             </div>
                             <a
-                                href="{{ route('partner.profile') }}"
+                                href=""
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                                 role="menuitem"
                             >
@@ -75,7 +75,7 @@
                                 Company Profile
                             </a>
                             <a
-                                href="{{ route('partner.settings') }}"
+                                href=""
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                                 role="menuitem"
                             >
@@ -197,13 +197,13 @@
                 </div>
                 <div class="mt-3 px-2 space-y-1">
                     <a
-                        href="{{ route('partner.profile') }}"
+                        href=""
                         class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200"
                     >
                         Company Profile
                     </a>
                     <a
-                        href="{{ route('partner.settings') }}"
+                        href=""
                         class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200"
                     >
                         Settings

@@ -16,10 +16,11 @@ use App\Http\Controllers\Dashboard\StaffDashboardController;
 use App\Http\Controllers\Dashboard\StudentDashboardController;
 use App\Http\Controllers\Partner\DashboardController;
 use App\Http\Controllers\Partner\JobPostingController;
+use App\Http\Controllers\Partner\PartnershipController;
+use App\Http\Controllers\Partner\NewsController;
+use App\Http\Controllers\Partner\ProfileController;
+use App\Http\Controllers\Partner\SettingsController;
 use Illuminate\Support\Facades\Route;
-
-
-
 
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -29,13 +30,11 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-
 // =====================================================
 // AUTHENTICATION ROUTES (from Laravel Breeze)
 // =====================================================
 
 require __DIR__ . '/auth.php';
-
 
 // =====================================================
 // AUTHENTICATED ROUTES (Require Auth + Password Changed + Active)
@@ -150,7 +149,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     });
 
     // =====================================================
-    // STAFF DASHBOARD ROUTES (Keep as-is for now)
+    // STAFF DASHBOARD ROUTES
     // =====================================================
 
     Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
@@ -193,45 +192,67 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     });
 
     // =====================================================
-    // PARTNER DASHBOARD ROUTES (Keep as-is for now)
+    // PARTNER DASHBOARD ROUTES (FIXED)
     // =====================================================
 
-    // Partner Routes (with auth and partner role middleware)
-    Route::middleware(['auth', 'role:partner'])->prefix('partner')->name('partner.')->group(function () {
+    Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
+
         // Dashboard
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Job Postings
-        Route::resource('job-postings', JobPostingController::class);
-        Route::get('/', [JobPostingController::class, 'index'])->name('index');
-        Route::get('/create', [JobPostingController::class, 'create'])->name('create');
-        Route::post('/', [JobPostingController::class, 'store'])->name('store');
-        Route::get('/{jobPosting}', [JobPostingController::class, 'show'])->name('show');
-        Route::get('/{jobPosting}/edit', [JobPostingController::class, 'edit'])->name('edit');
-        Route::put('/{jobPosting}', [JobPostingController::class, 'update'])->name('update');
-        Route::post('/{jobPosting}/pause', [JobPostingController::class, 'pause'])->name('pause');
-        Route::post('/{jobPosting}/resume', [JobPostingController::class, 'resume'])->name('resume');
-        Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])->name('close');
-        Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])->name('applications');
+        // Job Postings - FIXED: Removed duplicate routes
+        Route::prefix('job-postings')->name('job-postings.')->group(function () {
+            Route::get('/', [JobPostingController::class, 'index'])->name('index');
+            Route::get('/create', [JobPostingController::class, 'create'])->name('create');
+            Route::post('/', [JobPostingController::class, 'store'])->name('store');
+            Route::get('/{jobPosting}', [JobPostingController::class, 'show'])->name('show');
+            Route::get('/{jobPosting}/edit', [JobPostingController::class, 'edit'])->name('edit');
+            Route::put('/{jobPosting}', [JobPostingController::class, 'update'])->name('update');
+            Route::post('/{jobPosting}/pause', [JobPostingController::class, 'pause'])->name('pause');
+            Route::post('/{jobPosting}/resume', [JobPostingController::class, 'resume'])->name('resume');
+            Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])->name('close');
+            Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])->name('applications');
+        });
 
-        // Partnerships
-        Route::resource('partnerships', PartnershipController::class);
+        // Partnerships - FIXED: Added complete route
+        Route::prefix('partnerships')->name('partnerships.')->group(function () {
+            Route::get('/', [PartnershipController::class, 'index'])->name('index');
+            Route::get('/create', [PartnershipController::class, 'create'])->name('create');
+            Route::post('/', [PartnershipController::class, 'store'])->name('store');
+            Route::get('/{partnership}', [PartnershipController::class, 'show'])->name('show');
+            Route::get('/{partnership}/edit', [PartnershipController::class, 'edit'])->name('edit');
+            Route::put('/{partnership}', [PartnershipController::class, 'update'])->name('update');
+            Route::post('/{partnership}/complete', [PartnershipController::class, 'complete'])->name('complete');
+            Route::delete('/{partnership}', [PartnershipController::class, 'destroy'])->name('destroy');
+        });
 
-        // News
-        Route::resource('news', NewsController::class);
+        // News - FIXED: Added complete routes
+        Route::prefix('news')->name('news.')->group(function () {
+            Route::get('/', [NewsController::class, 'index'])->name('index');
+            Route::get('/create', [NewsController::class, 'create'])->name('create');
+            Route::post('/', [NewsController::class, 'store'])->name('store');
+            Route::get('/{news}', [NewsController::class, 'show'])->name('show');
+            Route::get('/{news}/edit', [NewsController::class, 'edit'])->name('edit');
+            Route::put('/{news}', [NewsController::class, 'update'])->name('update');
+            Route::post('/{news}/publish', [NewsController::class, 'publish'])->name('publish');
+            Route::delete('/{news}', [NewsController::class, 'destroy'])->name('destroy');
+        });
 
         // Profile
-        Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
-        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [ProfileController::class, 'show'])->name('show');
+            Route::put('/', [ProfileController::class, 'update'])->name('update');
+        });
 
         // Settings
-        Route::get('/settings', [SettingsController::class, 'show'])->name('settings');
-        Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [SettingsController::class, 'show'])->name('show');
+            Route::put('/', [SettingsController::class, 'update'])->name('update');
+        });
     });
 
-
     // =====================================================
-    // STUDENT DASHBOARD ROUTES (Keep as-is for now)
+    // STUDENT DASHBOARD ROUTES
     // =====================================================
 
     Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
@@ -304,7 +325,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     });
 
     // =====================================================
-    // ALUMNI DASHBOARD ROUTES (Keep as-is for now)
+    // ALUMNI DASHBOARD ROUTES
     // =====================================================
 
     Route::middleware('role:alumni')->prefix('alumni')->name('alumni.')->group(function () {
