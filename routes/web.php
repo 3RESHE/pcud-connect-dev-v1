@@ -1,20 +1,22 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Dashboard\AdminDashboardController;
-use App\Http\Controllers\Admin\Users\UserController;
-use App\Http\Controllers\Admin\Departments\DepartmentController;
-use App\Http\Controllers\Admin\Jobs\JobApprovalController;
-use App\Http\Controllers\Admin\Events\EventApprovalController;
-use App\Http\Controllers\Admin\News\NewsApprovalController;
-use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
 use App\Http\Controllers\Admin\Analytics\ActivityLogController;
 use App\Http\Controllers\Admin\Analytics\ReportController;
-use App\Http\Controllers\Dashboard\StaffDashboardController;
-use App\Http\Controllers\Dashboard\PartnerDashboardController;
-use App\Http\Controllers\Dashboard\StudentDashboardController;
+use App\Http\Controllers\Admin\Departments\DepartmentController;
+use App\Http\Controllers\Admin\Events\EventApprovalController;
+use App\Http\Controllers\Admin\Jobs\JobApprovalController;
+use App\Http\Controllers\Admin\News\NewsApprovalController;
+use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
+use App\Http\Controllers\Admin\Users\UserController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\AlumniDashboardController;
+use App\Http\Controllers\Dashboard\PartnerDashboardController;
+use App\Http\Controllers\Dashboard\StaffDashboardController;
+use App\Http\Controllers\Dashboard\StudentDashboardController;
+use App\Http\Controllers\Partner\DashboardController;
+use Illuminate\Support\Facades\Route;
+
 
 
 // =====================================================
@@ -192,52 +194,29 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // PARTNER DASHBOARD ROUTES (Keep as-is for now)
     // =====================================================
 
-    Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
-
+    // Partner Routes (with auth and partner role middleware)
+    Route::middleware(['auth', 'role:partner'])->prefix('partner')->name('partner.')->group(function () {
         // Dashboard
-        Route::get('/dashboard', [PartnerDashboardController::class, 'dashboard'])
-            ->name('dashboard');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Job Posting Management
-        Route::get('/jobs', [PartnerDashboardController::class, 'jobs'])
-            ->name('jobs.index');
-        Route::get('/jobs/create', [PartnerDashboardController::class, 'createJob'])
-            ->name('jobs.create');
-        Route::post('/jobs', [PartnerDashboardController::class, 'storeJob'])
-            ->name('jobs.store');
-        Route::get('/jobs/{id}/edit', [PartnerDashboardController::class, 'editJob'])
-            ->name('jobs.edit');
-        Route::put('/jobs/{id}', [PartnerDashboardController::class, 'updateJob'])
-            ->name('jobs.update');
-        Route::delete('/jobs/{id}', [PartnerDashboardController::class, 'deleteJob'])
-            ->name('jobs.destroy');
-        Route::get('/jobs/{id}/applications', [PartnerDashboardController::class, 'jobApplications'])
-            ->name('jobs.applications');
-        Route::post('/jobs/{id}/applications/{appId}/approve', [PartnerDashboardController::class, 'approveApplication'])
-            ->name('jobs.applications.approve');
-        Route::post('/jobs/{id}/applications/{appId}/reject', [PartnerDashboardController::class, 'rejectApplication'])
-            ->name('jobs.applications.reject');
+        // Job Postings
+        Route::resource('job-postings', JobPostingController::class);
 
-        // Partnership Submissions
-        Route::get('/partnerships', [PartnerDashboardController::class, 'partnerships'])
-            ->name('partnerships.index');
-        Route::get('/partnerships/create', [PartnerDashboardController::class, 'createPartnership'])
-            ->name('partnerships.create');
-        Route::post('/partnerships', [PartnerDashboardController::class, 'storePartnership'])
-            ->name('partnerships.store');
-        Route::get('/partnerships/{id}/edit', [PartnerDashboardController::class, 'editPartnership'])
-            ->name('partnerships.edit');
-        Route::put('/partnerships/{id}', [PartnerDashboardController::class, 'updatePartnership'])
-            ->name('partnerships.update');
-        Route::delete('/partnerships/{id}', [PartnerDashboardController::class, 'deletePartnership'])
-            ->name('partnerships.destroy');
+        // Partnerships
+        Route::resource('partnerships', PartnershipController::class);
 
-        // Company Profile
-        Route::get('/profile', [PartnerDashboardController::class, 'profile'])
-            ->name('profile');
-        Route::put('/profile', [PartnerDashboardController::class, 'updateProfile'])
-            ->name('profile.update');
+        // News
+        Route::resource('news', NewsController::class);
+
+        // Profile
+        Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+        // Settings
+        Route::get('/settings', [SettingsController::class, 'show'])->name('settings');
+        Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
     });
+
 
     // =====================================================
     // STUDENT DASHBOARD ROUTES (Keep as-is for now)
