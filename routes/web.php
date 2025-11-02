@@ -3,10 +3,19 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
+use App\Http\Controllers\Admin\Users\UserController;
+use App\Http\Controllers\Admin\Departments\DepartmentController;
+use App\Http\Controllers\Admin\Jobs\JobApprovalController;
+use App\Http\Controllers\Admin\Events\EventApprovalController;
+use App\Http\Controllers\Admin\News\NewsApprovalController;
+use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
+use App\Http\Controllers\Admin\Analytics\ActivityLogController;
+use App\Http\Controllers\Admin\Analytics\ReportController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
 use App\Http\Controllers\Dashboard\PartnerDashboardController;
 use App\Http\Controllers\Dashboard\StudentDashboardController;
 use App\Http\Controllers\Dashboard\AlumniDashboardController;
+
 
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -16,11 +25,13 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+
 // =====================================================
 // AUTHENTICATION ROUTES (from Laravel Breeze)
 // =====================================================
 
 require __DIR__ . '/auth.php';
+
 
 // =====================================================
 // AUTHENTICATED ROUTES (Require Auth + Password Changed + Active)
@@ -57,84 +68,85 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     })->name('dashboard');
 
     // =====================================================
-    // ADMIN DASHBOARD ROUTES
+    // ADMIN DASHBOARD ROUTES (REFACTORED)
     // =====================================================
-
 
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
 
-        // Dashboard
+        // ===== DASHBOARD, PROFILE & SETTINGS =====
         Route::get('/dashboard', [AdminDashboardController::class, 'dashboard'])
             ->name('dashboard');
 
-        // User Management
-        Route::get('/users', [AdminDashboardController::class, 'users'])
-            ->name('users.index');
-        Route::get('/users/create', [AdminDashboardController::class, 'createUser'])
-            ->name('users.create');
-        Route::post('/users', [AdminDashboardController::class, 'storeUser'])
-            ->name('users.store');
-        Route::get('/users/{id}/edit', [AdminDashboardController::class, 'editUser'])
-            ->name('users.edit');
-        Route::put('/users/{id}', [AdminDashboardController::class, 'updateUser'])
-            ->name('users.update');
-        Route::delete('/users/{id}', [AdminDashboardController::class, 'deleteUser'])
-            ->name('users.destroy');
-        Route::get('/users/bulk-import', [AdminDashboardController::class, 'bulkImportForm'])
+        Route::get('/profile', [AdminDashboardController::class, 'profile'])
+            ->name('profile');
+        Route::post('/profile', [AdminDashboardController::class, 'updateProfile'])
+            ->name('profile.update');
+
+        Route::get('/settings', [AdminDashboardController::class, 'settings'])
+            ->name('settings');
+        Route::post('/settings', [AdminDashboardController::class, 'updateSettings'])
+            ->name('settings.update');
+
+        // ===== USER MANAGEMENT (Separate Controller) =====
+        Route::resource('users', UserController::class);
+        Route::get('/users/bulk-import', [UserController::class, 'bulkImportForm'])
             ->name('users.bulk-import-form');
-        Route::post('/users/bulk-import', [AdminDashboardController::class, 'bulkImport'])
+        Route::post('/users/bulk-import', [UserController::class, 'bulkImport'])
             ->name('users.bulk-import');
 
-        // Approvals - Jobs
-        Route::get('/approvals/jobs', [AdminDashboardController::class, 'approveJobs'])
-            ->name('approvals.jobs');
-        Route::post('/approvals/jobs/{id}/approve', [AdminDashboardController::class, 'approveJob'])
-            ->name('approvals.jobs.approve');
-        Route::post('/approvals/jobs/{id}/reject', [AdminDashboardController::class, 'rejectJob'])
-            ->name('approvals.jobs.reject');
+        // ===== DEPARTMENT MANAGEMENT (Separate Controller) =====
+        Route::resource('departments', DepartmentController::class);
 
-        // Approvals - Events
-        Route::get('/approvals/events', [AdminDashboardController::class, 'approveEvents'])
-            ->name('approvals.events');
-        Route::post('/approvals/events/{id}/approve', [AdminDashboardController::class, 'approveEvent'])
-            ->name('approvals.events.approve');
-        Route::post('/approvals/events/{id}/reject', [AdminDashboardController::class, 'rejectEvent'])
-            ->name('approvals.events.reject');
+        // ===== JOB POSTINGS APPROVALS (Separate Controller) =====
+        Route::prefix('approvals/jobs')->name('approvals.jobs.')->group(function () {
+            Route::get('/', [JobApprovalController::class, 'index'])
+                ->name('index');
+            Route::post('/{id}/approve', [JobApprovalController::class, 'approve'])
+                ->name('approve');
+            Route::post('/{id}/reject', [JobApprovalController::class, 'reject'])
+                ->name('reject');
+        });
 
-        // Approvals - News
-        Route::get('/approvals/news', [AdminDashboardController::class, 'approveNews'])
-            ->name('approvals.news');
-        Route::post('/approvals/news/{id}/approve', [AdminDashboardController::class, 'approveNewsArticle']) // FIXED METHOD NAME
-            ->name('approvals.news.approve');
-        Route::post('/approvals/news/{id}/reject', [AdminDashboardController::class, 'rejectNews'])
-            ->name('approvals.news.reject');
+        // ===== EVENTS APPROVALS (Separate Controller) =====
+        Route::prefix('approvals/events')->name('approvals.events.')->group(function () {
+            Route::get('/', [EventApprovalController::class, 'index'])
+                ->name('index');
+            Route::post('/{id}/approve', [EventApprovalController::class, 'approve'])
+                ->name('approve');
+            Route::post('/{id}/reject', [EventApprovalController::class, 'reject'])
+                ->name('reject');
+        });
 
-        // Approvals - Partnerships
-        Route::get('/approvals/partnerships', [AdminDashboardController::class, 'approvePartnerships'])
-            ->name('approvals.partnerships');
-        Route::post('/approvals/partnerships/{id}/approve', [AdminDashboardController::class, 'approvePartnership'])
-            ->name('approvals.partnerships.approve');
-        Route::post('/approvals/partnerships/{id}/reject', [AdminDashboardController::class, 'rejectPartnership'])
-            ->name('approvals.partnerships.reject');
+        // ===== NEWS ARTICLES APPROVALS (Separate Controller) =====
+        Route::prefix('approvals/news')->name('approvals.news.')->group(function () {
+            Route::get('/', [NewsApprovalController::class, 'index'])
+                ->name('index');
+            Route::post('/{id}/approve', [NewsApprovalController::class, 'approve'])
+                ->name('approve');
+            Route::post('/{id}/reject', [NewsApprovalController::class, 'reject'])
+                ->name('reject');
+        });
 
-        // Activity Logs & Reports
-        Route::get('/activity-logs', [AdminDashboardController::class, 'activityLogs'])
+        // ===== PARTNERSHIPS APPROVALS (Separate Controller) =====
+        Route::prefix('approvals/partnerships')->name('approvals.partnerships.')->group(function () {
+            Route::get('/', [PartnershipApprovalController::class, 'index'])
+                ->name('index');
+            Route::post('/{id}/approve', [PartnershipApprovalController::class, 'approve'])
+                ->name('approve');
+            Route::post('/{id}/reject', [PartnershipApprovalController::class, 'reject'])
+                ->name('reject');
+        });
+
+        // ===== ACTIVITY LOGS & REPORTS (Separate Controllers) =====
+        Route::get('/activity-logs', [ActivityLogController::class, 'index'])
             ->name('activity-logs');
-        Route::get('/reports', [AdminDashboardController::class, 'reports'])
-            ->name('reports');
 
-        // Settings & Profile
-        Route::get('/settings', function () {
-            return view('users.admin.settings');
-        })->name('settings');
-        Route::get('/profile', function () {
-            return view('users.admin.profile');
-        })->name('profile');
+        Route::get('/reports', [ReportController::class, 'index'])
+            ->name('reports');
     });
 
-
     // =====================================================
-    // STAFF DASHBOARD ROUTES
+    // STAFF DASHBOARD ROUTES (Keep as-is for now)
     // =====================================================
 
     Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
@@ -177,7 +189,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     });
 
     // =====================================================
-    // PARTNER DASHBOARD ROUTES
+    // PARTNER DASHBOARD ROUTES (Keep as-is for now)
     // =====================================================
 
     Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
@@ -228,7 +240,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     });
 
     // =====================================================
-    // STUDENT DASHBOARD ROUTES
+    // STUDENT DASHBOARD ROUTES (Keep as-is for now)
     // =====================================================
 
     Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
@@ -301,7 +313,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     });
 
     // =====================================================
-    // ALUMNI DASHBOARD ROUTES
+    // ALUMNI DASHBOARD ROUTES (Keep as-is for now)
     // =====================================================
 
     Route::middleware('role:alumni')->prefix('alumni')->name('alumni.')->group(function () {
