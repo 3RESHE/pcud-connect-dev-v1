@@ -178,30 +178,57 @@ Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function
 
     // ===== EVENT MANAGEMENT (Separate Controller) =====
     Route::prefix('events')->name('events.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Staff\Events\EventController::class, 'index'])
+        // Basic CRUD
+        Route::get('/', [EventController::class, 'index'])
             ->name('index');
-        Route::get('/create', [\App\Http\Controllers\Staff\Events\EventController::class, 'create'])
+        Route::get('/create', [EventController::class, 'create'])
             ->name('create');
-        Route::post('/', [\App\Http\Controllers\Staff\Events\EventController::class, 'store'])
+        Route::post('/', [EventController::class, 'store'])
             ->name('store');
-        Route::get('/{event}', [\App\Http\Controllers\Staff\Events\EventController::class, 'show'])
+        Route::get('/{event}', [EventController::class, 'show'])
             ->name('show');
-        Route::get('/{event}/edit', [\App\Http\Controllers\Staff\Events\EventController::class, 'edit'])
+        Route::get('/{event}/edit', [EventController::class, 'edit'])
             ->name('edit');
-        Route::put('/{event}', [\App\Http\Controllers\Staff\Events\EventController::class, 'update'])
+        Route::put('/{event}', [EventController::class, 'update'])
             ->name('update');
-        Route::post('/{event}/publish', [\App\Http\Controllers\Staff\Events\EventController::class, 'publish'])
-            ->name('publish');
-        Route::post('/{event}/cancel', [\App\Http\Controllers\Staff\Events\EventController::class, 'cancel'])
-            ->name('cancel');
-        Route::post('/{event}/withdraw', [\App\Http\Controllers\Staff\Events\EventController::class, 'withdraw'])
-            ->name('withdraw');
-        Route::get('/{event}/registrations', [\App\Http\Controllers\Staff\Events\EventController::class, 'registrations'])
-            ->name('registrations');
-        Route::post('/{event}/registrations/{registration}/check-in', [\App\Http\Controllers\Staff\Events\EventController::class, 'checkIn'])
-            ->name('registrations.check-in');
-        Route::delete('/{event}', [\App\Http\Controllers\Staff\Events\EventController::class, 'destroy'])
+        Route::delete('/{event}', [EventController::class, 'destroy'])
             ->name('destroy');
+
+        // Event Status Actions
+        Route::post('/{event}/submit', [EventController::class, 'submit'])
+            ->name('submit');
+        Route::post('/{event}/withdraw', [EventController::class, 'withdraw'])
+            ->name('withdraw');
+        Route::post('/{event}/publish', [EventController::class, 'publish'])
+            ->name('publish');
+        Route::post('/{event}/cancel', [EventController::class, 'cancel'])
+            ->name('cancel');
+        Route::post('/{event}/end', [EventController::class, 'end'])
+            ->name('end');
+
+        // Registrations & Attendance
+        Route::get('/{event}/registrations', [EventController::class, 'registrations'])
+            ->name('registrations');
+        Route::post('/{event}/registrations/{registration}/confirm', [EventController::class, 'confirmRegistration'])
+            ->name('registrations.confirm');
+        Route::post('/{event}/registrations/{registration}/cancel', [EventController::class, 'cancelRegistration'])
+            ->name('registrations.cancel');
+        Route::get('/{event}/registrations/{registration}', [EventController::class, 'registrationDetails'])
+            ->name('registrations.details');
+
+        // Attendance Management
+        Route::get('/{event}/attendance', [EventController::class, 'attendance'])
+            ->name('attendance');
+        Route::post('/{event}/attendance/{registration}/check-in', [EventController::class, 'checkIn'])
+            ->name('attendance.check-in');
+        Route::post('/{event}/attendance/{registration}/check-out', [EventController::class, 'checkOut'])
+            ->name('attendance.check-out');
+        Route::get('/{event}/attendance/export', [EventController::class, 'exportAttendance'])
+            ->name('attendance.export');
+
+        // Registrations Export
+        Route::get('/{event}/registrations/export', [EventController::class, 'exportRegistrations'])
+            ->name('registrations.export');
     });
 
     // ===== NEWS MANAGEMENT (Separate Controller) =====
@@ -226,6 +253,7 @@ Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function
             ->name('destroy');
     });
 });
+
 
 
 
