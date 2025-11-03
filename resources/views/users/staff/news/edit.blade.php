@@ -1,6 +1,6 @@
 @extends('layouts.staff')
 
-@section('title', 'Create News Article - PCU-DASMA Connect')
+@section('title', 'Edit News Article - PCU-DASMA Connect')
 
 @section('content')
 <!-- Header -->
@@ -12,8 +12,8 @@
             </svg>
         </a>
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">Create News Article</h1>
-            <p class="text-gray-600">Compose and submit news articles for admin review</p>
+            <h1 class="text-3xl font-bold text-gray-900">Edit News Article</h1>
+            <p class="text-gray-600">Update and resubmit your news article</p>
         </div>
     </div>
     <div class="flex items-center space-x-3">
@@ -24,8 +24,9 @@
 </div>
 
 <!-- Article Form -->
-<form action="{{ route('staff.news.store') }}" method="POST" enctype="multipart/form-data" id="newsForm" class="space-y-8">
+<form action="{{ route('staff.news.update', $article->id) }}" method="POST" enctype="multipart/form-data" id="newsForm" class="space-y-8">
     @csrf
+    @method('PUT')
 
     <!-- Basic Information -->
     <div class="bg-white rounded-lg shadow-sm p-6">
@@ -40,7 +41,7 @@
                     id="title"
                     name="title"
                     required
-                    value="{{ old('title') }}"
+                    value="{{ old('title', $article->title) }}"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary text-lg @error('title') border-red-500 @enderror"
                     placeholder="Enter your article title..."
                 />
@@ -63,11 +64,11 @@
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary @error('category') border-red-500 @enderror"
                     >
                         <option value="">Select Category</option>
-                        <option value="university_updates" {{ old('category') == 'university_updates' ? 'selected' : '' }}>University Update</option>
-                        <option value="alumni_success" {{ old('category') == 'alumni_success' ? 'selected' : '' }}>Alumni Success</option>
-                        <option value="campus_events" {{ old('category') == 'campus_events' ? 'selected' : '' }}>Campus Events</option>
-                        <option value="partnership_highlights" {{ old('category') == 'partnership_highlights' ? 'selected' : '' }}>Partnership Success</option>
-                        <option value="general" {{ old('category') == 'general' ? 'selected' : '' }}>General News</option>
+                        <option value="university_updates" {{ old('category', $article->category) == 'university_updates' ? 'selected' : '' }}>University Update</option>
+                        <option value="alumni_success" {{ old('category', $article->category) == 'alumni_success' ? 'selected' : '' }}>Alumni Success</option>
+                        <option value="campus_events" {{ old('category', $article->category) == 'campus_events' ? 'selected' : '' }}>Campus Events</option>
+                        <option value="partnership_highlights" {{ old('category', $article->category) == 'partnership_highlights' ? 'selected' : '' }}>Partnership Success</option>
+                        <option value="general" {{ old('category', $article->category) == 'general' ? 'selected' : '' }}>General News</option>
                     </select>
                     @error('category')
                         <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
@@ -80,7 +81,7 @@
                         type="text"
                         id="author"
                         name="author"
-                        value="{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}"
+                        value="{{ $article->creator->first_name }} {{ $article->creator->last_name }}"
                         readonly
                         class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
                     />
@@ -95,7 +96,7 @@
                         id="event_date"
                         name="event_date"
                         required
-                        value="{{ old('event_date') }}"
+                        value="{{ old('event_date', $article->event_date ? $article->event_date->format('Y-m-d') : '') }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary @error('event_date') border-red-500 @enderror"
                     />
                     @error('event_date')
@@ -113,7 +114,7 @@
                         type="text"
                         id="partnership_with"
                         name="partnership_with"
-                        value="{{ old('partnership_with') }}"
+                        value="{{ old('partnership_with', $article->partnership_with) }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
                         placeholder="e.g., Clean Seas Alliance, Local Barangay"
                     />
@@ -127,6 +128,7 @@
                         id="publish_date"
                         name="publish_date"
                         readonly
+                        value="{{ $article->published_at ? $article->published_at->format('Y-m-d') : '' }}"
                         class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed"
                     />
                     <p class="text-sm text-gray-500 mt-1">Set by admin upon approval</p>
@@ -145,7 +147,7 @@
                     required
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary @error('summary') border-red-500 @enderror"
                     placeholder="Brief summary that will appear in the article preview and social media shares..."
-                >{{ old('summary') }}</textarea>
+                >{{ old('summary', $article->summary) }}</textarea>
                 @error('summary')
                     <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
                 @enderror
@@ -155,6 +157,18 @@
             <!-- Featured Image Upload -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+
+                <!-- Existing Image Preview -->
+                @if($article->featured_image)
+                    <div class="mb-4">
+                        <p class="text-sm text-gray-600 mb-2">Current Image:</p>
+                        <div class="relative inline-block">
+                            <img src="{{ asset('storage/' . $article->featured_image) }}" alt="Current featured image" class="h-32 w-auto rounded-md border border-gray-300">
+                            <input type="hidden" name="keep_existing_image" id="keepExistingImage" value="1">
+                        </div>
+                    </div>
+                @endif
+
                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors duration-200">
                     <div class="space-y-1 text-center">
                         <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -162,20 +176,24 @@
                         </svg>
                         <div class="flex text-sm text-gray-600">
                             <label for="featured_image" class="relative cursor-pointer bg-white rounded-md font-medium text-primary hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary">
-                                <span>Upload a file</span>
+                                <span>Upload a new file</span>
                                 <input id="featured_image" name="featured_image" type="file" accept="image/*" class="sr-only" onchange="handleImageUpload(event)" />
                             </label>
                             <p class="pl-1">or drag and drop</p>
                         </div>
                         <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        @if($article->featured_image)
+                            <p class="text-xs text-gray-500">(Leave empty to keep current image)</p>
+                        @endif
                     </div>
                 </div>
                 @error('featured_image')
                     <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
                 @enderror
                 <div id="imagePreview" class="hidden mt-4">
+                    <p class="text-sm text-gray-600 mb-2">New Image Preview:</p>
                     <img id="previewImg" class="h-48 w-full object-cover rounded-md" />
-                    <button type="button" onclick="removeImage()" class="mt-2 text-sm text-red-600 hover:text-red-700">Remove image</button>
+                    <button type="button" onclick="removeImage()" class="mt-2 text-sm text-red-600 hover:text-red-700">Remove new image</button>
                 </div>
             </div>
         </div>
@@ -224,24 +242,8 @@
             rows="12"
             required
             class="w-full px-3 py-3 border-l border-r border-b border-gray-300 rounded-b-md focus:outline-none focus:ring-primary focus:border-primary resize-none @error('content') border-red-500 @enderror"
-            placeholder="Write your full article content here...
-
-For event news, include:
-• Event purpose and significance
-• Key participants and speakers
-• Highlights and outcomes
-• Student/community involvement
-• Photos and quotes
-• Upcoming related activities
-
-For partnership success, include:
-• Partnership overview and objectives
-• Key achievements and metrics
-• Community impact and feedback
-• Photos and testimonials
-• Collaboration details
-• Future implications or next steps"
-        >{{ old('content') }}</textarea>
+            placeholder="Write your full article content here..."
+        >{{ old('content', $article->content) }}</textarea>
         @error('content')
             <p class="text-sm text-red-500 mt-1">{{ $message }}</p>
         @enderror
@@ -267,7 +269,7 @@ For partnership success, include:
                     id="tags"
                     name="tags"
                     required
-                    value="{{ old('tags') }}"
+                    value="{{ old('tags', $article->tags) }}"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary @error('tags') border-red-500 @enderror"
                     placeholder="e.g., university, event, community, partnership (separate with commas)"
                 />
@@ -281,7 +283,7 @@ For partnership success, include:
 
     <!-- Action Buttons -->
     <div class="flex justify-between items-center">
-        <a href="{{ route('staff.news.index') }}" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+        <a href="{{ route('staff.news.show', $article->id) }}" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
             Cancel
         </a>
         <div class="space-x-3">
@@ -289,13 +291,17 @@ For partnership success, include:
                 Save as Draft
             </button>
             <button type="submit" name="action" value="submit" class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                Submit for Review
+                @if($article->status === 'rejected')
+                    Update & Resubmit
+                @else
+                    Update Article
+                @endif
             </button>
         </div>
     </div>
 </form>
 
-<!-- Preview Modal -->
+<!-- Preview Modal (Same as Create) -->
 <div id="previewModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
     <div class="bg-white rounded-lg shadow-lg max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
         <div class="p-6">
@@ -351,4 +357,13 @@ For partnership success, include:
 </div>
 
 <script src="{{ asset('js/staff/news-form.js') }}"></script>
+<script>
+    // Pre-populate existing image in preview modal
+    @if($article->featured_image)
+        document.addEventListener('DOMContentLoaded', function() {
+            const previewModalImg = document.getElementById('previewModalImg');
+            previewModalImg.src = "{{ asset('storage/' . $article->featured_image) }}";
+        });
+    @endif
+</script>
 @endsection
