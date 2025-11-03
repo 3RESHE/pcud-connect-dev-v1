@@ -16,11 +16,13 @@ use App\Http\Controllers\Dashboard\StaffDashboardController;
 use App\Http\Controllers\Dashboard\StudentDashboardController;
 use App\Http\Controllers\Partner\DashboardController;
 use App\Http\Controllers\Partner\JobPostingController;
-use App\Http\Controllers\Partner\PartnershipController;
 use App\Http\Controllers\Partner\NewsController;
+use App\Http\Controllers\Partner\PartnershipController;
 use App\Http\Controllers\Partner\ProfileController;
 use App\Http\Controllers\Partner\SettingsController;
+use App\Http\Controllers\Staff\Events\EventController;
 use Illuminate\Support\Facades\Route;
+
 
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -152,44 +154,80 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // STAFF DASHBOARD ROUTES
     // =====================================================
 
-    Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
+    // Staff Events Routes (Separate Controller)
+// =====================================================
+// STAFF DASHBOARD ROUTES (REFACTORED & COMPLETE)
+// =====================================================
 
-        // Dashboard
-        Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])
-            ->name('dashboard');
+Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
 
-        // Event Management
-        Route::get('/events', [StaffDashboardController::class, 'events'])
-            ->name('events.index');
-        Route::get('/events/create', [StaffDashboardController::class, 'createEvent'])
-            ->name('events.create');
-        Route::post('/events', [StaffDashboardController::class, 'storeEvent'])
-            ->name('events.store');
-        Route::get('/events/{id}/edit', [StaffDashboardController::class, 'editEvent'])
-            ->name('events.edit');
-        Route::put('/events/{id}', [StaffDashboardController::class, 'updateEvent'])
-            ->name('events.update');
-        Route::delete('/events/{id}', [StaffDashboardController::class, 'deleteEvent'])
-            ->name('events.destroy');
-        Route::get('/events/{id}/registrations', [StaffDashboardController::class, 'eventRegistrations'])
-            ->name('events.registrations');
-        Route::post('/events/{id}/check-in', [StaffDashboardController::class, 'checkInAttendee'])
-            ->name('events.check-in');
+    // ===== DASHBOARD =====
+    Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])
+        ->name('dashboard');
 
-        // News Management
-        Route::get('/news', [StaffDashboardController::class, 'news'])
-            ->name('news.index');
-        Route::get('/news/create', [StaffDashboardController::class, 'createNews'])
-            ->name('news.create');
-        Route::post('/news', [StaffDashboardController::class, 'storeNews'])
-            ->name('news.store');
-        Route::get('/news/{id}/edit', [StaffDashboardController::class, 'editNews'])
-            ->name('news.edit');
-        Route::put('/news/{id}', [StaffDashboardController::class, 'updateNews'])
-            ->name('news.update');
-        Route::delete('/news/{id}', [StaffDashboardController::class, 'deleteNews'])
-            ->name('news.destroy');
+    // ===== PROFILE & SETTINGS =====
+    Route::get('/profile', [StaffDashboardController::class, 'profile'])
+        ->name('profile');
+    Route::put('/profile', [StaffDashboardController::class, 'updateProfile'])
+        ->name('profile.update');
+
+    Route::get('/settings', [StaffDashboardController::class, 'settings'])
+        ->name('settings');
+    Route::put('/settings', [StaffDashboardController::class, 'updateSettings'])
+        ->name('settings.update');
+
+    // ===== EVENT MANAGEMENT (Separate Controller) =====
+    Route::prefix('events')->name('events.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Staff\Events\EventController::class, 'index'])
+            ->name('index');
+        Route::get('/create', [\App\Http\Controllers\Staff\Events\EventController::class, 'create'])
+            ->name('create');
+        Route::post('/', [\App\Http\Controllers\Staff\Events\EventController::class, 'store'])
+            ->name('store');
+        Route::get('/{event}', [\App\Http\Controllers\Staff\Events\EventController::class, 'show'])
+            ->name('show');
+        Route::get('/{event}/edit', [\App\Http\Controllers\Staff\Events\EventController::class, 'edit'])
+            ->name('edit');
+        Route::put('/{event}', [\App\Http\Controllers\Staff\Events\EventController::class, 'update'])
+            ->name('update');
+        Route::post('/{event}/publish', [\App\Http\Controllers\Staff\Events\EventController::class, 'publish'])
+            ->name('publish');
+        Route::post('/{event}/cancel', [\App\Http\Controllers\Staff\Events\EventController::class, 'cancel'])
+            ->name('cancel');
+        Route::post('/{event}/withdraw', [\App\Http\Controllers\Staff\Events\EventController::class, 'withdraw'])
+            ->name('withdraw');
+        Route::get('/{event}/registrations', [\App\Http\Controllers\Staff\Events\EventController::class, 'registrations'])
+            ->name('registrations');
+        Route::post('/{event}/registrations/{registration}/check-in', [\App\Http\Controllers\Staff\Events\EventController::class, 'checkIn'])
+            ->name('registrations.check-in');
+        Route::delete('/{event}', [\App\Http\Controllers\Staff\Events\EventController::class, 'destroy'])
+            ->name('destroy');
     });
+
+    // ===== NEWS MANAGEMENT (Separate Controller) =====
+    Route::prefix('news')->name('news.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Staff\News\NewsController::class, 'index'])
+            ->name('index');
+        Route::get('/create', [\App\Http\Controllers\Staff\News\NewsController::class, 'create'])
+            ->name('create');
+        Route::post('/', [\App\Http\Controllers\Staff\News\NewsController::class, 'store'])
+            ->name('store');
+        Route::get('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'show'])
+            ->name('show');
+        Route::get('/{newsArticle}/edit', [\App\Http\Controllers\Staff\News\NewsController::class, 'edit'])
+            ->name('edit');
+        Route::put('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'update'])
+            ->name('update');
+        Route::post('/{newsArticle}/submit', [\App\Http\Controllers\Staff\News\NewsController::class, 'submit'])
+            ->name('submit');
+        Route::post('/{newsArticle}/withdraw', [\App\Http\Controllers\Staff\News\NewsController::class, 'withdraw'])
+            ->name('withdraw');
+        Route::delete('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'destroy'])
+            ->name('destroy');
+    });
+});
+
+
 
     // =====================================================
     // PARTNER DASHBOARD ROUTES (FIXED)
