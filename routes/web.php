@@ -171,9 +171,13 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('reject');
         });
 
-        // ===== ACTIVITY LOGS & REPORTS =====
+        // Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])
             ->name('activity-logs');
+        Route::get('/activity-logs/{log}', [ActivityLogController::class, 'show'])
+            ->name('activity-logs.show');
+        Route::post('/activity-logs/export', [ActivityLogController::class, 'export'])
+            ->name('activity-logs.export');
 
         Route::get('/reports', [ReportController::class, 'index'])
             ->name('reports');

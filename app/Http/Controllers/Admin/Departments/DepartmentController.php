@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Departments;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -69,6 +70,9 @@ class DepartmentController extends Controller
                 'code' => strtoupper($validated['code']),
             ]);
 
+            // Log activity
+            ActivityLogger::logCreate($department, "Created department: {$department->title}");
+
             return response()->json([
                 'success' => true,
                 'message' => 'Department created successfully',
@@ -133,11 +137,26 @@ class DepartmentController extends Controller
                 'code.max' => 'Department code must not exceed 20 characters',
             ]);
 
+            // Store old values for activity log
+            $oldValues = $department->only(['title', 'code']);
+
             // Update department
             $department->update([
                 'title' => $validated['title'],
                 'code' => strtoupper($validated['code']),
             ]);
+
+            // Log activity
+            ActivityLogger::log(
+                action: 'updated',
+                subjectType: Department::class,
+                subjectId: $department->id,
+                properties: [
+                    'old' => $oldValues,
+                    'new' => $department->only(['title', 'code']),
+                ],
+                description: "Updated department: {$department->title}"
+            );
 
             return response()->json([
                 'success' => true,
@@ -180,8 +199,22 @@ class DepartmentController extends Controller
                 ], 400);
             }
 
+            // Store data for activity log before deletion
+            $departmentData = $department->toArray();
+
             // Delete department
             $department->delete();
+
+            // Log activity
+            ActivityLogger::log(
+                action: 'deleted',
+                subjectType: Department::class,
+                subjectId: $id,
+                properties: [
+                    'data' => $departmentData,
+                ],
+                description: "Deleted department: {$departmentData['title']}"
+            );
 
             return response()->json([
                 'success' => true,
