@@ -12,37 +12,43 @@
                 </button>
             </div>
             <div class="p-6">
-                <form id="addDepartmentForm" action="" method="">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Department Name <span class="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="title"
-                                required
-                                placeholder="e.g., College of Computer Studies"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">
-                                Department Code <span class="text-red-500">*</span>
-                            </label>
-                            <input
-                                type="text"
-                                name="code"
-                                required
-                                placeholder="e.g., CCS"
-                                maxlength="10"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
-                            />
-                            <p class="text-xs text-gray-500 mt-1">
-                                Must be unique (e.g., CAS, CBA, COED)
-                            </p>
-                        </div>
+                <form id="addDepartmentForm" class="space-y-4">
+                    @csrf
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Department Name <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="title"
+                            id="addTitle"
+                            required
+                            placeholder="e.g., College of Computer Studies"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary"
+                        />
+                        <span id="addTitleError" class="text-red-500 text-xs mt-1 hidden"></span>
                     </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Department Code <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            name="code"
+                            id="addCode"
+                            required
+                            placeholder="e.g., CCS"
+                            maxlength="10"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary uppercase"
+                        />
+                        <p class="text-xs text-gray-500 mt-1">
+                            Must be unique (e.g., CAS, CBA, COED)
+                        </p>
+                        <span id="addCodeError" class="text-red-500 text-xs mt-1 hidden"></span>
+                    </div>
+
                     <div class="flex justify-end space-x-3 mt-6">
                         <button
                             type="button"
@@ -53,7 +59,8 @@
                         </button>
                         <button
                             type="submit"
-                            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-700"
+                            id="addSubmitBtn"
+                            class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             Add Department
                         </button>
