@@ -155,104 +155,104 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // =====================================================
 
     // Staff Events Routes (Separate Controller)
-// =====================================================
-// STAFF DASHBOARD ROUTES (REFACTORED & COMPLETE)
-// =====================================================
+    // =====================================================
+    // STAFF DASHBOARD ROUTES (REFACTORED & COMPLETE)
+    // =====================================================
 
-Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
+    Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
 
-    // ===== DASHBOARD =====
-    Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])
-        ->name('dashboard');
+        // ===== DASHBOARD =====
+        Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])
+            ->name('dashboard');
 
-    // ===== PROFILE & SETTINGS =====
-    Route::get('/profile', [StaffDashboardController::class, 'profile'])
-        ->name('profile');
-    Route::put('/profile', [StaffDashboardController::class, 'updateProfile'])
-        ->name('profile.update');
+        // ===== PROFILE & SETTINGS =====
+        Route::get('/profile', [StaffDashboardController::class, 'profile'])
+            ->name('profile');
+        Route::put('/profile', [StaffDashboardController::class, 'updateProfile'])
+            ->name('profile.update');
 
-    Route::get('/settings', [StaffDashboardController::class, 'settings'])
-        ->name('settings');
-    Route::put('/settings', [StaffDashboardController::class, 'updateSettings'])
-        ->name('settings.update');
+        Route::get('/settings', [StaffDashboardController::class, 'settings'])
+            ->name('settings');
+        Route::put('/settings', [StaffDashboardController::class, 'updateSettings'])
+            ->name('settings.update');
 
-    // ===== EVENT MANAGEMENT (Separate Controller) =====
-    Route::prefix('events')->name('events.')->group(function () {
-        // Basic CRUD
-        Route::get('/', [EventController::class, 'index'])
-            ->name('index');
-        Route::get('/create', [EventController::class, 'create'])
-            ->name('create');
-        Route::post('/', [EventController::class, 'store'])
-            ->name('store');
-        Route::get('/{event}', [EventController::class, 'show'])
-            ->name('show');
-        Route::get('/{event}/edit', [EventController::class, 'edit'])
-            ->name('edit');
-        Route::put('/{event}', [EventController::class, 'update'])
-            ->name('update');
-        Route::delete('/{event}', [EventController::class, 'destroy'])
-            ->name('destroy');
+        // ===== EVENT MANAGEMENT (Separate Controller) =====
+        Route::prefix('events')->name('events.')->group(function () {
+            // Basic CRUD
+            Route::get('/', [EventController::class, 'index'])
+                ->name('index');
+            Route::get('/create', [EventController::class, 'create'])
+                ->name('create');
+            Route::post('/', [EventController::class, 'store'])
+                ->name('store');
+            Route::get('/{event}', [EventController::class, 'show'])
+                ->name('show');
+            Route::get('/{event}/edit', [EventController::class, 'edit'])
+                ->name('edit');
+            Route::put('/{event}', [EventController::class, 'update'])
+                ->name('update');
+            Route::delete('/{event}', [EventController::class, 'destroy'])
+                ->name('destroy');
 
-        // Event Status Actions
-        Route::post('/{event}/submit', [EventController::class, 'submit'])
-            ->name('submit');
-        Route::post('/{event}/withdraw', [EventController::class, 'withdraw'])
-            ->name('withdraw');
-        Route::post('/{event}/publish', [EventController::class, 'publish'])
-            ->name('publish');
-        Route::post('/{event}/cancel', [EventController::class, 'cancel'])
-            ->name('cancel');
-        Route::post('/{event}/end', [EventController::class, 'end'])
-            ->name('end');
+            // Event Status Actions
+            Route::post('/{event}/submit', [EventController::class, 'submit'])
+                ->name('submit');
+            Route::post('/{event}/withdraw', [EventController::class, 'withdraw'])
+                ->name('withdraw');
+            Route::post('/{event}/publish', [EventController::class, 'publish'])
+                ->name('publish');
+            Route::post('/{event}/cancel', [EventController::class, 'cancel'])
+                ->name('cancel');
+            Route::post('/{event}/end', [EventController::class, 'end'])
+                ->name('end');
 
-        // Registrations & Attendance
-        Route::get('/{event}/registrations', [EventController::class, 'registrations'])
-            ->name('registrations');
-        Route::post('/{event}/registrations/{registration}/confirm', [EventController::class, 'confirmRegistration'])
-            ->name('registrations.confirm');
-        Route::post('/{event}/registrations/{registration}/cancel', [EventController::class, 'cancelRegistration'])
-            ->name('registrations.cancel');
-        Route::get('/{event}/registrations/{registration}', [EventController::class, 'registrationDetails'])
-            ->name('registrations.details');
+            // Registrations & Attendance
+            Route::get('/{event}/registrations', [EventController::class, 'registrations'])
+                ->name('registrations');
+            Route::post('/{event}/registrations/{registration}/confirm', [EventController::class, 'confirmRegistration'])
+                ->name('registrations.confirm');
+            Route::post('/{event}/registrations/{registration}/cancel', [EventController::class, 'cancelRegistration'])
+                ->name('registrations.cancel');
+            Route::get('/{event}/registrations/{registration}', [EventController::class, 'registrationDetails'])
+                ->name('registrations.details');
 
-        // Attendance Management
-        Route::get('/{event}/attendance', [EventController::class, 'attendance'])
-            ->name('attendance');
-        Route::post('/{event}/attendance/{registration}/check-in', [EventController::class, 'checkIn'])
-            ->name('attendance.check-in');
-        Route::post('/{event}/attendance/{registration}/check-out', [EventController::class, 'checkOut'])
-            ->name('attendance.check-out');
-        Route::get('/{event}/attendance/export', [EventController::class, 'exportAttendance'])
-            ->name('attendance.export');
+            // Attendance Management
+            Route::get('/{event}/attendance', [EventController::class, 'attendance'])
+                ->name('attendance');
+            Route::post('/{event}/attendance/{registration}/check-in', [EventController::class, 'checkIn'])
+                ->name('attendance.check-in');
+            Route::post('/{event}/attendance/{registration}/check-out', [EventController::class, 'checkOut'])
+                ->name('attendance.check-out');
+            Route::get('/{event}/attendance/export', [EventController::class, 'exportAttendance'])
+                ->name('attendance.export');
 
-        // Registrations Export
-        Route::get('/{event}/registrations/export', [EventController::class, 'exportRegistrations'])
-            ->name('registrations.export');
+            // Registrations Export
+            Route::get('/{event}/registrations/export', [EventController::class, 'exportRegistrations'])
+                ->name('registrations.export');
+        });
+
+        // ===== NEWS MANAGEMENT (Separate Controller) =====
+        Route::prefix('news')->name('news.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Staff\News\NewsController::class, 'index'])
+                ->name('index');
+            Route::get('/create', [\App\Http\Controllers\Staff\News\NewsController::class, 'create'])
+                ->name('create');
+            Route::post('/', [\App\Http\Controllers\Staff\News\NewsController::class, 'store'])
+                ->name('store');
+            Route::get('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'show'])
+                ->name('show');
+            Route::get('/{newsArticle}/edit', [\App\Http\Controllers\Staff\News\NewsController::class, 'edit'])
+                ->name('edit');
+            Route::put('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'update'])
+                ->name('update');
+            Route::post('/{newsArticle}/submit', [\App\Http\Controllers\Staff\News\NewsController::class, 'submit'])
+                ->name('submit');
+            Route::post('/{newsArticle}/withdraw', [\App\Http\Controllers\Staff\News\NewsController::class, 'withdraw'])
+                ->name('withdraw');
+            Route::delete('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'destroy'])
+                ->name('destroy');
+        });
     });
-
-    // ===== NEWS MANAGEMENT (Separate Controller) =====
-    Route::prefix('news')->name('news.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Staff\News\NewsController::class, 'index'])
-            ->name('index');
-        Route::get('/create', [\App\Http\Controllers\Staff\News\NewsController::class, 'create'])
-            ->name('create');
-        Route::post('/', [\App\Http\Controllers\Staff\News\NewsController::class, 'store'])
-            ->name('store');
-        Route::get('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'show'])
-            ->name('show');
-        Route::get('/{newsArticle}/edit', [\App\Http\Controllers\Staff\News\NewsController::class, 'edit'])
-            ->name('edit');
-        Route::put('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'update'])
-            ->name('update');
-        Route::post('/{newsArticle}/submit', [\App\Http\Controllers\Staff\News\NewsController::class, 'submit'])
-            ->name('submit');
-        Route::post('/{newsArticle}/withdraw', [\App\Http\Controllers\Staff\News\NewsController::class, 'withdraw'])
-            ->name('withdraw');
-        Route::delete('/{newsArticle}', [\App\Http\Controllers\Staff\News\NewsController::class, 'destroy'])
-            ->name('destroy');
-    });
-});
 
 
 
@@ -394,78 +394,51 @@ Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function
     // ALUMNI DASHBOARD ROUTES
     // =====================================================
 
+    // ===== ALUMNI ROUTES =====
     Route::middleware('role:alumni')->prefix('alumni')->name('alumni.')->group(function () {
 
         // Dashboard
-        Route::get('/dashboard', [AlumniDashboardController::class, 'dashboard'])
+        Route::get('/dashboard', [\App\Http\Controllers\Alumni\DashboardController::class, 'dashboard'])
             ->name('dashboard');
 
-        // Job Browsing & Application
-        Route::get('/jobs', [AlumniDashboardController::class, 'jobs'])
-            ->name('jobs.index');
-        Route::get('/jobs/{id}', [AlumniDashboardController::class, 'viewJob'])
-            ->name('jobs.show');
-        Route::post('/jobs/{id}/apply', [AlumniDashboardController::class, 'applyJob'])
-            ->name('jobs.apply');
-        Route::get('/applications', [AlumniDashboardController::class, 'applications'])
-            ->name('applications.index');
-        Route::get('/applications/{id}', [AlumniDashboardController::class, 'viewApplication'])
-            ->name('applications.show');
-
-        // Event Registration
-        Route::get('/events', [AlumniDashboardController::class, 'events'])
-            ->name('events.index');
-        Route::get('/events/{id}', [AlumniDashboardController::class, 'viewEvent'])
-            ->name('events.show');
-        Route::post('/events/{id}/register', [AlumniDashboardController::class, 'registerEvent'])
-            ->name('events.register');
-        Route::get('/event-registrations', [AlumniDashboardController::class, 'eventRegistrations'])
-            ->name('event-registrations.index');
-
-        // Profile & Portfolio
-        Route::get('/profile', [AlumniDashboardController::class, 'profile'])
-            ->name('profile');
-        Route::put('/profile', [AlumniDashboardController::class, 'updateProfile'])
+        // Profile & Settings
+        Route::get('/profile', [\App\Http\Controllers\Alumni\ProfileController::class, 'index'])
+            ->name('profile.index');
+        Route::get('/profile/edit', [\App\Http\Controllers\Alumni\ProfileController::class, 'edit'])
+            ->name('profile.edit');
+        Route::put('/profile', [\App\Http\Controllers\Alumni\ProfileController::class, 'update'])
             ->name('profile.update');
+        Route::get('/settings', [\App\Http\Controllers\Alumni\ProfileController::class, 'settings'])
+            ->name('profile.settings');
+        Route::put('/settings', [\App\Http\Controllers\Alumni\ProfileController::class, 'updateSettings'])
+            ->name('profile.settings.update');
 
-        // Experiences
-        Route::get('/experiences', [AlumniDashboardController::class, 'experiences'])
-            ->name('experiences.index');
-        Route::get('/experiences/create', [AlumniDashboardController::class, 'createExperience'])
-            ->name('experiences.create');
-        Route::post('/experiences', [AlumniDashboardController::class, 'storeExperience'])
-            ->name('experiences.store');
-        Route::get('/experiences/{id}/edit', [AlumniDashboardController::class, 'editExperience'])
-            ->name('experiences.edit');
-        Route::put('/experiences/{id}', [AlumniDashboardController::class, 'updateExperience'])
-            ->name('experiences.update');
-        Route::delete('/experiences/{id}', [AlumniDashboardController::class, 'deleteExperience'])
-            ->name('experiences.destroy');
+        // Jobs (Read-only + Apply)
+        Route::prefix('jobs')->name('jobs.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Alumni\JobController::class, 'index'])
+                ->name('index');
+            Route::get('/{job}', [\App\Http\Controllers\Alumni\JobController::class, 'show'])
+                ->name('show');
+            Route::post('/{job}/apply', [\App\Http\Controllers\Alumni\JobController::class, 'apply'])
+                ->name('apply');
+        });
 
-        // Projects
-        Route::get('/projects', [AlumniDashboardController::class, 'projects'])
-            ->name('projects.index');
-        Route::get('/projects/create', [AlumniDashboardController::class, 'createProject'])
-            ->name('projects.create');
-        Route::post('/projects', [AlumniDashboardController::class, 'storeProject'])
-            ->name('projects.store');
-        Route::get('/projects/{id}/edit', [AlumniDashboardController::class, 'editProject'])
-            ->name('projects.edit');
-        Route::put('/projects/{id}', [AlumniDashboardController::class, 'updateProject'])
-            ->name('projects.update');
-        Route::delete('/projects/{id}', [AlumniDashboardController::class, 'deleteProject'])
-            ->name('projects.destroy');
+        // Events (View & Register)
+        Route::prefix('events')->name('events.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Alumni\EventController::class, 'index'])
+                ->name('index');
+            Route::get('/{event}', [\App\Http\Controllers\Alumni\EventController::class, 'show'])
+                ->name('show');
+            Route::post('/{event}/register', [\App\Http\Controllers\Alumni\EventController::class, 'register'])
+                ->name('register');
+        });
 
-        // News Feed
-        Route::get('/news', [AlumniDashboardController::class, 'news'])
-            ->name('news.index');
-        Route::get('/news/{id}', [AlumniDashboardController::class, 'viewNews'])
-            ->name('news.show');
-
-        // Notifications
-        Route::get('/notifications', [AlumniDashboardController::class, 'notifications'])
-            ->name('notifications.index');
-        Route::post('/notifications/{id}/read', [AlumniDashboardController::class, 'markNotificationAsRead'])
-            ->name('notifications.read');
+        // News (Read-only)
+        Route::prefix('news')->name('news.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Alumni\NewsController::class, 'index'])
+                ->name('index');
+            Route::get('/{news}', [\App\Http\Controllers\Alumni\NewsController::class, 'show'])
+                ->name('show');
+        });
     });
 });
