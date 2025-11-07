@@ -1,54 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'PCU-DASMA Connect - Alumni')</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@yield('title', 'Student Dashboard - PCU-DASMA Connect')</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#1E40AF',
-                        secondary: '#3B82F6',
-                        accent: '#F59E0B',
-                    },
-                },
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1E40AF",
+              secondary: "#3B82F6",
+              accent: "#F59E0B",
             },
-        };
+          },
+        },
+      };
     </script>
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b sticky top-0 z-40">
+    <nav class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <!-- Logo and Desktop Navigation -->
                 <div class="flex items-center">
-                    <a href="{{ route('alumni.dashboard') }}" class="text-xl font-bold text-primary">
+                    <a href="{{ route('student.dashboard') }}" class="text-xl font-bold text-primary">
                         PCU-DASMA Connect
                     </a>
                     <!-- Desktop Navigation Menu -->
                     <div class="hidden md:ml-10 md:flex md:space-x-8">
-                        <a href="{{ route('alumni.dashboard') }}"
-                           class="@if(request()->routeIs('alumni.dashboard')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                        <a href="{{ route('student.dashboard') }}" class="@if(request()->routeIs('student.dashboard')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Dashboard
                         </a>
-                        <a href="{{ route('alumni.jobs.index') }}"
-                           class="@if(request()->routeIs('alumni.jobs.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                        <a href="{{ route('student.jobs.index') }}" class="@if(request()->routeIs('student.jobs.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Job Opportunities
                         </a>
-                        <a href="{{ route('alumni.events.index') }}"
-                           class="@if(request()->routeIs('alumni.events.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                        <a href="{{ route('student.events.index') }}" class="@if(request()->routeIs('student.events.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Events
                         </a>
-                        <a href="{{ route('alumni.news.index') }}"
-                           class="@if(request()->routeIs('alumni.news.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                        <a href="{{ route('student.news.index') }}" class="@if(request()->routeIs('student.news.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             News
                         </a>
-                        <a href="{{ route('alumni.profile.index') }}"
-                           class="@if(request()->routeIs('alumni.profile.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                        <a href="{{ route('student.profile.index') }}" class="@if(request()->routeIs('student.profile.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Profile
                         </a>
                     </div>
@@ -86,13 +81,7 @@
                                         </div>
                                     @endif
                                     <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-semibold text-gray-900 truncate">
-                                            @if(auth()->user()->middle_name)
-                                                {{ auth()->user()->first_name }} {{ auth()->user()->middle_name }} {{ auth()->user()->last_name }}
-                                            @else
-                                                {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}
-                                            @endif
-                                        </p>
+                                        <p class="text-sm font-semibold text-gray-900 truncate">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
                                         <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
                                     </div>
                                 </div>
@@ -100,7 +89,7 @@
 
                             <!-- Menu Items -->
                             <div class="py-1">
-                                <a href="{{ route('alumni.profile.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" role="menuitem">
+                                <a href="{{ route('student.profile.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" role="menuitem">
                                     <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
@@ -141,11 +130,11 @@
             <!-- Mobile Menu -->
             <div id="mobileMenu" class="md:hidden hidden transition-all duration-300 ease-in-out">
                 <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 border-t border-gray-200 bg-white">
-                    <a href="{{ route('alumni.dashboard') }}" class="@if(request()->routeIs('alumni.dashboard')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Dashboard</a>
-                    <a href="{{ route('alumni.jobs.index') }}" class="@if(request()->routeIs('alumni.jobs.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Job Opportunities</a>
-                    <a href="{{ route('alumni.events.index') }}" class="@if(request()->routeIs('alumni.events.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Events</a>
-                    <a href="{{ route('alumni.news.index') }}" class="@if(request()->routeIs('alumni.news.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">News</a>
-                    <a href="{{ route('alumni.profile.index') }}" class="@if(request()->routeIs('alumni.profile.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Profile</a>
+                    <a href="{{ route('student.dashboard') }}" class="@if(request()->routeIs('student.dashboard')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Dashboard</a>
+                    <a href="{{ route('student.jobs.index') }}" class="@if(request()->routeIs('student.jobs.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Job Opportunities</a>
+                    <a href="{{ route('student.events.index') }}" class="@if(request()->routeIs('student.events.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Events</a>
+                    <a href="{{ route('student.news.index') }}" class="@if(request()->routeIs('student.news.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">News</a>
+                    <a href="{{ route('student.profile.index') }}" class="@if(request()->routeIs('student.profile.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Profile</a>
                 </div>
 
                 <!-- Mobile User Profile Section - ENHANCED -->
@@ -163,18 +152,12 @@
                             @endif
                         </div>
                         <div class="ml-3">
-                            <div class="text-base font-semibold leading-none text-gray-900">
-                                @if(auth()->user()->middle_name)
-                                    {{ auth()->user()->first_name }} {{ auth()->user()->middle_name }} {{ auth()->user()->last_name }}
-                                @else
-                                    {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}
-                                @endif
-                            </div>
+                            <div class="text-base font-semibold leading-none text-gray-900">{{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</div>
                             <div class="text-sm font-medium leading-none text-gray-500 mt-1">{{ auth()->user()->email }}</div>
                         </div>
                     </div>
                     <div class="mt-3 px-2 space-y-1">
-                        <a href="{{ route('alumni.profile.index') }}" class="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200">
+                        <a href="{{ route('student.profile.index') }}" class="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200">
                             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
@@ -201,22 +184,15 @@
     </nav>
 
     <!-- Main Content -->
-    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        @yield('content')
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t border-gray-200 mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <p class="text-center text-gray-500 text-sm">© 2025 PCU-DASMA Connect. All rights reserved.</p>
-        </div>
-    </footer>
+    @yield('content')
 
     <script>
+        // Mobile menu toggle function
         function toggleMobileMenu() {
             const mobileMenu = document.getElementById("mobileMenu");
             const hamburgerIcon = document.getElementById("hamburgerIcon");
             const closeIcon = document.getElementById("closeIcon");
+
             mobileMenu.classList.toggle("hidden");
             hamburgerIcon.classList.toggle("hidden");
             closeIcon.classList.toggle("hidden");
@@ -226,14 +202,17 @@
             button.setAttribute("aria-expanded", isExpanded);
         }
 
+        // User menu toggle function
         function toggleUserMenu() {
             const menu = document.getElementById("userMenu");
             menu.classList.toggle("hidden");
         }
 
+        // Close user menu when clicking outside
         document.addEventListener("click", function (event) {
             const userMenu = document.getElementById("userMenu");
             const button = event.target.closest('button[onclick="toggleUserMenu()"]');
+
             if (!button && !userMenu.contains(event.target)) {
                 userMenu.classList.add("hidden");
             }

@@ -10,10 +10,7 @@ use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
 use App\Http\Controllers\Admin\Users\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
-use App\Http\Controllers\Dashboard\AlumniDashboardController;
-use App\Http\Controllers\Dashboard\PartnerDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
-use App\Http\Controllers\Dashboard\StudentDashboardController;
 use App\Http\Controllers\Partner\DashboardController;
 use App\Http\Controllers\Partner\JobPostingController;
 use App\Http\Controllers\Partner\NewsController;
@@ -22,6 +19,33 @@ use App\Http\Controllers\Partner\ProfileController;
 use App\Http\Controllers\Partner\SettingsController;
 use App\Http\Controllers\Staff\Events\EventController;
 use Illuminate\Support\Facades\Route;
+
+
+// ===== STUDENT ROUTES =====
+Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')->group(function () {
+    // Dashboard
+    Route::get('/dashboard', [App\Http\Controllers\Student\DashboardController::class, 'dashboard'])->name('dashboard');
+
+    // Jobs
+    Route::get('/jobs', [App\Http\Controllers\Student\StudentJobController::class, 'index'])->name('jobs.index');
+    Route::get('/jobs/{job}', [App\Http\Controllers\Student\StudentJobController::class, 'show'])->name('jobs.show');
+
+    // Events
+    Route::get('/events', [App\Http\Controllers\Student\StudentEventController::class, 'index'])->name('events.index');
+    Route::get('/events/{event}', [App\Http\Controllers\Student\StudentEventController::class, 'show'])->name('events.show');
+    Route::post('/events/{event}/register', [App\Http\Controllers\Student\StudentEventController::class, 'register'])->name('events.register');
+
+    // News
+    Route::get('/news', [App\Http\Controllers\Student\StudentNewsController::class, 'index'])->name('news.index');
+    Route::get('/news/{article}', [App\Http\Controllers\Student\StudentNewsController::class, 'show'])->name('news.show');
+
+    // Profile
+    Route::get('/profile', [App\Http\Controllers\Student\StudentProfileController::class, 'index'])->name('profile.index');
+    Route::put('/profile', [App\Http\Controllers\Student\StudentProfileController::class, 'update'])->name('profile.update');
+});
+
+
+
 
 
 // =====================================================
@@ -321,74 +345,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // STUDENT DASHBOARD ROUTES
     // =====================================================
 
-    Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
 
-        // Dashboard
-        Route::get('/dashboard', [StudentDashboardController::class, 'dashboard'])
-            ->name('dashboard');
 
-        // Job Browsing & Application
-        Route::get('/jobs', [StudentDashboardController::class, 'jobs'])
-            ->name('jobs.index');
-        Route::get('/jobs/{id}', [StudentDashboardController::class, 'viewJob'])
-            ->name('jobs.show');
-        Route::post('/jobs/{id}/apply', [StudentDashboardController::class, 'applyJob'])
-            ->name('jobs.apply');
-        Route::get('/applications', [StudentDashboardController::class, 'applications'])
-            ->name('applications.index');
-        Route::get('/applications/{id}', [StudentDashboardController::class, 'viewApplication'])
-            ->name('applications.show');
-
-        // Event Registration
-        Route::get('/events', [StudentDashboardController::class, 'events'])
-            ->name('events.index');
-        Route::get('/events/{id}', [StudentDashboardController::class, 'viewEvent'])
-            ->name('events.show');
-        Route::post('/events/{id}/register', [StudentDashboardController::class, 'registerEvent'])
-            ->name('events.register');
-        Route::get('/event-registrations', [StudentDashboardController::class, 'eventRegistrations'])
-            ->name('event-registrations.index');
-
-        // Profile & Portfolio
-        Route::get('/profile', [StudentDashboardController::class, 'profile'])
-            ->name('profile');
-        Route::put('/profile', [StudentDashboardController::class, 'updateProfile'])
-            ->name('profile.update');
-
-        // Experiences
-        Route::get('/experiences', [StudentDashboardController::class, 'experiences'])
-            ->name('experiences.index');
-        Route::get('/experiences/create', [StudentDashboardController::class, 'createExperience'])
-            ->name('experiences.create');
-        Route::post('/experiences', [StudentDashboardController::class, 'storeExperience'])
-            ->name('experiences.store');
-        Route::get('/experiences/{id}/edit', [StudentDashboardController::class, 'editExperience'])
-            ->name('experiences.edit');
-        Route::put('/experiences/{id}', [StudentDashboardController::class, 'updateExperience'])
-            ->name('experiences.update');
-        Route::delete('/experiences/{id}', [StudentDashboardController::class, 'deleteExperience'])
-            ->name('experiences.destroy');
-
-        // Projects
-        Route::get('/projects', [StudentDashboardController::class, 'projects'])
-            ->name('projects.index');
-        Route::get('/projects/create', [StudentDashboardController::class, 'createProject'])
-            ->name('projects.create');
-        Route::post('/projects', [StudentDashboardController::class, 'storeProject'])
-            ->name('projects.store');
-        Route::get('/projects/{id}/edit', [StudentDashboardController::class, 'editProject'])
-            ->name('projects.edit');
-        Route::put('/projects/{id}', [StudentDashboardController::class, 'updateProject'])
-            ->name('projects.update');
-        Route::delete('/projects/{id}', [StudentDashboardController::class, 'deleteProject'])
-            ->name('projects.destroy');
-
-        // News Feed
-        Route::get('/news', [StudentDashboardController::class, 'news'])
-            ->name('news.index');
-        Route::get('/news/{id}', [StudentDashboardController::class, 'viewNews'])
-            ->name('news.show');
-    });
 
     // =====================================================
     // ALUMNI DASHBOARD ROUTES
