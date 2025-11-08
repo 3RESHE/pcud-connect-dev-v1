@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Account\PasswordManagementController;  // ADD THIS
+use App\Http\Controllers\Account\PasswordManagementController;
 use App\Http\Controllers\Admin\Analytics\ActivityLogController;
 use App\Http\Controllers\Admin\Analytics\ReportController;
 use App\Http\Controllers\Admin\Departments\DepartmentController;
@@ -9,11 +9,13 @@ use App\Http\Controllers\Admin\Jobs\JobApprovalController;
 use App\Http\Controllers\Admin\News\NewsApprovalController;
 use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
 use App\Http\Controllers\Admin\Users\UserController;
+use App\Http\Controllers\Alumni\AlumniExperienceController;
+use App\Http\Controllers\Alumni\AlumniProjectController;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboardController;
 use App\Http\Controllers\Alumni\EventController as AlumniEventController;
 use App\Http\Controllers\Alumni\JobController as AlumniJobController;
 use App\Http\Controllers\Alumni\NewsController as AlumniNewsController;
-use App\Http\Controllers\Alumni\ProfileController as AlumniProfileController;
+use App\Http\Controllers\Alumni\AlumniProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
@@ -36,22 +38,27 @@ use Illuminate\Support\Facades\Route;
 
 
 
+
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
 // =====================================================
+
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+
 // =====================================================
 // AUTHENTICATION ROUTES (from Laravel Breeze)
 // =====================================================
-require __DIR__ . '/auth.php';  // This includes password.request, password.email, password.reset, password.store, password.update
+require __DIR__ . '/auth.php';
+
 
 // =====================================================
 // CUSTOM PASSWORD MANAGEMENT ROUTES (First Login & Account Settings)
 // =====================================================
+
 
 Route::middleware(['auth'])->group(function () {
     // First Login - Forced Password Change (for new users)
@@ -68,15 +75,12 @@ Route::middleware(['auth'])->group(function () {
 });
 
 
-
-
 // =====================================================
 // AUTHENTICATED ROUTES (Require Auth + Email Verified + Password Changed + Active)
 // =====================================================
 
+
 Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(function () {
-
-
 
     // =====================================================
     // REDIRECT ROOT TO APPROPRIATE DASHBOARD BY ROLE
@@ -138,7 +142,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::put('/{user}', [UserController::class, 'update'])->name('update');
             Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
         });
-
 
         // ===== DEPARTMENT MANAGEMENT =====
         Route::prefix('departments')->name('departments.')->group(function () {
@@ -405,8 +408,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         });
     });
 
-
-
     // =====================================================
     // STUDENT DASHBOARD ROUTES
     // =====================================================
@@ -463,9 +464,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         });
     });
 
-
     // =====================================================
-    // ALUMNI DASHBOARD ROUTES
+    // ALUMNI DASHBOARD ROUTES - UPDATED
     // =====================================================
 
     Route::middleware('role:alumni')->prefix('alumni')->name('alumni.')->group(function () {
@@ -474,18 +474,34 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::get('/dashboard', [AlumniDashboardController::class, 'dashboard'])
             ->name('dashboard');
 
-        // ===== PROFILE & SETTINGS =====
+        // ===== PROFILE & SETTINGS (ALWAYS ACCESSIBLE - NO MIDDLEWARE) =====
         Route::prefix('profile')->name('profile.')->group(function () {
-            Route::get('/', [AlumniProfileController::class, 'index'])
-                ->name('index');
+            Route::get('/', [AlumniProfileController::class, 'show'])
+                ->name('show');
             Route::get('/edit', [AlumniProfileController::class, 'edit'])
                 ->name('edit');
-            Route::put('/', [AlumniProfileController::class, 'update'])
+            Route::post('/update', [AlumniProfileController::class, 'update'])
                 ->name('update');
-            Route::get('/settings', [AlumniProfileController::class, 'settings'])
-                ->name('settings');
-            Route::put('/settings', [AlumniProfileController::class, 'updateSettings'])
-                ->name('settings.update');
+        });
+
+        // ===== ALUMNI EXPERIENCES =====
+        Route::prefix('experiences')->name('experiences.')->group(function () {
+            Route::post('/', [AlumniExperienceController::class, 'store'])
+                ->name('store');
+            Route::put('/{experience}', [AlumniExperienceController::class, 'update'])
+                ->name('update');
+            Route::delete('/{experience}', [AlumniExperienceController::class, 'destroy'])
+                ->name('destroy');
+        });
+
+        // ===== ALUMNI PROJECTS =====
+        Route::prefix('projects')->name('projects.')->group(function () {
+            Route::post('/', [AlumniProjectController::class, 'store'])
+                ->name('store');
+            Route::put('/{project}', [AlumniProjectController::class, 'update'])
+                ->name('update');
+            Route::delete('/{project}', [AlumniProjectController::class, 'destroy'])
+                ->name('destroy');
         });
 
         // ===== JOBS =====

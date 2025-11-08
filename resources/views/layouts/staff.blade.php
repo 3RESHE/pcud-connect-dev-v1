@@ -6,6 +6,7 @@
     <title>@yield('title') - PCU-DASMA Connect</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script src="https://cdn.tailwindcss.com"></script>
+       <meta name="csrf-token" content="{{ csrf_token() }}">
     <script>
         tailwind.config = {
             theme: {

@@ -19,7 +19,7 @@ class ProfileController extends Controller
         try {
             $user = auth()->user();
 
-            return view('users.alumni.profile.index', [
+            return view('users.alumni.profile.show', [
                 'user' => $user,
             ]);
         } catch (\Exception $e) {
@@ -83,7 +83,7 @@ class ProfileController extends Controller
             // ===== UPDATE USER =====
             $user->update($validated);
 
-            return redirect()->route('alumni.profile.index')
+            return redirect()->route('alumni.profile.show')
                 ->with('success', 'Profile updated successfully!');
         } catch (\Illuminate\Validation\ValidationException $e) {
             return redirect()->back()
