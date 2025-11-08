@@ -43,7 +43,7 @@
                         <a href="{{ route('student.news.index') }}" class="@if(request()->routeIs('student.news.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             News
                         </a>
-                        <a href="{{ route('student.profile.index') }}" class="@if(request()->routeIs('student.profile.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                        <a href="{{ route('student.profile.show') }}" class="@if(request()->routeIs('student.profile.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Profile
                         </a>
                     </div>
@@ -89,7 +89,7 @@
 
                             <!-- Menu Items -->
                             <div class="py-1">
-                                <a href="{{ route('student.profile.index') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" role="menuitem">
+                                <a href="{{ route('student.profile.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200" role="menuitem">
                                     <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                     </svg>
@@ -134,7 +134,7 @@
                     <a href="{{ route('student.jobs.index') }}" class="@if(request()->routeIs('student.jobs.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Job Opportunities</a>
                     <a href="{{ route('student.events.index') }}" class="@if(request()->routeIs('student.events.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Events</a>
                     <a href="{{ route('student.news.index') }}" class="@if(request()->routeIs('student.news.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">News</a>
-                    <a href="{{ route('student.profile.index') }}" class="@if(request()->routeIs('student.profile.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Profile</a>
+                    <a href="{{ route('student.profile.show') }}" class="@if(request()->routeIs('student.profile.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Profile</a>
                 </div>
 
                 <!-- Mobile User Profile Section - ENHANCED -->
@@ -157,7 +157,7 @@
                         </div>
                     </div>
                     <div class="mt-3 px-2 space-y-1">
-                        <a href="{{ route('student.profile.index') }}" class="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200">
+                        <a href="{{ route('student.profile.show') }}" class="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200">
                             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
