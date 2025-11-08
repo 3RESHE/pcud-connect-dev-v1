@@ -376,9 +376,7 @@ class UserController extends Controller
                 break;
             case 'partner':
                 // Create empty profile - partner will fill it later
-                $user->partnerProfile()->create([
-                    'company_name' => 'Pending', // Placeholder
-                ]);
+                $user->partnerProfile()->create([]);
                 break;
             case 'student':
                 $user->studentProfile()->create([
