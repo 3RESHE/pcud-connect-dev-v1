@@ -33,8 +33,10 @@ class JobPosting extends Model
         'application_process',
         'benefits',
         'status',
+        'sub_status',
         'rejection_reason',
         'published_at',
+        'closed_at',
     ];
 
     protected $casts = [
@@ -47,9 +49,11 @@ class JobPosting extends Model
         'application_deadline' => 'date',
         'technical_skills' => 'json',
         'published_at' => 'datetime',
+        'closed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
 
     // ===== RELATIONSHIPS =====
 

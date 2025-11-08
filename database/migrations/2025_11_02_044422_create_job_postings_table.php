@@ -15,50 +15,52 @@ return new class extends Migration
             $table->id();
 
             // Creator & Approver
-            $table->foreignId('partner_id')->constrained('users')->cascadeOnDelete(); // Partner who created it
-            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete(); // Admin who approved it
+            $table->foreignId('partner_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
 
             // Job type & basics
-            $table->enum('job_type', ['fulltime', 'parttime', 'internship', 'contract']);
-            $table->string('title'); // Job title
-            $table->string('department')->nullable(); // Department within company
-            $table->string('custom_department')->nullable(); // Custom department if not in predefined list
+            $table->enum('job_type', ['fulltime', 'parttime', 'internship', 'other'])->default('fulltime');
+            $table->string('title');
+            $table->string('department')->nullable();
+            $table->string('custom_department')->nullable();
 
             // Experience level
-            $table->enum('experience_level', ['entry', 'mid', 'senior', 'lead', 'student']);
+            $table->enum('experience_level', ['entry', 'mid', 'senior', 'lead', 'student'])->default('entry');
 
             // Job description
-            $table->longText('description'); // Full job description
+            $table->longText('description');
 
             // Work setup
-            $table->enum('work_setup', ['onsite', 'remote', 'hybrid']);
-            $table->string('location')->nullable(); // City/address for on-site jobs
+            $table->enum('work_setup', ['onsite', 'remote', 'hybrid'])->default('onsite');
+            $table->string('location')->nullable();
 
             // Compensation
             $table->decimal('salary_min', 10, 2)->nullable();
             $table->decimal('salary_max', 10, 2)->nullable();
             $table->enum('salary_period', ['monthly', 'hourly', 'daily', 'project'])->nullable();
-            $table->boolean('is_unpaid')->default(false); // For internships/volunteer
+            $table->boolean('is_unpaid')->default(false);
 
             // Duration & timeline
-            $table->integer('duration_months')->nullable(); // For contract/internship
+            $table->integer('duration_months')->nullable();
             $table->date('preferred_start_date')->nullable();
             $table->date('application_deadline');
 
             // Requirements
             $table->text('education_requirements')->nullable();
-            $table->json('technical_skills')->nullable(); // Array of skills
+            $table->json('technical_skills')->nullable();
             $table->text('experience_requirements')->nullable();
 
             // Positions & process
             $table->integer('positions_available')->default(1);
-            $table->text('application_process')->nullable(); // How to apply
-            $table->text('benefits')->nullable(); // Additional benefits
+            $table->text('application_process')->nullable();
+            $table->text('benefits')->nullable();
 
-            // Approval workflow
-            $table->enum('status', ['pending', 'approved', 'rejected', 'published', 'paused', 'completed'])->default('pending');
-            $table->text('rejection_reason')->nullable(); // Why was it rejected?
-            $table->timestamp('published_at')->nullable(); // When was it published?
+            // Approval workflow - FIXED
+            $table->enum('status', ['pending', 'approved', 'rejected', 'completed'])->default('pending');
+            $table->enum('sub_status', ['active', 'paused'])->default('active');
+            $table->text('rejection_reason')->nullable();
+            $table->timestamp('published_at')->nullable();
+            $table->timestamp('closed_at')->nullable();
 
             $table->timestamps();
         });
