@@ -10,8 +10,6 @@ class EnsurePasswordChanged
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -20,13 +18,13 @@ class EnsurePasswordChanged
             // Check if password_changed_at is NULL (first login)
             if (is_null($request->user()->password_changed_at)) {
                 // Allow these routes without redirecting
-                if ($request->routeIs('password.change-first', 'password.update-first')) {
+                if ($request->routeIs('password.change-first', 'password.update-first', 'logout')) {
                     return $next($request);
                 }
 
-                // Redirect to password change page
+                // Redirect to first-time password setup page
                 return redirect()->route('password.change-first')
-                    ->with('warning', 'You must change your password before continuing.');
+                    ->with('warning', 'You must set your password before continuing.');
             }
         }
 

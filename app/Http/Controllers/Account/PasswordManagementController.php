@@ -96,7 +96,7 @@ class PasswordManagementController extends Controller
     /**
      * Show update password form (General password change)
      */
-    public function showUpdatePassword()
+    public function showUpdatePasswordForm()
     {
         return view('account.update-password');
     }
@@ -104,7 +104,7 @@ class PasswordManagementController extends Controller
     /**
      * Update password (General - not first login)
      */
-    public function updatePassword(Request $request)
+    public function processPasswordUpdate(Request $request)
     {
         try {
             $user = auth()->user();

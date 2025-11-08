@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Account\PasswordManagementController;
 use App\Http\Controllers\Admin\Analytics\ActivityLogController;
 use App\Http\Controllers\Admin\Analytics\ReportController;
 use App\Http\Controllers\Admin\Departments\DepartmentController;
@@ -15,7 +14,7 @@ use App\Http\Controllers\Alumni\JobController as AlumniJobController;
 use App\Http\Controllers\Alumni\NewsController as AlumniNewsController;
 use App\Http\Controllers\Alumni\ProfileController as AlumniProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\Auth\PasswordChangeController;
+use App\Http\Controllers\Account\PasswordManagementController;  // ADD THIS
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
 use App\Http\Controllers\Partner\DashboardController as PartnerDashboardController;
@@ -33,9 +32,6 @@ use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
 use Illuminate\Support\Facades\Route;
 
-
-
-
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
 // =====================================================
@@ -47,31 +43,27 @@ Route::get('/', function () {
 // =====================================================
 // AUTHENTICATION ROUTES (from Laravel Breeze)
 // =====================================================
-
-require __DIR__ . '/auth.php';
-
-// =====================================================
-// PASSWORD CHANGE ROUTE (First Login)
-// =====================================================
-
+require __DIR__ . '/auth.php';  // This includes password.request, password.email, password.reset, password.store, password.update
 
 // =====================================================
-// PASSWORD MANAGEMENT ROUTES (Account)
+// CUSTOM PASSWORD MANAGEMENT ROUTES (First Login & Account Settings)
 // =====================================================
 
 Route::middleware(['auth'])->group(function () {
-    // First Login - Change Password
-    Route::get('/change-password', [PasswordManagementController::class, 'showChangePassword'])
+    // First Login - Forced Password Change (for new users)
+    Route::get('/setup-password', [PasswordManagementController::class, 'showChangePassword'])
         ->name('password.change-first');
-    Route::post('/change-password', [PasswordManagementController::class, 'updateChangePassword'])
+    Route::post('/setup-password', [PasswordManagementController::class, 'updateChangePassword'])
         ->name('password.update-first');
 
-    // General - Update Password
-    Route::get('/account/update-password', [PasswordManagementController::class, 'showUpdatePassword'])
-        ->name('password.update-form');
-    Route::post('/account/update-password', [PasswordManagementController::class, 'updatePassword'])
-        ->name('password.update');
+    // Account Settings - Change Password (for existing users)
+    Route::get('/account/security/password', [PasswordManagementController::class, 'showUpdatePassword'])
+        ->name('account.password.change');
+    Route::post('/account/security/password', [PasswordManagementController::class, 'updatePassword'])
+        ->name('account.password.update');
 });
+
+
 
 
 // =====================================================

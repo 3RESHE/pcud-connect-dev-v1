@@ -147,7 +147,7 @@
         submitBtn.disabled = true;
 
         try {
-            const response = await fetch('{{ route("password.update") }}', {
+            const response = await fetch('{{ route("account.password.update") }}', {
                 method: 'POST',
                 headers: {
                     'Accept': 'application/json',
