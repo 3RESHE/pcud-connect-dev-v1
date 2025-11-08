@@ -49,10 +49,10 @@ class UserController extends Controller
             // Search
             if ($request->filled('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('first_name', 'like', "%{$search}%")
-                      ->orWhere('last_name', 'like', "%{$search}%")
-                      ->orWhere('email', 'like', "%{$search}%");
+                        ->orWhere('last_name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
                 });
             }
 
@@ -375,7 +375,10 @@ class UserController extends Controller
                 $user->staffProfile()->create([]);
                 break;
             case 'partner':
-                $user->partnerProfile()->create([]);
+                // Create empty profile - partner will fill it later
+                $user->partnerProfile()->create([
+                    'company_name' => 'Pending', // Placeholder
+                ]);
                 break;
             case 'student':
                 $user->studentProfile()->create([
@@ -385,6 +388,65 @@ class UserController extends Controller
             case 'alumni':
                 $user->alumniProfile()->create([]);
                 break;
+        }
+    }
+
+    /**
+     * Download import template
+     */
+    /**
+     * Download import template
+     */
+    public function downloadTemplate($type)
+    {
+        try {
+            // Validate type
+            if (!in_array($type, ['students', 'alumni'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid template type',
+                ], 400);
+            }
+
+            $filename = "{$type}-import-template-" . date('Y-m-d') . ".csv";
+
+            if ($type === 'students') {
+                $headers = ['first_name', 'last_name', 'middle_name', 'name_suffix', 'email', 'student_id'];
+                $rows = [
+                    ['Juan', 'Dela Cruz', 'Carlos', 'Jr.', 'jegluneta@pcu.edu.ph', '202206402'],
+                    ['Marj Celine', 'San Jose', 'Abera', '', 'mcasanjose@pcu.edu.ph', '202206406'],
+                    ['Antonio', 'Reyes', 'Manuel', 'Sr.', 'test123@pcud.edu.ph', '202206408'],
+                ];
+            } else {
+                $headers = ['first_name', 'last_name', 'middle_name', 'name_suffix', 'email'];
+                $rows = [
+                    ['Pedro', 'Gonzales', 'Ramos', '', 'pedro.gonzales@example.com'],
+                    ['Rosa', 'Martinez', '', '', 'rosa.martinez@example.com'],
+                    ['Carlos', 'Lopez', 'Juan', 'Jr.', 'carlos.lopez@example.com'],
+                ];
+            }
+
+            $callback = function () use ($headers, $rows) {
+                $file = fopen('php://output', 'w');
+                fputcsv($file, $headers);
+                foreach ($rows as $row) {
+                    fputcsv($file, $row);
+                }
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, [
+                "Content-Type" => "text/csv; charset=utf-8",
+                "Content-Disposition" => "attachment; filename=\"$filename\"",
+                "Pragma" => "no-cache",
+                "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+                "Expires" => "0"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to download template: ' . $e->getMessage(),
+            ], 500);
         }
     }
 }

@@ -16,7 +16,7 @@ return new class extends Migration
             $table->foreignId('user_id')->unique()->constrained('users')->cascadeOnDelete();
 
             // Company information
-            $table->string('company_name');
+            $table->string('company_name')->nullable(); // Will be filled by partner later
             $table->string('company_logo')->nullable(); // File path
             $table->string('industry')->nullable(); // e.g., "Technology", "Finance"
             $table->string('company_size')->nullable(); // e.g., "1-50", "51-200", "201+"

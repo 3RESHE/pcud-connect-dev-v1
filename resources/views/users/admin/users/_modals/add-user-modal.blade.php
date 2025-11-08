@@ -89,7 +89,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">
                             Student ID <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" name="student_id" id="addStudentId" placeholder="e.g., 202106602"
+                        <input type="text" name="student_id" id="addStudentId" placeholder="e.g., 202206642"
                             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
                         <span id="addStudentIdError" class="text-red-500 text-xs mt-1 hidden"></span>
                         <p class="text-xs text-gray-500 mt-1">Enter the student's ID number</p>
