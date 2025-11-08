@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Partner;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobPosting;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class JobPostingController extends Controller
@@ -72,7 +73,7 @@ class JobPostingController extends Controller
                 'salary_min' => 'nullable|numeric|min:0|decimal:0,2',
                 'salary_max' => 'nullable|numeric|min:0|decimal:0,2',
                 'salary_period' => 'nullable|in:monthly,hourly,daily,project',
-                'is_unpaid' => 'nullable|boolean',
+                'is_unpaid' => 'sometimes|in:0,1,on,true',  // ✅ FIX
                 'duration_months' => 'nullable|integer|min:1|max:60',
                 'preferred_start_date' => 'nullable|date|after_or_equal:today',
                 'application_deadline' => 'required|date|after:today',
@@ -95,11 +96,10 @@ class JobPostingController extends Controller
                 ], 422);
             }
 
-            // Salary validation for paid positions
-            $isUnpaid = $request->has('is_unpaid') && $request->boolean('is_unpaid');
+            // ✅ FIX: Convert is_unpaid to boolean properly
+            $isUnpaid = (bool) ($request->input('is_unpaid') === '1' || $request->input('is_unpaid') === 'on');
 
             if (!$isUnpaid) {
-                // For paid positions, ensure salary is provided
                 if (empty($validated['salary_min']) && empty($validated['salary_max'])) {
                     return response()->json([
                         'success' => false,
@@ -111,7 +111,6 @@ class JobPostingController extends Controller
                     ], 422);
                 }
 
-                // Ensure min is not greater than max
                 if (
                     !empty($validated['salary_min']) && !empty($validated['salary_max']) &&
                     (float)$validated['salary_min'] > (float)$validated['salary_max']
@@ -125,7 +124,6 @@ class JobPostingController extends Controller
                     ], 422);
                 }
 
-                // Ensure salary period is specified
                 if (empty($validated['salary_period'])) {
                     return response()->json([
                         'success' => false,
@@ -145,7 +143,7 @@ class JobPostingController extends Controller
                 $validated['technical_skills'] = json_encode([]);
             }
 
-            // Set is_unpaid
+            // ✅ Set is_unpaid correctly
             $validated['is_unpaid'] = $isUnpaid;
 
             // Create job posting
@@ -157,7 +155,15 @@ class JobPostingController extends Controller
             ]);
 
             // Log activity
-            \Log::info("Job posting created by partner {$user->id}: {$job->title}");
+            ActivityLog::create([
+                'user_id' => $user->id,
+                'action' => 'created',
+                'subject_type' => 'JobPosting',
+                'subject_id' => $job->id,
+                'description' => "Created job posting: {$job->title}",
+                'ip_address' => request()->ip(),
+                'new_values' => json_encode($job->toArray()),
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -185,51 +191,16 @@ class JobPostingController extends Controller
         }
     }
 
-
-    /**
-     * Show job posting
-     */
-    public function show(JobPosting $jobPosting)
-    {
-        // Check authorization
-        if ($jobPosting->partner_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        return view('users.partner.job-postings.show', compact('jobPosting'));
-    }
-
-    /**
-     * Show edit form
-     */
-    public function edit(JobPosting $jobPosting)
-    {
-        // Check authorization
-        if ($jobPosting->partner_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        // Can only edit if pending or rejected
-        if (!in_array($jobPosting->status, ['pending', 'rejected', 'approved'])) {
-            return redirect()->route('partner.job-postings.show', $jobPosting->id)
-                ->with('error', 'This job posting cannot be edited');
-        }
-
-        return view('users.partner.job-postings.edit', compact('jobPosting'));
-    }
-
     /**
      * Update job posting
      */
     public function update(Request $request, JobPosting $jobPosting)
     {
         try {
-            // Check authorization
             if ($jobPosting->partner_id !== auth()->id()) {
                 return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
             }
 
-            // Can only edit if pending or rejected
             if (!in_array($jobPosting->status, ['pending', 'rejected', 'approved'])) {
                 return response()->json([
                     'success' => false,
@@ -237,33 +208,36 @@ class JobPostingController extends Controller
                 ], 422);
             }
 
-            // Validate
+            $oldValues = $jobPosting->toArray();
+
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'job_type' => 'required|in:fulltime,parttime,internship,other',
                 'experience_level' => 'required|in:entry,mid,senior,lead,student',
                 'department' => 'nullable|string|max:255',
-                'custom_department' => 'nullable|string|max:255',
                 'description' => 'required|string|min:50|max:5000',
                 'work_setup' => 'required|in:onsite,remote,hybrid',
                 'location' => 'nullable|string|max:255',
                 'salary_min' => 'nullable|numeric|min:0',
                 'salary_max' => 'nullable|numeric|min:0',
                 'salary_period' => 'nullable|in:monthly,hourly,daily,project',
-                'is_unpaid' => 'boolean',
+                'is_unpaid' => 'sometimes|in:0,1,on,true',  // ✅ FIX
                 'duration_months' => 'nullable|integer|min:1|max:60',
                 'preferred_start_date' => 'nullable|date|after_or_equal:today',
                 'application_deadline' => 'required|date|after:today',
-                'education_requirements' => 'nullable|string|max:1000',
-                'experience_requirements' => 'nullable|string|max:1000',
+                'education_requirements' => 'nullable|string|max:2000',
+                'experience_requirements' => 'nullable|string|max:2000',
                 'technical_skills' => 'nullable|string|max:1000',
                 'positions_available' => 'required|integer|min:1|max:100',
                 'application_process' => 'nullable|string|max:1000',
-                'benefits' => 'nullable|string|max:1000',
+                'benefits' => 'nullable|string|max:2000',
             ]);
 
+            // ✅ FIX: Convert is_unpaid to boolean properly
+            $isUnpaid = (bool) ($request->input('is_unpaid') === '1' || $request->input('is_unpaid') === 'on');
+
             // Salary validation
-            if (!$request->boolean('is_unpaid')) {
+            if (!$isUnpaid) {
                 if (!$validated['salary_min'] && !$validated['salary_max']) {
                     return response()->json([
                         'success' => false,
@@ -292,24 +266,39 @@ class JobPostingController extends Controller
 
             // Convert technical_skills to JSON array
             if ($validated['technical_skills']) {
-                $validated['technical_skills'] = array_map(
-                    'trim',
-                    explode(',', $validated['technical_skills'])
-                );
+                $skillsArray = array_filter(array_map('trim', explode(',', $validated['technical_skills'])));
+                $validated['technical_skills'] = json_encode($skillsArray);
+            } else {
+                $validated['technical_skills'] = json_encode([]);
             }
 
-            // If was rejected, reset status to pending
-            if ($jobPosting->status === 'rejected') {
+            // If was rejected, reset status to pending for re-review
+            $wasRejected = $jobPosting->status === 'rejected';
+            if ($wasRejected) {
                 $validated['status'] = 'pending';
+                $validated['rejection_reason'] = null;
             }
 
-            $validated['is_unpaid'] = $request->boolean('is_unpaid');
+            // ✅ Set is_unpaid correctly
+            $validated['is_unpaid'] = $isUnpaid;
 
             $jobPosting->update($validated);
 
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'updated',
+                'subject_type' => 'JobPosting',
+                'subject_id' => $jobPosting->id,
+                'description' => "Updated job posting: {$jobPosting->title}" . ($wasRejected ? ' (Resubmitted after rejection)' : ''),
+                'ip_address' => request()->ip(),
+                'old_values' => json_encode($oldValues),
+                'new_values' => json_encode($jobPosting->toArray()),
+            ]);
+
             return response()->json([
                 'success' => true,
-                'message' => $jobPosting->status === 'pending' ? 'Updated and resubmitted for approval!' : 'Job posting updated successfully!',
+                'message' => $wasRejected ? 'Updated and resubmitted for approval!' : 'Job posting updated successfully!',
                 'redirect' => route('partner.job-postings.show', $jobPosting->id),
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -329,16 +318,104 @@ class JobPostingController extends Controller
 
 
     /**
+     * Show job posting
+     */
+    public function show(JobPosting $jobPosting)
+    {
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        return view('users.partner.job-postings.show', compact('jobPosting'));
+    }
+
+    /**
+     * Show edit form
+     */
+    public function edit(JobPosting $jobPosting)
+    {
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        if (!in_array($jobPosting->status, ['pending', 'rejected', 'approved'])) {
+            return redirect()->route('partner.job-postings.show', $jobPosting->id)
+                ->with('error', 'This job posting cannot be edited');
+        }
+
+        return view('users.partner.job-postings.edit', compact('jobPosting'));
+    }
+
+    /**
+     * Update job posting
+     */
+
+    /**
+     * Delete/Withdraw job posting
+     */
+    public function destroy(JobPosting $jobPosting)
+    {
+        if ($jobPosting->partner_id !== auth()->id()) {
+            return redirect()->route('partner.job-postings.index')
+                ->with('error', 'Unauthorized action');
+        }
+
+        if (!in_array($jobPosting->status, ['pending', 'rejected'])) {
+            return redirect()->route('partner.job-postings.show', $jobPosting->id)
+                ->with('error', 'This job posting cannot be withdrawn');
+        }
+
+        $title = $jobPosting->title;
+        $jobId = $jobPosting->id;
+
+        // Log activity BEFORE deleting
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'subject_type' => 'JobPosting',
+            'subject_id' => $jobId,
+            'description' => "Withdrew job posting: {$title}",
+            'ip_address' => request()->ip(),
+            'old_values' => json_encode($jobPosting->toArray()),
+        ]);
+
+        $jobPosting->delete();
+
+        return redirect()->route('partner.job-postings.index')
+            ->with('success', "Job posting '{$title}' has been withdrawn successfully");
+    }
+
+    /**
      * Pause job posting
      */
     public function pause(JobPosting $jobPosting)
     {
-        if ($jobPosting->status !== 'approved') {
-            return redirect()->back()->with('error', 'Only approved postings can be paused');
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
         }
 
+        if ($jobPosting->status !== 'approved') {
+            return redirect()->route('partner.job-postings.show', $jobPosting->id)
+                ->with('error', 'Only approved postings can be paused');
+        }
+
+        $oldStatus = $jobPosting->sub_status;
         $jobPosting->update(['sub_status' => 'paused']);
-        return redirect()->back()->with('success', 'Job posting paused successfully!');
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'updated',
+            'subject_type' => 'JobPosting',
+            'subject_id' => $jobPosting->id,
+            'description' => "Paused job posting: {$jobPosting->title}",
+            'ip_address' => request()->ip(),
+            'old_values' => json_encode(['sub_status' => $oldStatus]),
+            'new_values' => json_encode(['sub_status' => 'paused']),
+        ]);
+
+        return redirect()->route('partner.job-postings.show', $jobPosting->id)
+            ->with('success', 'Job posting paused successfully');
     }
 
     /**
@@ -346,12 +423,32 @@ class JobPostingController extends Controller
      */
     public function resume(JobPosting $jobPosting)
     {
-        if ($jobPosting->status !== 'approved') {
-            return redirect()->back()->with('error', 'Only approved postings can be resumed');
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
         }
 
+        if ($jobPosting->status !== 'approved') {
+            return redirect()->route('partner.job-postings.show', $jobPosting->id)
+                ->with('error', 'Only approved postings can be resumed');
+        }
+
+        $oldStatus = $jobPosting->sub_status;
         $jobPosting->update(['sub_status' => 'active']);
-        return redirect()->back()->with('success', 'Job posting resumed successfully!');
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'updated',
+            'subject_type' => 'JobPosting',
+            'subject_id' => $jobPosting->id,
+            'description' => "Resumed job posting: {$jobPosting->title}",
+            'ip_address' => request()->ip(),
+            'old_values' => json_encode(['sub_status' => $oldStatus]),
+            'new_values' => json_encode(['sub_status' => 'active']),
+        ]);
+
+        return redirect()->route('partner.job-postings.show', $jobPosting->id)
+            ->with('success', 'Job posting resumed successfully');
     }
 
     /**
@@ -359,22 +456,51 @@ class JobPostingController extends Controller
      */
     public function close(JobPosting $jobPosting)
     {
-        if ($jobPosting->status === 'completed') {
-            return redirect()->back()->with('error', 'This job posting is already completed');
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
         }
 
+        if ($jobPosting->status !== 'approved') {
+            return redirect()->route('partner.job-postings.show', $jobPosting->id)
+                ->with('error', 'Only approved postings can be closed');
+        }
+
+        $oldStatus = $jobPosting->status;
         $jobPosting->update([
             'status' => 'completed',
             'closed_at' => now(),
         ]);
-        return redirect()->back()->with('success', 'Job posting closed successfully!');
+
+        // Log activity
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'updated',
+            'subject_type' => 'JobPosting',
+            'subject_id' => $jobPosting->id,
+            'description' => "Closed job posting: {$jobPosting->title}",
+            'ip_address' => request()->ip(),
+            'old_values' => json_encode(['status' => $oldStatus]),
+            'new_values' => json_encode(['status' => 'completed']),
+        ]);
+
+        return redirect()->route('partner.job-postings.index')
+            ->with('success', 'Job posting closed successfully');
     }
 
     /**
-     * View applications for job
+     * View applications for a job posting
      */
     public function applications(JobPosting $jobPosting)
     {
-        return view('users.partner.job-postings.applications', compact('jobPosting'));
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $applications = $jobPosting->applications()
+            ->with('user')
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
+
+        return view('users.partner.job-postings.applications', compact('jobPosting', 'applications'));
     }
 }

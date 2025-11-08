@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -47,13 +48,19 @@ class JobPosting extends Model
         'positions_available' => 'integer',
         'preferred_start_date' => 'date',
         'application_deadline' => 'date',
-        'technical_skills' => 'json',
         'published_at' => 'datetime',
         'closed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
 
+    // ✅ FIX: Auto-decode technical_skills from JSON
+    protected function technicalSkills(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value ? json_decode($value, true) : [],
+        );
+    }
 
     // ===== RELATIONSHIPS =====
 
@@ -78,25 +85,26 @@ class JobPosting extends Model
      */
     public function applications(): HasMany
     {
-        return $this->hasMany(JobApplication::class);
+        return $this->hasMany(JobApplication::class, 'job_posting_id');
     }
 
     // ===== SCOPES =====
 
     /**
-     * Scope: Get published job postings.
+     * Scope: Get approved job postings.
      */
-    public function scopePublished($query)
+    public function scopeApproved($query)
     {
-        return $query->where('status', 'published');
+        return $query->where('status', 'approved');
     }
 
     /**
-     * Scope: Get active job postings (published and not expired).
+     * Scope: Get active (non-paused) job postings.
      */
-    public function scopeActive($query)
+    public function scopeActiveOnly($query)
     {
-        return $query->where('status', 'published')
+        return $query->where('status', 'approved')
+            ->where('sub_status', 'active')
             ->where('application_deadline', '>=', now()->toDateString());
     }
 
@@ -153,8 +161,18 @@ class JobPosting extends Model
      */
     public function scopeRecentlyPublished($query, $days = 7)
     {
-        return $query->where('status', 'published')
+        return $query->where('status', 'approved')
             ->where('published_at', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Scope: Search by title, description, or department.
+     */
+    public function scopeSearch($query, $keyword)
+    {
+        return $query->where('title', 'like', "%{$keyword}%")
+            ->orWhere('description', 'like', "%{$keyword}%")
+            ->orWhere('department', 'like', "%{$keyword}%");
     }
 
     // ===== HELPER METHODS =====
@@ -174,16 +192,16 @@ class JobPosting extends Model
 
         if ($this->salary_min && $this->salary_max) {
             $period = $this->salary_period ?? 'per period';
-            return "₱{$this->salary_min} - ₱{$this->salary_max} {$period}";
+            return "₱" . number_format($this->salary_min) . " - ₱" . number_format($this->salary_max) . " {$period}";
         }
 
         if ($this->salary_min) {
             $period = $this->salary_period ?? 'per period';
-            return "₱{$this->salary_min}+ {$period}";
+            return "₱" . number_format($this->salary_min) . "+ {$period}";
         }
 
         $period = $this->salary_period ?? 'per period';
-        return "Up to ₱{$this->salary_max} {$period}";
+        return "Up to ₱" . number_format($this->salary_max) . " {$period}";
     }
 
     /**
@@ -191,7 +209,8 @@ class JobPosting extends Model
      */
     public function isOpenForApplications(): bool
     {
-        return $this->status === 'published'
+        return $this->status === 'approved'
+            && $this->sub_status === 'active'
             && $this->application_deadline->isAfter(now());
     }
 
@@ -201,6 +220,14 @@ class JobPosting extends Model
     public function isExpired(): bool
     {
         return $this->application_deadline->isBefore(now());
+    }
+
+    /**
+     * Check if job posting is paused.
+     */
+    public function isPaused(): bool
+    {
+        return $this->status === 'approved' && $this->sub_status === 'paused';
     }
 
     /**
@@ -232,12 +259,71 @@ class JobPosting extends Model
     }
 
     /**
+     * Get job posting status display.
+     */
+    public function getStatusDisplay(): string
+    {
+        return match($this->status) {
+            'pending' => 'Pending Approval',
+            'approved' => $this->sub_status === 'paused' ? 'Paused' : 'Approved',
+            'rejected' => 'Rejected',
+            'completed' => 'Completed',
+            default => ucfirst($this->status),
+        };
+    }
+
+    /**
+     * Get job type display.
+     */
+    public function getJobTypeDisplay(): string
+    {
+        return match($this->job_type) {
+            'fulltime' => 'Full-time',
+            'parttime' => 'Part-time',
+            'internship' => 'Internship',
+            'other' => 'Other',
+            default => ucfirst($this->job_type),
+        };
+    }
+
+    /**
+     * Get experience level display.
+     */
+    public function getExperienceLevelDisplay(): string
+    {
+        return match($this->experience_level) {
+            'entry' => 'Entry Level',
+            'mid' => 'Mid Level',
+            'senior' => 'Senior Level (6+ years)',
+            'lead' => 'Lead/Manager',
+            'student' => 'Student/Fresh Graduate',
+            default => ucfirst($this->experience_level),
+        };
+    }
+
+    /**
+     * Get work setup display.
+     */
+    public function getWorkSetupDisplay(): string
+    {
+        return match($this->work_setup) {
+            'onsite' => 'On-site',
+            'remote' => 'Remote',
+            'hybrid' => 'Hybrid',
+            default => ucfirst($this->work_setup),
+        };
+    }
+
+    // ===== ACTION METHODS =====
+
+    /**
      * Approve this job posting (set status and approver).
      */
     public function approve($adminId)
     {
         $this->update([
             'status' => 'approved',
+            'sub_status' => 'active',
             'approved_by' => $adminId,
         ]);
     }
@@ -255,29 +341,51 @@ class JobPosting extends Model
     }
 
     /**
-     * Publish this job posting.
+     * Pause this job posting.
      */
-    public function publish()
+    public function pausePosting()
     {
         $this->update([
-            'status' => 'published',
-            'published_at' => now(),
+            'status' => 'approved',
+            'sub_status' => 'paused',
         ]);
     }
 
     /**
-     * Pause this job posting.
+     * Resume this job posting.
      */
-    public function pause()
+    public function resumePosting()
     {
-        $this->update(['status' => 'paused']);
+        $this->update([
+            'status' => 'approved',
+            'sub_status' => 'active',
+        ]);
     }
 
     /**
-     * Complete this job posting.
+     * Close this job posting.
      */
-    public function complete()
+    public function closePosting()
     {
-        $this->update(['status' => 'completed']);
+        $this->update([
+            'status' => 'completed',
+            'closed_at' => now(),
+        ]);
+    }
+
+    /**
+     * Check if the job posting can be edited.
+     */
+    public function canBeEdited(): bool
+    {
+        return in_array($this->status, ['pending', 'rejected', 'approved']);
+    }
+
+    /**
+     * Check if the job posting can be withdrawn.
+     */
+    public function canBeWithdrawn(): bool
+    {
+        return $this->status === 'pending' || $this->status === 'rejected';
     }
 }

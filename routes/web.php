@@ -356,6 +356,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                     ->name('edit');
                 Route::put('/{jobPosting}', [JobPostingController::class, 'update'])
                     ->name('update');
+                Route::delete('/{jobPosting}', [JobPostingController::class, 'destroy'])  // ✅ ADD THIS LINE
+                    ->name('destroy');
                 Route::post('/{jobPosting}/pause', [JobPostingController::class, 'pause'])
                     ->name('pause');
                 Route::post('/{jobPosting}/resume', [JobPostingController::class, 'resume'])
@@ -365,6 +367,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])
                     ->name('applications');
             });
+
 
             // ===== PARTNERSHIPS =====
             Route::prefix('partnerships')->name('partnerships.')->group(function () {
