@@ -107,11 +107,18 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             ->name('settings.update');
 
         // ===== USER MANAGEMENT =====
-        Route::resource('users', UserController::class);
-        Route::get('/users/bulk-import', [UserController::class, 'bulkImportForm'])
-            ->name('users.bulk-import-form');
-        Route::post('/users/bulk-import', [UserController::class, 'bulkImport'])
-            ->name('users.bulk-import');
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('index');
+            Route::get('/all', [UserController::class, 'getAll'])->name('all');
+            Route::get('/stats', [UserController::class, 'getStats'])->name('stats');
+            Route::post('/', [UserController::class, 'store'])->name('store');
+            Route::get('/{user}', [UserController::class, 'show'])->name('show');
+            Route::put('/{user}', [UserController::class, 'update'])->name('update');
+            Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+            Route::get('/bulk-import', [UserController::class, 'bulkImportForm'])->name('bulk-import-form');
+            Route::post('/bulk-import', [UserController::class, 'bulkImport'])->name('bulk-import');
+        });
+
 
         // ===== DEPARTMENT MANAGEMENT =====
         Route::prefix('departments')->name('departments.')->group(function () {

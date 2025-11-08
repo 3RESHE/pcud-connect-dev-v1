@@ -8,119 +8,116 @@
 <div class="flex justify-between items-center mb-8">
     <div>
         <h1 class="text-3xl font-bold text-gray-900">User Management</h1>
-        <p class="text-gray-600">Manage all platform users and their roles</p>
+        <p class="text-gray-600">Create, manage, and monitor system users</p>
     </div>
     <div class="flex space-x-3">
-        <button
-            onclick="openBulkUploadModal()"
-            class="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 flex items-center"
-        >
+        <a href="{{ route('admin.users.bulk-import-form') }}" class="px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 flex items-center">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            Bulk Upload
-        </button>
-        <button
-            onclick="openCreateUserModal()"
-            class="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-blue-700 flex items-center"
-        >
+            Bulk Import
+        </a>
+        <button onclick="openAddUserModal()" class="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-blue-700 flex items-center">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
-            Create Account
+            Add User
         </button>
     </div>
 </div>
 
-<!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-8">
-    @include('users.admin.users._stats-card', ['title' => 'Total Users', 'value' => 1234, 'color' => 'blue', 'icon' => 'users'])
-    @include('users.admin.users._stats-card', ['title' => 'Alumni', 'value' => 789, 'color' => 'blue', 'icon' => 'users'])
-    @include('users.admin.users._stats-card', ['title' => 'Students', 'value' => 400, 'color' => 'indigo', 'icon' => 'document'])
-    @include('users.admin.users._stats-card', ['title' => 'Partners', 'value' => 32, 'color' => 'purple', 'icon' => 'building'])
-    @include('users.admin.users._stats-card', ['title' => 'Staff', 'value' => 10, 'color' => 'yellow', 'icon' => 'shield'])
-    @include('users.admin.users._stats-card', ['title' => 'Admins', 'value' => 3, 'color' => 'orange', 'icon' => 'cog'])
-</div>
-
-<!-- Filter Tabs -->
-<div class="mb-8">
-    <div class="border-b border-gray-200">
-        <nav class="-mb-px flex space-x-8 overflow-x-auto">
-            <button onclick="filterUsers('all')" class="user-filter active border-b-2 border-primary text-primary py-2 px-1 text-sm font-medium whitespace-nowrap">
-                All (1,234)
-            </button>
-            <button onclick="filterUsers('alumni')" class="user-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap">
-                Alumni (789)
-            </button>
-            <button onclick="filterUsers('student')" class="user-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap">
-                Student (400)
-            </button>
-            <button onclick="filterUsers('partner')" class="user-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap">
-                Partners (32)
-            </button>
-            <button onclick="filterUsers('staff')" class="user-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap">
-                Staff (10)
-            </button>
-            <button onclick="filterUsers('admin')" class="user-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap">
-                Admin (3)
-            </button>
-        </nav>
+<!-- Statistics -->
+<div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-2xl font-bold text-primary" id="statTotal">0</div>
+        <div class="text-sm text-gray-600">Total Users</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-2xl font-bold text-blue-600" id="statAdmin">0</div>
+        <div class="text-sm text-gray-600">Admin</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-2xl font-bold text-green-600" id="statStaff">0</div>
+        <div class="text-sm text-gray-600">Staff</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-2xl font-bold text-orange-600" id="statPartner">0</div>
+        <div class="text-sm text-gray-600">Partner</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-2xl font-bold text-purple-600" id="statStudent">0</div>
+        <div class="text-sm text-gray-600">Student</div>
+    </div>
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="text-2xl font-bold text-pink-600" id="statAlumni">0</div>
+        <div class="text-sm text-gray-600">Alumni</div>
     </div>
 </div>
 
-<!-- Search and Filter Bar -->
-<div class="mb-6 flex flex-col sm:flex-row gap-4">
-    <div class="flex-1">
-        <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-            </div>
-            <input
-                type="text"
-                placeholder="Search users by name, email, or ID..."
-                oninput="searchUsers(this.value)"
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary"
-            />
+<!-- Filters -->
+<div class="bg-white shadow-sm rounded-lg p-6 mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+            <input type="text" id="searchInput" placeholder="Name or email..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
         </div>
-    </div>
-    <div class="flex space-x-2">
-        <select class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
-            <option>All Roles</option>
-            <option>Alumni</option>
-            <option>Student</option>
-            <option>Partner</option>
-            <option>Staff</option>
-            <option>Admin</option>
-        </select>
-        <select class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
-            <option>All Status</option>
-            <option>Active</option>
-            <option>Inactive</option>
-        </select>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+            <select id="roleFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                <option value="all">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="staff">Staff</option>
+                <option value="partner">Partner</option>
+                <option value="student">Student</option>
+                <option value="alumni">Alumni</option>
+            </select>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+            <select id="statusFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary">
+                <option value="">All Status</option>
+                <option value="1">Active</option>
+                <option value="0">Inactive</option>
+            </select>
+        </div>
+        <div class="flex items-end">
+            <button onclick="filterUsers()" class="w-full px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-700">
+                Filter
+            </button>
+        </div>
     </div>
 </div>
 
 <!-- Users Table -->
 <div class="bg-white shadow-sm rounded-lg overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900">User List</h3>
+        <h3 class="text-lg font-semibold text-gray-900">Users List</h3>
     </div>
+
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
             </thead>
             <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
-                <!-- Users will be populated by JavaScript -->
+                <tr>
+                    <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                        <div class="flex items-center justify-center">
+                            <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </td>
+                </tr>
             </tbody>
         </table>
     </div>
@@ -129,23 +126,51 @@
     <div class="px-6 py-4 border-t border-gray-200">
         <div class="flex items-center justify-between">
             <div class="text-sm text-gray-700">
-                Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">1,234</span> results
+                Showing <span id="showingStart" class="font-medium">1</span> to
+                <span id="showingEnd" class="font-medium">10</span> of
+                <span id="showingTotal" class="font-medium">0</span>
             </div>
-            <nav class="flex items-center space-x-2">
-                <button class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-500 rounded-md">Previous</button>
-                <button class="px-3 py-1 text-sm bg-primary text-white rounded-md">1</button>
-                <button class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">2</button>
-                <button class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">3</button>
-                <button class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">Next</button>
+            <nav class="flex items-center space-x-2" id="paginationContainer">
+                <!-- Pagination buttons -->
             </nav>
         </div>
     </div>
 </div>
 
-<!-- Modals -->
-@include('users.admin.users.modals.create-user-modal')
-@include('users.admin.users.modals.edit-user-modal')
-@include('users.admin.users.modals.bulk-upload-modal')
+<!-- Add User Modal -->
+@include('users.admin.users._modals.add-user-modal')
+
+<!-- Edit User Modal -->
+@include('users.admin.users._modals.edit-user-modal')
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteConfirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        <div class="relative bg-white rounded-lg max-w-md w-full shadow-xl">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Delete User?</h3>
+                <p id="deleteMessage" class="text-gray-600 text-center mb-6">This action cannot be undone.</p>
+                <div class="flex justify-center space-x-3">
+                    <button type="button" onclick="closeDeleteConfirmModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div id="toastContainer" class="fixed bottom-4 right-4 z-50"></div>
 
 <script src="{{ asset('js/admin/users.js') }}"></script>
 @endsection
