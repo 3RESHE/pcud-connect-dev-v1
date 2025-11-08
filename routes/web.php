@@ -465,7 +465,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     });
 
     // =====================================================
-    // ALUMNI DASHBOARD ROUTES - UPDATED
+    // ALUMNI DASHBOARD ROUTES - WITH PROFILE COMPLETION CHECK
     // =====================================================
 
     Route::middleware('role:alumni')->prefix('alumni')->name('alumni.')->group(function () {
@@ -504,32 +504,36 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('destroy');
         });
 
-        // ===== JOBS =====
-        Route::prefix('jobs')->name('jobs.')->group(function () {
-            Route::get('/', [AlumniJobController::class, 'index'])
-                ->name('index');
-            Route::get('/{job}', [AlumniJobController::class, 'show'])
-                ->name('show');
-            Route::post('/{job}/apply', [AlumniJobController::class, 'apply'])
-                ->name('apply');
-        });
+        // ===== PROTECTED ROUTES (Require complete profile) =====
+        Route::middleware('alumni.profile.complete')->group(function () {
 
-        // ===== EVENTS =====
-        Route::prefix('events')->name('events.')->group(function () {
-            Route::get('/', [AlumniEventController::class, 'index'])
-                ->name('index');
-            Route::get('/{event}', [AlumniEventController::class, 'show'])
-                ->name('show');
-            Route::post('/{event}/register', [AlumniEventController::class, 'register'])
-                ->name('register');
-        });
+            // ===== JOBS =====
+            Route::prefix('jobs')->name('jobs.')->group(function () {
+                Route::get('/', [AlumniJobController::class, 'index'])
+                    ->name('index');
+                Route::get('/{job}', [AlumniJobController::class, 'show'])
+                    ->name('show');
+                Route::post('/{job}/apply', [AlumniJobController::class, 'apply'])
+                    ->name('apply');
+            });
 
-        // ===== NEWS =====
-        Route::prefix('news')->name('news.')->group(function () {
-            Route::get('/', [AlumniNewsController::class, 'index'])
-                ->name('index');
-            Route::get('/{news}', [AlumniNewsController::class, 'show'])
-                ->name('show');
+            // ===== EVENTS =====
+            Route::prefix('events')->name('events.')->group(function () {
+                Route::get('/', [AlumniEventController::class, 'index'])
+                    ->name('index');
+                Route::get('/{event}', [AlumniEventController::class, 'show'])
+                    ->name('show');
+                Route::post('/{event}/register', [AlumniEventController::class, 'register'])
+                    ->name('register');
+            });
+
+            // ===== NEWS =====
+            Route::prefix('news')->name('news.')->group(function () {
+                Route::get('/', [AlumniNewsController::class, 'index'])
+                    ->name('index');
+                Route::get('/{news}', [AlumniNewsController::class, 'show'])
+                    ->name('show');
+            });
         });
     });
 });
