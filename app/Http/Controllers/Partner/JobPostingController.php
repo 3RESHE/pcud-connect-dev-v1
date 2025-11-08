@@ -328,7 +328,6 @@ class JobPostingController extends Controller
 
         return view('users.partner.job-postings.show', compact('jobPosting'));
     }
-
     /**
      * Show edit form
      */
@@ -338,13 +337,24 @@ class JobPostingController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        if (!in_array($jobPosting->status, ['pending', 'rejected', 'approved'])) {
+        if (!$jobPosting->canBeEdited()) {
             return redirect()->route('partner.job-postings.show', $jobPosting->id)
                 ->with('error', 'This job posting cannot be edited');
         }
 
-        return view('users.partner.job-postings.edit', compact('jobPosting'));
+        // Decode technical_skills for the form
+        $technicalSkills = is_string($jobPosting->technical_skills)
+            ? json_decode($jobPosting->technical_skills, true)
+            : ($jobPosting->technical_skills ?? []);
+        $technicalSkills = is_array($technicalSkills) ? implode(', ', $technicalSkills) : '';
+
+        return view('users.partner.job-postings.edit', [
+            'jobPosting' => $jobPosting,
+            'technicalSkills' => $technicalSkills,
+            'isEditing' => true,
+        ]);
     }
+
 
     /**
      * Update job posting
@@ -490,17 +500,34 @@ class JobPostingController extends Controller
     /**
      * View applications for a job posting
      */
+    /**
+     * View applications for a job posting
+     */
     public function applications(JobPosting $jobPosting)
     {
         if ($jobPosting->partner_id !== auth()->id()) {
             abort(403, 'Unauthorized');
         }
 
+        // Get applications with pagination
         $applications = $jobPosting->applications()
-            ->with('user')
+            ->with('alumni')
             ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->paginate(10);
 
-        return view('users.partner.job-postings.applications', compact('jobPosting', 'applications'));
+        // Get application statistics
+        $stats = [
+            'total' => $jobPosting->applications()->count(),
+            'pending' => $jobPosting->applications()->where('status', 'pending')->count(),
+            'reviewed' => $jobPosting->applications()->where('status', 'reviewed')->count(),
+            'approved' => $jobPosting->applications()->where('status', 'approved')->count(),
+            'rejected' => $jobPosting->applications()->where('status', 'rejected')->count(),
+        ];
+
+        return view('users.partner.job-postings.applications', [
+            'jobPosting' => $jobPosting,
+            'applications' => $applications,
+            'stats' => $stats,
+        ]);
     }
 }
