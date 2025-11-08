@@ -1,14 +1,21 @@
 <?php
 
-use App\Http\Controllers\Admin\Departments\DepartmentController;
+use App\Http\Controllers\Account\PasswordManagementController;
 use App\Http\Controllers\Admin\Analytics\ActivityLogController;
 use App\Http\Controllers\Admin\Analytics\ReportController;
+use App\Http\Controllers\Admin\Departments\DepartmentController;
 use App\Http\Controllers\Admin\Events\EventApprovalController;
 use App\Http\Controllers\Admin\Jobs\JobApprovalController;
 use App\Http\Controllers\Admin\News\NewsApprovalController;
 use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
 use App\Http\Controllers\Admin\Users\UserController;
+use App\Http\Controllers\Alumni\DashboardController as AlumniDashboardController;
+use App\Http\Controllers\Alumni\EventController as AlumniEventController;
+use App\Http\Controllers\Alumni\JobController as AlumniJobController;
+use App\Http\Controllers\Alumni\NewsController as AlumniNewsController;
+use App\Http\Controllers\Alumni\ProfileController as AlumniProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
 use App\Http\Controllers\Partner\DashboardController as PartnerDashboardController;
@@ -20,16 +27,14 @@ use App\Http\Controllers\Partner\SettingsController as PartnerSettingsController
 use App\Http\Controllers\Staff\Events\EventController;
 use App\Http\Controllers\Staff\News\NewsController as StaffNewsController;
 use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
-use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentEventController;
+use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
-use App\Http\Controllers\Alumni\DashboardController as AlumniDashboardController;
-use App\Http\Controllers\Alumni\ProfileController as AlumniProfileController;
-use App\Http\Controllers\Alumni\JobController as AlumniJobController;
-use App\Http\Controllers\Alumni\EventController as AlumniEventController;
-use App\Http\Controllers\Alumni\NewsController as AlumniNewsController;
 use Illuminate\Support\Facades\Route;
+
+
+
 
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -46,21 +51,36 @@ Route::get('/', function () {
 require __DIR__ . '/auth.php';
 
 // =====================================================
+// PASSWORD CHANGE ROUTE (First Login)
+// =====================================================
+
+
+// =====================================================
+// PASSWORD MANAGEMENT ROUTES (Account)
+// =====================================================
+
+Route::middleware(['auth'])->group(function () {
+    // First Login - Change Password
+    Route::get('/change-password', [PasswordManagementController::class, 'showChangePassword'])
+        ->name('password.change-first');
+    Route::post('/change-password', [PasswordManagementController::class, 'updateChangePassword'])
+        ->name('password.update-first');
+
+    // General - Update Password
+    Route::get('/account/update-password', [PasswordManagementController::class, 'showUpdatePassword'])
+        ->name('password.update-form');
+    Route::post('/account/update-password', [PasswordManagementController::class, 'updatePassword'])
+        ->name('password.update');
+});
+
+
+// =====================================================
 // AUTHENTICATED ROUTES (Require Auth + Email Verified + Password Changed + Active)
 // =====================================================
 
 Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(function () {
 
-    // =====================================================
-    // PASSWORD CHANGE ROUTE (First Login)
-    // =====================================================
 
-    Route::get('/change-password', function () {
-        return view('auth.change-password');
-    })->name('password.change');
-
-    Route::post('/change-password', [AuthenticatedSessionController::class, 'updatePassword'])
-        ->name('password.update');
 
     // =====================================================
     // REDIRECT ROOT TO APPROPRIATE DASHBOARD BY ROLE

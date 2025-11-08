@@ -19,11 +19,14 @@ class EnsurePasswordChanged
         if ($request->user()) {
             // Check if password_changed_at is NULL (first login)
             if (is_null($request->user()->password_changed_at)) {
-                // Redirect to password change page (except if already there)
-                if (!$request->routeIs('password.change')) {
-                    return redirect()->route('password.change')
-                        ->with('warning', 'You must change your password before continuing.');
+                // Allow these routes without redirecting
+                if ($request->routeIs('password.change-first', 'password.update-first')) {
+                    return $next($request);
                 }
+
+                // Redirect to password change page
+                return redirect()->route('password.change-first')
+                    ->with('warning', 'You must change your password before continuing.');
             }
         }
 
