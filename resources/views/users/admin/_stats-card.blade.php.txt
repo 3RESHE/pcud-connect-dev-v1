@@ -1,4 +1,4 @@
-<div class="bg-white rounded-lg shadow p-6">
+{{-- <div class="bg-white rounded-lg shadow p-6">
     <div class="flex items-center justify-between">
         <div>
             <p class="text-sm text-gray-600">{{ $title }}</p>
@@ -24,4 +24,4 @@
             @endif
         </div>
     </div>
-</div>
+</div> --}}

@@ -1,4 +1,4 @@
-@extends('layouts.admin')
+{{-- @extends('layouts.admin')
 
 @section('title', 'Activity Logs - PCU-DASMA Connect')
 @section('page-title', 'System Activity Logs')
@@ -195,4 +195,4 @@
 </div>
 
 <script src="{{ asset('js/admin/activity-logs.js') }}"></script>
-@endsection
+@endsection --}}
