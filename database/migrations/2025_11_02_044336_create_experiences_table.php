@@ -21,22 +21,25 @@ return new class extends Migration
             // Experience details
             $table->string('role_position')->nullable(); // Job title/position
             $table->string('organization')->nullable(); // Company/organization name
+            $table->string('location')->nullable(); // Job location (City, State/Country)
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->boolean('is_current')->default(false); // Currently working here?
 
             // Experience type
             $table->enum('experience_type', [
-                'parttime',
                 'internship',
+                'part_time',
+                'full_time',
                 'volunteer',
+                'freelance',
                 'organization',
                 'competition',
                 'project'
             ]);
 
             // Description
-            $table->text('description')->nullable(); // What they did
+            $table->text('description')->nullable(); // What they did / responsibilities
 
             $table->timestamps();
         });
@@ -45,6 +48,7 @@ return new class extends Migration
         Schema::table('experiences', function (Blueprint $table) {
             $table->index('user_id', 'idx_experiences_user');
             $table->index('user_type', 'idx_experiences_type');
+            $table->index('is_current', 'idx_experiences_current');
         });
     }
 
