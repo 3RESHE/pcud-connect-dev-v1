@@ -294,14 +294,14 @@
                                 <form action="{{ route('partner.job-postings.resume', $job->id) }}" method="POST" class="w-full">
                                     @csrf
                                     <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 font-medium">
-                                        ▶ Resume Posting
+                                        Resume Posting
                                     </button>
                                 </form>
                             @else
                                 <form action="{{ route('partner.job-postings.pause', $job->id) }}" method="POST" class="w-full">
                                     @csrf
                                     <button type="submit" class="w-full px-4 py-2 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 transition-colors duration-200 font-medium">
-                                        ⏸ Pause Posting
+                                        Pause Posting
                                     </button>
                                 </form>
                             @endif
@@ -309,7 +309,7 @@
                             <form action="{{ route('partner.job-postings.close', $job->id) }}" method="POST" class="w-full" onsubmit="return confirm('Close this job posting? It will no longer accept applications.');'">
                                 @csrf
                                 <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
-                                    ✕ Close Posting
+                                    Close Posting
                                 </button>
                             </form>
 
@@ -317,7 +317,7 @@
                             <!-- ✅ EDIT BUTTON FOR PENDING/REJECTED JOBS -->
                             <a href="{{ route('partner.job-postings.edit', $job->id) }}"
                                 class="px-4 py-2 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 transition-colors duration-200 text-center font-medium">
-                                ✏️ Edit Posting
+                                Edit Posting
                             </a>
 
                             @if($job->status === 'pending')
