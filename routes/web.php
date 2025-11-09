@@ -9,26 +9,26 @@ use App\Http\Controllers\Admin\Jobs\JobApprovalController;
 use App\Http\Controllers\Admin\News\NewsApprovalController;
 use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
 use App\Http\Controllers\Admin\Users\UserController;
+use App\Http\Controllers\Alumni\AlumniEventController;
 use App\Http\Controllers\Alumni\AlumniExperienceController;
+use App\Http\Controllers\Alumni\AlumniJobController;
+use App\Http\Controllers\Alumni\AlumniNewsController;
 use App\Http\Controllers\Alumni\AlumniProfileController;
 use App\Http\Controllers\Alumni\AlumniProjectController;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboardController;
-use App\Http\Controllers\Alumni\EventController as AlumniEventController;
-use App\Http\Controllers\Alumni\JobController as AlumniJobController;
-use App\Http\Controllers\Alumni\NewsController as AlumniNewsController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
-use App\Http\Controllers\Partner\DashboardController as PartnerDashboardController;
+use App\Http\Controllers\Dashboard\StudentDashboardController;
 use App\Http\Controllers\Partner\JobPostingController;
 use App\Http\Controllers\Partner\NewsController as PartnerNewsController;
+use App\Http\Controllers\Partner\PartnerDashboardController;
 use App\Http\Controllers\Partner\PartnershipController;
 use App\Http\Controllers\Partner\ProfileController as PartnerProfileController;
 use App\Http\Controllers\Partner\SettingsController as PartnerSettingsController;
 use App\Http\Controllers\Staff\Events\EventController;
 use App\Http\Controllers\Staff\News\NewsController as StaffNewsController;
-use App\Http\Controllers\Student\DashboardController as StudentDashboardController;
 use App\Http\Controllers\Student\ExperienceController;
 use App\Http\Controllers\Student\ProjectController;
 use App\Http\Controllers\Student\StudentEventController;
@@ -36,8 +36,6 @@ use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
 use Illuminate\Support\Facades\Route;
-
-
 
 
 
@@ -184,11 +182,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::put('/{id}/unpublish', [JobApprovalController::class, 'unpublish'])
                 ->name('unpublish');
         });
-
-
-
-
-
 
         // ===== EVENTS APPROVALS =====
         Route::prefix('approvals/events')->name('approvals.events.')->group(function () {
@@ -549,12 +542,15 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
 
             // ===== JOBS =====
             Route::prefix('jobs')->name('jobs.')->group(function () {
-                Route::get('/', [AlumniJobController::class, 'index'])
-                    ->name('index');
-                Route::get('/{job}', [AlumniJobController::class, 'show'])
-                    ->name('show');
-                Route::post('/{job}/apply', [AlumniJobController::class, 'apply'])
-                    ->name('apply');
+                Route::get('/', [AlumniJobController::class, 'index'])->name('index');
+                Route::get('/{job}', [AlumniJobController::class, 'show'])->name('show');
+                Route::post('/{job}/apply', [AlumniJobController::class, 'apply'])->name('apply');
+            });
+            //  APPLICATIONS ROUTES
+            Route::prefix('applications')->name('applications.')->group(function () {
+                Route::get('/', [AlumniJobController::class, 'applications'])->name('index');
+                Route::get('/{application}', [AlumniJobController::class, 'viewApplication'])->name('show');
+                Route::delete('/{application}', [AlumniJobController::class, 'withdrawApplication'])->name('destroy');
             });
 
             // ===== EVENTS =====

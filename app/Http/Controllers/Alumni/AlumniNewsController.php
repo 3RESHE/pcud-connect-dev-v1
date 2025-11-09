@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NewsArticle;
 use Illuminate\View\View;
 
-class NewsController extends Controller
+class AlumniNewsController extends Controller
 {
     /**
      * Display a list of published news articles for alumni.

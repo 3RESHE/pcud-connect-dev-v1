@@ -7,7 +7,7 @@ use App\Models\JobPosting;
 use App\Models\Partnership;
 use Illuminate\Http\Request;
 
-class DashboardController extends Controller
+class PartnerDashboardController extends Controller
 {
     /**
      * Display partner dashboard

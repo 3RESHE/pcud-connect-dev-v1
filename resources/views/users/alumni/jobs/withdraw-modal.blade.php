@@ -1,6 +1,6 @@
     <!-- Withdraw Confirmation Modal -->
-    <div id="withdrawConfirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="withdraw-modal-title"
-        role="dialog" aria-modal="true">
+    <div id="withdrawConfirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="withdraw-modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <!-- Background overlay -->
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
@@ -24,8 +24,7 @@
                         Withdraw Application?
                     </h3>
                     <p class="text-sm text-gray-600 mb-6">
-                        This action cannot be undone. Your application will be permanently deleted and you can apply
-                        again
+                        This action cannot be undone. Your application will be permanently deleted and you can apply again
                         if needed.
                     </p>
 

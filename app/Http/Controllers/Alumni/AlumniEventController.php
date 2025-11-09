@@ -10,7 +10,7 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class EventController extends Controller
+class AlumniEventController extends Controller
 {
     /**
      * Display a list of available events for alumni.
