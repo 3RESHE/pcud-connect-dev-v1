@@ -471,26 +471,61 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         });
 
         // ===== PROTECTED ROUTES (Require complete profile) =====
-        Route::middleware('student.profile.complete')->group(function () {
+        Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
 
-            // ===== JOBS =====
-            Route::prefix('jobs')->name('jobs.')->group(function () {
-                Route::get('/', [StudentJobController::class, 'index'])->name('index');
-                Route::get('/{job}', [StudentJobController::class, 'show'])->name('show');
-                Route::post('/{job}/apply', [StudentJobController::class, 'apply'])->name('apply');
+            // ===== DASHBOARD =====
+            Route::get('/dashboard', [StudentDashboardController::class, 'dashboard'])
+                ->name('dashboard');
+
+            // ===== PROFILE (NO MIDDLEWARE - Can access anytime) =====
+            Route::prefix('profile')->name('profile.')->group(function () {
+                Route::get('/', [StudentProfileController::class, 'show'])->name('show');
+                Route::get('/edit', [StudentProfileController::class, 'edit'])->name('edit');
+                Route::post('/', [StudentProfileController::class, 'update'])->name('update');
             });
 
-            // ===== EVENTS =====
-            Route::prefix('events')->name('events.')->group(function () {
-                Route::get('/', [StudentEventController::class, 'index'])->name('index');
-                Route::get('/{event}', [StudentEventController::class, 'show'])->name('show');
-                Route::post('/{event}/register', [StudentEventController::class, 'register'])->name('register');
+            // Experiences
+            Route::prefix('experiences')->name('experiences.')->group(function () {
+                Route::post('/', [ExperienceController::class, 'store'])->name('store');
+                Route::put('{experience}', [ExperienceController::class, 'update'])->name('update');
+                Route::delete('{experience}', [ExperienceController::class, 'destroy'])->name('destroy');
             });
 
-            // ===== NEWS =====
-            Route::prefix('news')->name('news.')->group(function () {
-                Route::get('/', [StudentNewsController::class, 'index'])->name('index');
-                Route::get('/{article}', [StudentNewsController::class, 'show'])->name('show');
+            // Projects
+            Route::prefix('projects')->name('projects.')->group(function () {
+                Route::post('/', [ProjectController::class, 'store'])->name('store');
+                Route::put('{project}', [ProjectController::class, 'update'])->name('update');
+                Route::delete('{project}', [ProjectController::class, 'destroy'])->name('destroy');
+            });
+
+            // ===== PROTECTED ROUTES (Require complete profile) =====
+            Route::middleware('student.profile.complete')->group(function () {
+
+                // ===== JOBS =====
+                Route::prefix('jobs')->name('jobs.')->group(function () {
+                    Route::get('/', [StudentJobController::class, 'index'])->name('index');
+                    Route::get('/{job}', [StudentJobController::class, 'show'])->name('show');
+                    Route::post('/{job}/apply', [StudentJobController::class, 'apply'])->name('apply');
+
+                    // ✅ APPLICATIONS
+                    Route::prefix('applications')->name('applications.')->group(function () {
+                        Route::get('/', [StudentJobController::class, 'applications'])->name('index');
+                        Route::get('/{application}', [StudentJobController::class, 'viewApplication'])->name('show');
+                    });
+                });
+
+                // ===== EVENTS =====
+                Route::prefix('events')->name('events.')->group(function () {
+                    Route::get('/', [StudentEventController::class, 'index'])->name('index');
+                    Route::get('/{event}', [StudentEventController::class, 'show'])->name('show');
+                    Route::post('/{event}/register', [StudentEventController::class, 'register'])->name('register');
+                });
+
+                // ===== NEWS =====
+                Route::prefix('news')->name('news.')->group(function () {
+                    Route::get('/', [StudentNewsController::class, 'index'])->name('index');
+                    Route::get('/{article}', [StudentNewsController::class, 'show'])->name('show');
+                });
             });
         });
     });
