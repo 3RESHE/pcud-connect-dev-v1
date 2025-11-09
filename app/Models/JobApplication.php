@@ -43,6 +43,28 @@ class JobApplication extends Model
         return $this->belongsTo(User::class, 'applicant_id');
     }
 
+    /**
+     * Get the applicant's student profile.
+     */
+    public function studentProfile()
+    {
+        if ($this->applicant && $this->applicant->studentProfile) {
+            return $this->applicant->studentProfile;
+        }
+        return null;
+    }
+
+    /**
+     * Get the applicant's alumni profile.
+     */
+    public function alumniProfile()
+    {
+        if ($this->applicant && $this->applicant->alumniProfile) {
+            return $this->applicant->alumniProfile;
+        }
+        return null;
+    }
+
     // ===== SCOPES =====
 
     /**
@@ -86,6 +108,14 @@ class JobApplication extends Model
     }
 
     /**
+     * Scope: Get applications by applicant type.
+     */
+    public function scopeByApplicantType($query, $type)
+    {
+        return $query->where('applicant_type', $type);
+    }
+
+    /**
      * Scope: Get unreviewed applications.
      */
     public function scopeUnreviewed($query)
@@ -99,6 +129,14 @@ class JobApplication extends Model
     public function scopeRecentlySubmitted($query, $days = 7)
     {
         return $query->where('created_at', '>=', now()->subDays($days));
+    }
+
+    /**
+     * Scope: Get applications for a specific job.
+     */
+    public function scopeForJob($query, $jobId)
+    {
+        return $query->where('job_posting_id', $jobId);
     }
 
     // ===== HELPER METHODS =====
@@ -168,9 +206,9 @@ class JobApplication extends Model
     public function getApplicantProfile()
     {
         if ($this->applicant_type === 'student') {
-            return $this->applicant->studentProfile;
+            return $this->studentProfile();
         }
 
-        return $this->applicant->alumniProfile;
+        return $this->alumniProfile();
     }
 }

@@ -23,7 +23,7 @@ return new class extends Migration
 
             // Application content
             $table->text('cover_letter')->nullable();
-            $table->string('resume_path'); // File path to resume/CV
+            $table->string('resume_path')->nullable(); // File path to resume/CV
             $table->json('additional_documents')->nullable(); // Array of file paths
 
             // Application status
@@ -40,6 +40,8 @@ return new class extends Migration
         Schema::table('job_applications', function (Blueprint $table) {
             $table->index('applicant_id', 'idx_job_applications_applicant');
             $table->index('status', 'idx_job_applications_status');
+            $table->index('job_posting_id', 'idx_job_applications_job');
+            $table->index('applicant_type', 'idx_job_applications_type');
         });
     }
 
