@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
 class JobPosting extends Model
 {
@@ -74,6 +75,21 @@ class JobPosting extends Model
     public function partner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'partner_id');
+    }
+
+    /**
+     * Get the partner's profile (company information).
+     */
+    public function partnerProfile(): HasOneThrough
+    {
+        return $this->hasOneThrough(
+            PartnerProfile::class,
+            User::class,
+            'id',           // Foreign key on users table
+            'user_id',      // Foreign key on partner_profiles table
+            'partner_id',   // Local key on job_postings table
+            'id'            // Local key on users table
+        );
     }
 
     /**

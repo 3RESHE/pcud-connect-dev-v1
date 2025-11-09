@@ -216,11 +216,13 @@
                     <div class="space-y-3">
                         <div>
                             <p class="text-sm font-medium text-gray-900">Company Name</p>
-                            <p class="text-sm text-gray-600">{{ $jobPosting->partner->company_name ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-600">{{ $jobPosting->partnerProfile->company_name ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900">Contact Person</p>
-                            <p class="text-sm text-gray-600">{{ $jobPosting->partner->full_name ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-600">
+                                {{ $jobPosting->partnerProfile->contact_person ?? ($jobPosting->partner->getFullNameAttribute() ?? 'N/A') }}
+                            </p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900">Email</p>
@@ -228,7 +230,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900">Phone</p>
-                            <p class="text-sm text-gray-600">{{ $jobPosting->partner->phone ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-600">{{ $jobPosting->partnerProfile->phone ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900">Partnership Status</p>

@@ -110,38 +110,166 @@
             </div>
         @endif
 
-        <!-- Filters and Search -->
+        <!-- Enhanced Filters and Search -->
         <div class="bg-white rounded-lg shadow mb-8 p-6">
-            <form method="GET" class="flex flex-col md:flex-row gap-4">
-                <!-- Search -->
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Job</label>
-                    <input type="text" name="search" value="{{ request('search') }}"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                        placeholder="Search by job title, department, or company...">
+            <form method="GET" class="space-y-4">
+                <!-- Primary Search Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Search -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                        <input type="text" name="search" value="{{ request('search') }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                            placeholder="Title, company, or contact...">
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select name="status"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <option value="all">All Statuses</option>
+                            <option value="pending" @if (request('status') === 'pending') selected @endif>Pending</option>
+                            <option value="approved" @if (request('status') === 'approved') selected @endif>Approved</option>
+                            <option value="rejected" @if (request('status') === 'rejected') selected @endif>Rejected</option>
+                        </select>
+                    </div>
+
+                    <!-- Job Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
+                        <select name="job_type"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <option value="">All Types</option>
+                            <option value="fulltime" @if (request('job_type') === 'fulltime') selected @endif>Full-time</option>
+                            <option value="parttime" @if (request('job_type') === 'parttime') selected @endif>Part-time</option>
+                            <option value="internship" @if (request('job_type') === 'internship') selected @endif>Internship</option>
+                            <option value="other" @if (request('job_type') === 'other') selected @endif>Other</option>
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Status Filter -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select name="status" onchange="this.form.submit()"
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
-                        <option value="all">All Statuses</option>
-                        <option value="pending" @if (request('status') === 'pending') selected @endif>Pending</option>
-                        <option value="approved" @if (request('status') === 'approved') selected @endif>Approved</option>
-                        <option value="rejected" @if (request('status') === 'rejected') selected @endif>Rejected</option>
-                    </select>
+                <!-- Secondary Filters Row -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Experience Level -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Experience</label>
+                        <select name="experience_level"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <option value="">All Levels</option>
+                            <option value="entry" @if (request('experience_level') === 'entry') selected @endif>Entry Level</option>
+                            <option value="mid" @if (request('experience_level') === 'mid') selected @endif>Mid Level</option>
+                            <option value="senior" @if (request('experience_level') === 'senior') selected @endif>Senior Level</option>
+                            <option value="lead" @if (request('experience_level') === 'lead') selected @endif>Lead/Manager</option>
+                            <option value="student" @if (request('experience_level') === 'student') selected @endif>Student/Graduate
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Work Setup -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Work Setup</label>
+                        <select name="work_setup"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                            <option value="">All Setup</option>
+                            <option value="onsite" @if (request('work_setup') === 'onsite') selected @endif>On-site</option>
+                            <option value="remote" @if (request('work_setup') === 'remote') selected @endif>Remote</option>
+                            <option value="hybrid" @if (request('work_setup') === 'hybrid') selected @endif>Hybrid</option>
+                        </select>
+                    </div>
+
+                    <!-- Date From -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Posted From</label>
+                        <input type="date" name="date_from" value="{{ request('date_from') }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                    </div>
+
+                    <!-- Date To -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Posted To</label>
+                        <input type="date" name="date_to" value="{{ request('date_to') }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm">
+                    </div>
                 </div>
 
-                <!-- Submit Button -->
-                <div class="flex items-end">
-                    <button type="submit"
-                        class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                        Search
-                    </button>
+                <!-- Salary Range Row -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Min Salary -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Min Salary (₱)</label>
+                        <input type="number" name="salary_min" value="{{ request('salary_min') }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                            placeholder="e.g., 20000">
+                    </div>
+
+                    <!-- Max Salary -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Max Salary (₱)</label>
+                        <input type="number" name="salary_max" value="{{ request('salary_max') }}"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                            placeholder="e.g., 100000">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-end gap-2">
+                        <button type="submit"
+                            class="flex-1 px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                            Search
+                        </button>
+                        <a href="{{ route('admin.approvals.jobs.index') }}"
+                            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">
+                            Reset
+                        </a>
+                    </div>
                 </div>
+
+                <!-- Active Filters Display -->
+                @php
+                    $activeFilters = [];
+                    if (request('search')) {
+                        $activeFilters[] = 'Search: ' . request('search');
+                    }
+                    if (request('status') && request('status') !== 'all') {
+                        $activeFilters[] = 'Status: ' . ucfirst(request('status'));
+                    }
+                    if (request('job_type')) {
+                        $activeFilters[] = 'Type: ' . ucfirst(request('job_type'));
+                    }
+                    if (request('experience_level')) {
+                        $activeFilters[] = 'Experience: ' . ucfirst(request('experience_level'));
+                    }
+                    if (request('work_setup')) {
+                        $activeFilters[] = 'Setup: ' . ucfirst(request('work_setup'));
+                    }
+                    if (request('salary_min')) {
+                        $activeFilters[] = 'Min: ₱' . number_format(request('salary_min'));
+                    }
+                    if (request('salary_max')) {
+                        $activeFilters[] = 'Max: ₱' . number_format(request('salary_max'));
+                    }
+                    if (request('date_from')) {
+                        $activeFilters[] = 'From: ' . request('date_from');
+                    }
+                    if (request('date_to')) {
+                        $activeFilters[] = 'To: ' . request('date_to');
+                    }
+                @endphp
+
+                @if (count($activeFilters) > 0)
+                    <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-200">
+                        <span class="text-xs font-medium text-gray-600">Active Filters:</span>
+                        @foreach ($activeFilters as $filter)
+                            <span
+                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ $filter }}
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
             </form>
         </div>
+
 
         <!-- Job Postings List -->
         <div class="space-y-6">
@@ -168,8 +296,9 @@
                                     </span>
                                 </div>
 
-                                <!-- Company & Details -->
-                                <p class="text-gray-700 font-semibold mb-2">{{ $job->partner->company_name ?? 'N/A' }}</p>
+                                <!-- Company & Details (✅ FIXED) -->
+                                <p class="text-gray-700 font-semibold mb-2">
+                                    {{ $job->partnerProfile->company_name ?? 'N/A' }}</p>
                                 <p class="text-gray-600 text-sm mb-3">
                                     {{ $job->department ?? 'N/A' }} • {{ $job->getJobTypeDisplay() }} •
                                     {{ $job->getExperienceLevelDisplay() }} • {{ $job->getWorkSetupDisplay() }}
@@ -217,17 +346,20 @@
                             </div>
                         </div>
 
-                        <!-- Partner Information -->
+                        <!-- Partner Information (✅ FIXED) -->
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                             <h4 class="text-sm font-semibold text-blue-900 mb-2">Partner Company Details</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                                 <div>
                                     <p class="text-blue-700 text-xs font-medium">Company</p>
-                                    <p class="text-blue-900 font-semibold">{{ $job->partner->company_name ?? 'N/A' }}</p>
+                                    <p class="text-blue-900 font-semibold">
+                                        {{ $job->partnerProfile->company_name ?? 'N/A' }}</p>
                                 </div>
                                 <div>
                                     <p class="text-blue-700 text-xs font-medium">Contact Person</p>
-                                    <p class="text-blue-900 font-semibold">{{ $job->partner->full_name ?? 'N/A' }}</p>
+                                    <p class="text-blue-900 font-semibold">
+                                        {{ $job->partnerProfile->contact_person ?? ($job->partner->getFullNameAttribute() ?? 'N/A') }}
+                                    </p>
                                 </div>
                                 <div>
                                     <p class="text-blue-700 text-xs font-medium">Email</p>
@@ -235,7 +367,7 @@
                                 </div>
                                 <div>
                                     <p class="text-blue-700 text-xs font-medium">Phone</p>
-                                    <p class="text-blue-900">{{ $job->partner->phone ?? 'N/A' }}</p>
+                                    <p class="text-blue-900">{{ $job->partnerProfile->phone ?? 'N/A' }}</p>
                                 </div>
                             </div>
                         </div>

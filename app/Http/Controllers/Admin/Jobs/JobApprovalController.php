@@ -15,23 +15,59 @@ class JobApprovalController extends Controller
      */
     public function index(Request $request)
     {
-        $query = JobPosting::with(['partner']);
+        $query = JobPosting::with(['partner', 'partnerProfile']);
 
         // Filter by status if provided
         if ($request->has('status') && $request->status !== 'all') {
             $query->where('status', $request->status);
         }
 
-        // Search functionality
+        // ✅ ENHANCED SEARCH with multiple filters
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('department', 'like', "%{$search}%")
+                $q->where('job_postings.title', 'like', "%{$search}%")
+                    ->orWhere('job_postings.department', 'like', "%{$search}%")
+                    ->orWhereHas('partnerProfile', function ($profileQuery) use ($search) {
+                        $profileQuery->where('company_name', 'like', "%{$search}%");
+                    })
                     ->orWhereHas('partner', function ($partnerQuery) use ($search) {
-                        $partnerQuery->where('company_name', 'like', "%{$search}%");
+                        $partnerQuery->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
                     });
             });
+        }
+
+        // ✅ Filter by job type
+        if ($request->has('job_type') && $request->job_type) {
+            $query->where('job_type', $request->job_type);
+        }
+
+        // ✅ Filter by experience level
+        if ($request->has('experience_level') && $request->experience_level) {
+            $query->where('experience_level', $request->experience_level);
+        }
+
+        // ✅ Filter by work setup
+        if ($request->has('work_setup') && $request->work_setup) {
+            $query->where('work_setup', $request->work_setup);
+        }
+
+        // ✅ Filter by salary range
+        if ($request->has('salary_min') && $request->salary_min) {
+            $query->where('salary_min', '>=', $request->salary_min);
+        }
+        if ($request->has('salary_max') && $request->salary_max) {
+            $query->where('salary_max', '<=', $request->salary_max);
+        }
+
+        // ✅ Filter by date range
+        if ($request->has('date_from') && $request->date_from) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->has('date_to') && $request->date_to) {
+            $query->whereDate('created_at', '<=', $request->date_to);
         }
 
         // Order by created date (newest first)
@@ -62,12 +98,10 @@ class JobApprovalController extends Controller
 
             $jobPosting = JobPosting::findOrFail($id);
 
-            // Check if already approved
             if ($jobPosting->status === 'approved') {
                 return redirect()->back()->with('warning', 'Job posting is already approved.');
             }
 
-            // Update job posting status
             $jobPosting->update([
                 'status' => 'approved',
                 'sub_status' => 'active',
@@ -76,7 +110,6 @@ class JobApprovalController extends Controller
                 'rejection_reason' => null,
             ]);
 
-            // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'approved',
@@ -90,9 +123,6 @@ class JobApprovalController extends Controller
                 ]),
             ]);
 
-            // TODO: Send notification to partner
-            // Notification::send($jobPosting->partner, new JobApproved($jobPosting));
-
             DB::commit();
 
             return redirect()->back()->with('success', 'Job posting approved and published successfully!');
@@ -102,10 +132,6 @@ class JobApprovalController extends Controller
         }
     }
 
-
-    /**
-     * Reject a job posting
-     */
     /**
      * Reject a job posting
      */
@@ -120,15 +146,13 @@ class JobApprovalController extends Controller
 
             $jobPosting = JobPosting::findOrFail($id);
 
-            // Check if already rejected
             if ($jobPosting->status === 'rejected') {
                 return redirect()->back()->with('warning', 'Job posting is already rejected.');
             }
 
-            // Update job posting status
             $jobPosting->update([
                 'status' => 'rejected',
-                'sub_status' => null,  // ✅ NOW THIS WILL WORK!
+                'sub_status' => null,
                 'approved_by' => null,
                 'rejection_reason' => $request->rejection_reason,
                 'rejected_at' => now(),
@@ -136,7 +160,6 @@ class JobApprovalController extends Controller
                 'approved_at' => null,
             ]);
 
-            // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'rejected',
@@ -160,13 +183,12 @@ class JobApprovalController extends Controller
         }
     }
 
-
-
-
-
+    /**
+     * Show job posting details
+     */
     public function show($id)
     {
-        $jobPosting = JobPosting::with('partner')->findOrFail($id);
+        $jobPosting = JobPosting::with(['partner', 'partnerProfile'])->findOrFail($id);
         return view('users.admin.approvals.jobs.show', compact('jobPosting'));
     }
 }
