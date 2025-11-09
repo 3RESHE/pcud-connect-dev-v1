@@ -17,6 +17,77 @@
                 </a>
             </div>
 
+            <!-- Error/Success Messages (Outside Modal) -->
+            @if (session('success'))
+                <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-medium text-green-800">Success!</h3>
+                        <p class="text-sm text-green-700 mt-1">{{ session('success') }}</p>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('error'))
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-medium text-red-800">Error!</h3>
+                        <p class="text-sm text-red-700 mt-1">{{ session('error') }}</p>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('warning'))
+                <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <svg class="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-medium text-yellow-800">Warning!</h3>
+                        <p class="text-sm text-yellow-700 mt-1">{{ session('warning') }}</p>
+                    </div>
+                </div>
+            @endif
+
+            @if (session('info'))
+                <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
+                    <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zm6 0a1 1 0 11-2 0 1 1 0 012 0zm-6 3a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-medium text-blue-800">Info</h3>
+                        <p class="text-sm text-blue-700 mt-1">{{ session('info') }}</p>
+                    </div>
+                </div>
+            @endif
+
+            <!-- Validation Errors Outside Modal -->
+            @if ($errors->any())
+                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex gap-3">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="text-sm font-medium text-red-800 mb-2">Validation Errors:</h3>
+                            <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Content -->
                 <div class="lg:col-span-2 space-y-6">
@@ -53,7 +124,7 @@
                                     </path>
                                 </svg>
                                 <span
-                                    class="font-semibold break-words truncate">{{ $job->partnerProfile->company_name ?? 'N/A' }}</span>
+                                    class="font-semibold break-words truncate">{{ $job->partnerProfile?->company_name ?? 'N/A' }}</span>
                             </div>
 
                             <!-- Location -->
@@ -139,7 +210,6 @@
                                         Withdraw Application
                                     </button>
                                 </form>
-
                             </div>
                         @endif
                     </div>
@@ -242,7 +312,7 @@
                                                     class="font-semibold text-gray-900 text-sm sm:text-base break-words line-clamp-2">
                                                     {{ $relatedJob->title }}</h3>
                                                 <p class="text-xs sm:text-sm text-gray-600 truncate">
-                                                    {{ $relatedJob->partnerProfile->company_name ?? 'N/A' }} ·
+                                                    {{ $relatedJob->partnerProfile?->company_name ?? 'N/A' }} ·
                                                     {{ $relatedJob->location ?? 'Remote' }}</p>
                                             </div>
                                             <a href="{{ route('student.jobs.show', $relatedJob->id) }}"
@@ -311,7 +381,7 @@
 
                         <!-- Company Details -->
                         <div class="space-y-3 text-sm mb-4">
-                            @if ($job->partnerProfile->company_name)
+                            @if ($job->partnerProfile?->company_name)
                                 <div>
                                     <div class="text-gray-500 text-xs font-medium mb-1">Company Name</div>
                                     <div class="font-semibold text-gray-900">{{ $job->partnerProfile->company_name }}
@@ -319,14 +389,14 @@
                                 </div>
                             @endif
 
-                            @if ($job->partnerProfile->industry)
+                            @if ($job->partnerProfile?->industry)
                                 <div class="border-t border-gray-200 pt-3">
                                     <div class="text-gray-500 text-xs font-medium mb-1">Industry</div>
                                     <div class="font-semibold text-gray-900">{{ $job->partnerProfile->industry }}</div>
                                 </div>
                             @endif
 
-                            @if ($job->partnerProfile->company_size)
+                            @if ($job->partnerProfile?->company_size)
                                 <div class="border-t border-gray-200 pt-3">
                                     <div class="text-gray-500 text-xs font-medium mb-1">Company Size</div>
                                     <div class="font-semibold text-gray-900">{{ $job->partnerProfile->company_size }}
@@ -334,7 +404,7 @@
                                 </div>
                             @endif
 
-                            @if ($job->partnerProfile->founded_year)
+                            @if ($job->partnerProfile?->founded_year)
                                 <div class="border-t border-gray-200 pt-3">
                                     <div class="text-gray-500 text-xs font-medium mb-1">Founded</div>
                                     <div class="font-semibold text-gray-900">{{ $job->partnerProfile->founded_year }}
@@ -348,10 +418,10 @@
                             class="overflow-hidden transition-all duration-300 border-t border-gray-200 pt-3"
                             style="max-height: 200px;">
                             <p class="text-sm text-gray-600 mb-3">
-                                {{ $job->partnerProfile->company_description ?? 'Information about the company is not available.' }}
+                                {{ $job->partnerProfile?->company_description ?? 'Information about the company is not available.' }}
                             </p>
                         </div>
-                        @if ($job->partnerProfile->company_description && strlen($job->partnerProfile->company_description) > 300)
+                        @if ($job->partnerProfile?->company_description && strlen($job->partnerProfile->company_description) > 300)
                             <button onclick="toggleCompanyDesc()"
                                 class="text-primary hover:text-blue-700 font-medium text-xs flex items-center gap-1 transition-colors">
                                 <span id="companyDescToggle">Read More</span>
@@ -364,7 +434,7 @@
                         @endif
 
                         <!-- Website Link -->
-                        @if ($job->partnerProfile->company_website)
+                        @if ($job->partnerProfile?->company_website)
                             <div class="border-t border-gray-200 pt-3 mt-3">
                                 <a href="{{ $job->partnerProfile->company_website }}" target="_blank"
                                     rel="noopener noreferrer"
@@ -382,11 +452,11 @@
                     </div>
 
                     <!-- Contact Info -->
-                    @if ($job->partnerProfile->contact_email || $job->partnerProfile->contact_phone || $job->partnerProfile->address)
+                    @if ($job->partnerProfile?->contact_email || $job->partnerProfile?->contact_phone || $job->partnerProfile?->address)
                         <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
                             <div class="space-y-3 text-sm">
-                                @if ($job->partnerProfile->contact_email)
+                                @if ($job->partnerProfile?->contact_email)
                                     <div>
                                         <div class="text-gray-500 text-xs font-medium mb-1">Email</div>
                                         <a href="mailto:{{ $job->partnerProfile->contact_email }}"
@@ -395,7 +465,7 @@
                                         </a>
                                     </div>
                                 @endif
-                                @if ($job->partnerProfile->contact_phone)
+                                @if ($job->partnerProfile?->contact_phone)
                                     <div class="@if ($job->partnerProfile->contact_email) border-t border-gray-200 pt-3 @endif">
                                         <div class="text-gray-500 text-xs font-medium mb-1">Phone</div>
                                         <a href="tel:{{ $job->partnerProfile->contact_phone }}"
@@ -404,7 +474,7 @@
                                         </a>
                                     </div>
                                 @endif
-                                @if ($job->partnerProfile->address)
+                                @if ($job->partnerProfile?->address)
                                     <div class="@if ($job->partnerProfile->contact_email || $job->partnerProfile->contact_phone) border-t border-gray-200 pt-3 @endif">
                                         <div class="text-gray-500 text-xs font-medium mb-1">Address</div>
                                         <p class="text-gray-900 text-xs sm:text-sm">{{ $job->partnerProfile->address }}
@@ -437,6 +507,7 @@
             </div>
         </div>
     </div>
+
     <!-- Application Modal -->
     <div id="applicationModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
@@ -467,29 +538,6 @@
                     enctype="multipart/form-data"
                     class="p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-96 sm:max-h-none overflow-y-auto">
                     @csrf
-
-                    <!-- Error Alert -->
-                    @if ($errors->any())
-                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                            <div class="flex gap-3">
-                                <div class="flex-shrink-0">
-                                    <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</h3>
-                                    <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
-                                        @foreach ($errors->all() as $error)
-                                            <li>{{ $error }}</li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    @endif
 
                     <!-- Cover Letter -->
                     <div>
@@ -558,29 +606,8 @@
                         @enderror
                     </div>
 
-                    <!-- Additional Documents -->
-                    <div>
-                        <label for="additional_documents" class="block text-sm font-medium text-gray-700 mb-2">Additional
-                            Documents (Optional)</label>
-                        <p class="text-xs text-gray-600 mb-2">Portfolio, certificates, etc.</p>
-                        <input type="file" name="additional_documents[]" id="additional_documents" multiple
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                            class="w-full text-xs @error('additional_documents') border-red-500 @endif"
-                    >
-                    <p class="text-xs text-gray-500 mt-1">Max 10MB each</p>
-                    @error('additional_documents')
-                        <p class="text-xs text-red-600 mt-1 flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                            </svg>
-                            {{ $message }}
-                        </p>
-                    @enderror
-                </div>
-
-                <!-- Confirmation -->
-                <div class="bg-blue-50
-                            border border-blue-200 rounded-lg p-3">
+                    <!-- Confirmation -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <label class="flex items-start cursor-pointer">
                             <input type="checkbox" name="confirmApplication" id="confirmApplication" required
                                 class="mt-1 h-4 w-4 text-primary flex-shrink-0">
@@ -666,6 +693,7 @@
 
         function applyForJob() {
             document.getElementById('applicationModal').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function closeApplicationModal() {
