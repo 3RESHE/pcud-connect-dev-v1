@@ -26,6 +26,8 @@
                         @endif
                     @elseif($jobPosting->status === 'rejected')
                         Review your rejected job posting
+                    @elseif($jobPosting->status === 'unpublished')
+                        This job posting has been unpublished
                     @else
                         Review your completed job posting
                     @endif
@@ -43,6 +45,8 @@
                         @endif
                     @elseif($jobPosting->status === 'rejected')
                         <span class="bg-red-100 text-red-800 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">Rejected</span>
+                    @elseif($jobPosting->status === 'unpublished')
+                        <span class="bg-gray-100 text-gray-800 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">Unpublished</span>
                     @else
                         <span class="bg-gray-100 text-gray-800 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">Completed</span>
                     @endif
@@ -96,7 +100,24 @@
                         @if($jobPosting->sub_status === 'paused')
                             This job posting is currently paused and not visible to new applicants. You can resume it at any time.
                         @else
-                            This job posting was approved on {{ $jobPosting->updated_at->format('F d, Y - g:i A') }} and is now live for applicants. You can view applications, edit, pause, or close the posting as needed.
+                            This job posting was approved on {{ $jobPosting->updated_at->format('F d, Y - g:i A') }} and is now live for applicants. You can view applications, pause, or close the posting as needed.
+                        @endif
+                    </p>
+                </div>
+            </div>
+        </div>
+    @elseif($jobPosting->status === 'unpublished')
+        <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-start gap-3">
+                <svg class="w-5 h-5 text-gray-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                <div class="min-w-0">
+                    <h4 class="font-semibold text-gray-800">Job Posting Unpublished</h4>
+                    <p class="text-sm text-gray-700 mt-1 break-words">
+                        This job posting was unpublished on {{ $jobPosting->unpublished_at->format('F d, Y - g:i A') }}.
+                        @if($jobPosting->unpublish_reason)
+                            Reason: {{ $jobPosting->unpublish_reason }}
                         @endif
                     </p>
                 </div>
@@ -129,15 +150,14 @@
                     <p class="text-gray-700 text-sm sm:text-base leading-relaxed break-words whitespace-pre-wrap">{{ $jobPosting->description }}</p>
 
                     @php
-                        // Decode technical_skills properly
                         $skills = is_string($jobPosting->technical_skills)
                             ? json_decode($jobPosting->technical_skills, true)
                             : ($jobPosting->technical_skills ?? []);
                         $skills = is_array($skills) ? $skills : [];
-                        $hasRequirements = $jobPosting->education_requirements || $jobPosting->experience_requirements || !empty($skills);
+                        $hasEducationRequirements = $jobPosting->education_requirements || $jobPosting->experience_requirements;
                     @endphp
 
-                    @if($hasRequirements)
+                    @if($hasEducationRequirements)
                         <div class="mt-6 pt-6 border-t border-gray-200">
                             <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">Requirements</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -152,17 +172,30 @@
                                         <div class="text-gray-700 text-sm sm:text-base space-y-1 break-words whitespace-pre-wrap">{{ $jobPosting->experience_requirements }}</div>
                                     @endif
                                 </div>
+                            </div>
+                        </div>
+                    @endif
 
-                                @if(!empty($skills))
-                                    <div>
-                                        <h4 class="text-sm sm:text-base font-medium text-gray-900 mb-3">Technical Skills</h4>
-                                        <div class="flex flex-wrap gap-2">
-                                            @foreach($skills as $skill)
-                                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded break-words">{{ $skill }}</span>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
+                    <!-- ✅ Technical Skills - Separate Bento Box Card -->
+                    @if(!empty($skills))
+                        <div class="bg-white shadow rounded-lg p-4 sm:p-6 mt-6">
+                            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3.5a2.5 2.5 0 00-5 0V18h5z"></path>
+                                </svg>
+                                Technical Skills Required
+                            </h2>
+                            <div class="flex flex-wrap gap-2 sm:gap-3">
+                                @foreach($skills as $skill)
+                                    <span class="px-3 sm:px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 text-blue-700 text-xs sm:text-sm font-medium rounded-lg hover:shadow-md transition-shadow duration-200 break-words inline-block">
+                                        <span class="flex items-center gap-2 whitespace-normal">
+                                            <svg class="w-4 h-4 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            {{ $skill }}
+                                        </span>
+                                    </span>
+                                @endforeach
                             </div>
                         </div>
                     @endif
@@ -184,7 +217,7 @@
             </div>
 
             <!-- Review Timeline -->
-            @if(in_array($jobPosting->status, ['pending', 'rejected', 'approved', 'completed']))
+            @if(in_array($jobPosting->status, ['pending', 'rejected', 'approved', 'unpublished', 'completed']))
                 <div class="bg-white shadow rounded-lg p-4 sm:p-6">
                     <h2 class="text-lg sm:text-lg font-semibold text-gray-900 mb-4">Review Timeline</h2>
                     <div class="space-y-4 min-w-0">
@@ -235,6 +268,25 @@
                                     </div>
                                 </div>
                             </div>
+                        @elseif($jobPosting->status === 'unpublished')
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                                <div class="flex items-center gap-3 flex-1 min-w-0">
+                                    <div class="w-3 h-3 bg-green-400 rounded-full flex-shrink-0"></div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-gray-900">Approved by Admin</p>
+                                        <p class="text-xs text-gray-500 break-words">{{ $jobPosting->approved_at->format('F d, Y - g:i A') }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                                <div class="flex items-center gap-3 flex-1 min-w-0">
+                                    <div class="w-3 h-3 bg-gray-400 rounded-full flex-shrink-0"></div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-gray-900">Unpublished</p>
+                                        <p class="text-xs text-gray-500 break-words">{{ $jobPosting->unpublished_at->format('F d, Y - g:i A') }}</p>
+                                    </div>
+                                </div>
+                            </div>
                         @else
                             <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
                                 <div class="flex items-center gap-3 flex-1 min-w-0">
@@ -267,46 +319,47 @@
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
                 <div class="space-y-2 sm:space-y-3">
                     @if($jobPosting->status === 'approved')
+                        <!-- ✅ APPROVED: No Edit button, only View Applications & Pause/Resume/Close -->
                         <a href="{{ route('partner.job-postings.applications', $jobPosting->id) }}"
-                            class="block w-full px-4 py-2 bg-primary text-white text-sm text-center rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            class="block w-full px-4 py-2 bg-primary text-white text-sm text-center rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium">
                             View Applications
-                        </a>
-                        <a href="{{ route('partner.job-postings.edit', $jobPosting->id) }}"
-                            class="block w-full px-4 py-2 bg-primary text-white text-sm text-center rounded-md hover:bg-blue-700 transition-colors duration-200">
-                            Edit
                         </a>
 
                         @if($jobPosting->sub_status === 'paused')
                             <button onclick="openResumeModal()"
-                                class="w-full px-4 py-2 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 transition-colors duration-200">
-                                Resume
+                                class="w-full px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 font-medium">
+                                Resume Posting
                             </button>
                         @else
                             <button onclick="openPauseModal()"
-                                class="w-full px-4 py-2 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 transition-colors duration-200">
-                                Pause
+                                class="w-full px-4 py-2 bg-yellow-600 text-white text-sm rounded-md hover:bg-yellow-700 transition-colors duration-200 font-medium">
+                                Pause Posting
                             </button>
                         @endif
 
                         <button onclick="openCloseModal()"
-                            class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200">
+                            class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
                             Close Job
                         </button>
+
                     @elseif($jobPosting->status === 'pending' || $jobPosting->status === 'rejected')
+                        <!-- ✅ PENDING/REJECTED: Edit & Withdraw available -->
                         <a href="{{ route('partner.job-postings.edit', $jobPosting->id) }}"
-                            class="block w-full px-4 py-2 bg-primary text-white text-sm text-center rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            class="block w-full px-4 py-2 bg-primary text-white text-sm text-center rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium">
                             Edit {{ $jobPosting->status === 'rejected' ? '& Resubmit' : '' }}
                         </a>
 
                         @if($jobPosting->status === 'pending')
                             <button onclick="openWithdrawModal()"
-                                class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200">
+                                class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
                                 Withdraw
                             </button>
                         @endif
+
                     @else
+                        <!-- ✅ UNPUBLISHED/COMPLETED: View Applications only -->
                         <a href="{{ route('partner.job-postings.applications', $jobPosting->id) }}"
-                            class="block w-full px-4 py-2 bg-primary text-white text-sm text-center rounded-md hover:bg-blue-700 transition-colors duration-200">
+                            class="block w-full px-4 py-2 bg-primary text-white text-sm text-center rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium">
                             View Applications
                         </a>
                     @endif
