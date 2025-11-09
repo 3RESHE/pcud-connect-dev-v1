@@ -162,7 +162,7 @@ class JobApplication extends Model
      */
     public function getStatusDisplay(): array
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => ['text' => 'Pending Review', 'badge' => 'warning'],
             'approved' => ['text' => 'Approved', 'badge' => 'success'],
             'rejected' => ['text' => 'Rejected', 'badge' => 'danger'],
@@ -210,5 +210,13 @@ class JobApplication extends Model
         }
 
         return $this->alumniProfile();
+    }
+
+    /**
+     * Get display name for activity logs
+     */
+    public function getDisplayName(): string
+    {
+        return 'Job Application - ' . $this->jobPosting->title ?? 'Application #' . $this->id;
     }
 }

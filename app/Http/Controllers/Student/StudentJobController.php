@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Student;
 use App\Http\Controllers\Controller;
 use App\Models\JobPosting;
 use App\Models\JobApplication;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
@@ -134,7 +135,7 @@ class StudentJobController extends Controller
 
     /**
      * Store job application from student
-     * ✅ FIXED: Uses public disk, proper file storage, and no activity() function
+     * ✅ COMPLETE FIX: Records to ActivityLog database properly
      */
     public function apply(JobPosting $job, Request $request): RedirectResponse
     {
@@ -192,7 +193,7 @@ class StudentJobController extends Controller
                 $path = $file->storeAs(
                     'resumes/job-applications/' . auth()->id(),
                     $filename,
-                    'public'  // ✅ Uses public disk (symlinked to public/storage)
+                    'public'
                 );
 
                 if (!$path) {
@@ -232,7 +233,7 @@ class StudentJobController extends Controller
                     $path = $file->storeAs(
                         'applications/documents/' . auth()->id() . '/' . $job->id,
                         $filename,
-                        'public'  // ✅ Uses public disk
+                        'public'
                     );
 
                     if ($path) {
@@ -260,10 +261,36 @@ class StudentJobController extends Controller
 
             \Log::info('Application created successfully - ID: ' . $application->id . ' for job: ' . $job->id);
 
-            // Log to file (no activity() function needed)
-            $logMessage = auth()->user()->first_name . ' ' . auth()->user()->last_name
-                . ' applied for job: ' . $job->title . ' (Job ID: ' . $job->id . ')';
-            \Log::info('JOB_APPLICATION: ' . $logMessage);
+            // ✅ RECORD TO ACTIVITY LOG DATABASE - THIS IS THE KEY FIX
+            try {
+                $studentName = auth()->user()->first_name . ' ' . auth()->user()->last_name;
+
+                // Create activity log entry
+                ActivityLog::create([
+                    'user_id' => auth()->id(),
+                    'action' => 'created',
+                    'description' => $studentName . ' applied for job: ' . $job->title,
+                    'subject_type' => JobApplication::class,  // ✅ Use fully qualified class name
+                    'subject_id' => $application->id,
+                    'properties' => json_encode([
+                        'job_id' => $job->id,
+                        'job_title' => $job->title,
+                        'company_name' => $job->partnerProfile?->company_name ?? 'Unknown Company',
+                        'student_name' => $studentName,
+                        'student_id' => auth()->id(),
+                    ]),
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'created_at' => now(),
+                ]);
+
+                \Log::info('✅ Activity log recorded successfully for application: ' . $application->id);
+
+            } catch (\Exception $e) {
+                \Log::error('⚠️ Failed to record activity log: ' . $e->getMessage());
+                \Log::error('Stack trace: ' . $e->getTraceAsString());
+                // Continue anyway - application was created, just log wasn't recorded
+            }
 
             return redirect()->route('student.jobs.applications.show', $application->id)
                 ->with('success', 'Application submitted successfully! The employer will review your application soon.');

@@ -4,6 +4,12 @@ namespace App\Http\Controllers\Admin\Analytics;
 
 use App\Http\Controllers\Controller;
 use App\Models\ActivityLog;
+use App\Models\JobApplication;
+use App\Models\JobPosting;
+use App\Models\Event;
+use App\Models\News;
+use App\Models\Partnership;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -14,42 +20,58 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request): View
     {
-        $query = ActivityLog::with('user')
-            ->orderBy('created_at', 'desc');
+        try {
+            $query = ActivityLog::with('user')
+                ->orderBy('created_at', 'desc');
 
-        // Filter by action
-        if ($request->filled('action')) {
-            $query->where('action', $request->action);
+            // Filter by action
+            if ($request->filled('action')) {
+                $query->where('action', $request->action);
+            }
+
+            // Filter by date range
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
+            // Filter by subject type
+            if ($request->filled('subject_type')) {
+                $query->where('subject_type', $request->subject_type);
+            }
+
+            $logs = $query->paginate(25);
+
+            return view('users.admin.analytics.activity-logs.index', [
+                'logs' => $logs,
+                'actions' => [
+                    'created' => 'Created',
+                    'updated' => 'Updated',
+                    'deleted' => 'Deleted',
+                    'approved' => 'Approved',
+                    'rejected' => 'Rejected',
+                    'published' => 'Published',
+                    'archived' => 'Archived',
+                    'restored' => 'Restored',
+                    'closed' => 'Closed',
+                ],
+                'subject_types' => [
+                    'Event',
+                    'News',
+                    'JobPosting',
+                    'JobApplication',  // ✅ ADDED
+                    'User',
+                    'Partnership',
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Activity logs index error: ' . $e->getMessage());
+            abort(500, 'Failed to load activity logs');
         }
-
-        // Filter by date range
-        if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
-        }
-
-        if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
-        }
-
-        // Filter by subject type
-        if ($request->filled('subject_type')) {
-            $query->where('subject_type', $request->subject_type);
-        }
-
-        $logs = $query->paginate(25);
-
-        return view('users.admin.analytics.activity-logs.index', [
-            'logs' => $logs,
-            'actions' => ['created', 'updated', 'deleted', 'approved', 'rejected', 'published'],
-            'subject_types' => [
-                'Event',
-                'News',
-                'JobPosting',      // ✅ NEW
-                'User',
-                'Partnership',
-                'Application',     // ✅ NEW
-            ],
-        ]);
     }
 
     /**
@@ -57,71 +79,122 @@ class ActivityLogController extends Controller
      */
     public function show($id)
     {
-        $log = ActivityLog::with('user')->findOrFail($id);
+        try {
+            $log = ActivityLog::with('user')->findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $log->id,
-                'user' => $log->user ? $log->user->first_name . ' ' . $log->user->last_name : 'Unknown',
-                'action' => $this->getActionDisplay($log->action),
-                'description' => $log->description,
-                'subject_type' => $this->getSubjectTypeDisplay($log->subject_type),
-                'subject' => $this->getSubjectDisplay($log),
-                'created_at' => $log->created_at->format('M d, Y h:i A'),
-                'ip_address' => $log->ip_address,
-                'browser' => $this->getBrowserInfo($log),
-                'old_values' => json_decode($log->old_values, true) ?? [],
-                'new_values' => json_decode($log->new_values, true) ?? [],
-                'changed_fields' => $this->getChangedFields($log),
-            ],
-        ]);
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $log->id,
+                    'user' => $log->user ? $log->user->first_name . ' ' . $log->user->last_name : 'Unknown User',
+                    'action' => $this->getActionDisplay($log->action),
+                    'description' => $log->description ?? 'No description provided',
+                    'subject_type' => $this->getSubjectTypeDisplay($log->subject_type),
+                    'subject' => $this->getSubjectDisplay($log),
+                    'created_at' => $log->created_at->format('M d, Y h:i A'),
+                    'created_at_relative' => $log->created_at->diffForHumans(),
+                    'ip_address' => $log->ip_address ?? 'N/A',
+                    'browser' => $this->getBrowserInfo($log),
+                    'properties' => json_decode($log->properties ?? '[]', true),
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Activity log show error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to load log details',
+            ], 500);
+        }
     }
 
     /**
-     * Export logs
+     * Export logs to CSV
      */
     public function export(Request $request)
     {
-        $query = ActivityLog::with('user')
-            ->orderBy('created_at', 'desc');
+        try {
+            $query = ActivityLog::with('user')
+                ->orderBy('created_at', 'desc');
 
-        if ($request->filled('action')) {
-            $query->where('action', $request->action);
-        }
+            if ($request->filled('action')) {
+                $query->where('action', $request->action);
+            }
 
-        if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
-        }
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
 
-        if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
-        }
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
 
-        $logs = $query->get();
+            if ($request->filled('subject_type')) {
+                $query->where('subject_type', $request->subject_type);
+            }
 
-        $csv = fopen('php://output', 'w');
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="activity-logs-' . now()->format('Y-m-d') . '.csv"');
+            $logs = $query->get();
 
-        // Headers
-        fputcsv($csv, ['Date & Time', 'User', 'Action', 'Subject Type', 'Description', 'IP Address', 'Browser']);
+            $csv = fopen('php://output', 'w');
+            header('Content-Type: text/csv');
+            header('Content-Disposition: attachment; filename="activity-logs-' . now()->format('Y-m-d-His') . '.csv"');
 
-        // Data
-        foreach ($logs as $log) {
+            // CSV Headers
             fputcsv($csv, [
-                $log->created_at->format('M d, Y h:i A'),
-                ($log->user?->first_name ?? '') . ' ' . ($log->user?->last_name ?? ''),
-                $this->getActionDisplay($log->action),
-                $this->getSubjectTypeDisplay($log->subject_type),
-                $log->description,
-                $log->ip_address,
-                $this->getBrowserInfo($log),
+                'Date & Time',
+                'User',
+                'Action',
+                'Subject Type',
+                'Description',
+                'Subject Name',
+                'IP Address',
+                'Browser',
             ]);
-        }
 
-        fclose($csv);
-        exit;
+            // CSV Data
+            foreach ($logs as $log) {
+                fputcsv($csv, [
+                    $log->created_at->format('M d, Y h:i A'),
+                    ($log->user?->first_name ?? 'Unknown') . ' ' . ($log->user?->last_name ?? 'User'),
+                    $this->getActionDisplay($log->action),
+                    $this->getSubjectTypeDisplay($log->subject_type),
+                    $log->description ?? 'N/A',
+                    $this->getSubjectDisplay($log),
+                    $log->ip_address ?? 'N/A',
+                    $this->getBrowserInfo($log),
+                ]);
+            }
+
+            fclose($csv);
+            exit;
+
+        } catch (\Exception $e) {
+            \Log::error('Activity log export error: ' . $e->getMessage());
+            abort(500, 'Failed to export logs');
+        }
+    }
+
+    /**
+     * Delete logs older than specified days
+     */
+    public function clearOldLogs(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'days' => 'required|integer|min:1|max:365',
+            ]);
+
+            $deleted = ActivityLog::where('created_at', '<', now()->subDays($validated['days']))
+                ->delete();
+
+            return redirect()->back()
+                ->with('success', "Deleted {$deleted} activity logs older than {$validated['days']} days");
+
+        } catch (\Exception $e) {
+            \Log::error('Clear old logs error: ' . $e->getMessage());
+            return redirect()->back()
+                ->with('error', 'Failed to clear old logs');
+        }
     }
 
     /**
@@ -139,6 +212,11 @@ class ActivityLogController extends Controller
             'paused' => 'Paused',
             'resumed' => 'Resumed',
             'closed' => 'Closed',
+            'archived' => 'Archived',
+            'restored' => 'Restored',
+            'completed' => 'Completed',
+            'checked_in' => 'Checked In',
+            'applied' => 'Applied',
             default => ucfirst($action),
         };
     }
@@ -148,14 +226,19 @@ class ActivityLogController extends Controller
      */
     private function getSubjectTypeDisplay($subjectType): string
     {
-        return match($subjectType) {
-            'Event' => 'Event',
-            'News' => 'News',
+        $basename = class_basename($subjectType ?? '');
+
+        return match($basename) {
             'JobPosting' => 'Job Posting',
-            'User' => 'User',
+            'JobApplication' => 'Job Application',  // ✅ ADDED
+            'Event' => 'Event',
+            'EventRegistration' => 'Event Registration',
+            'News' => 'News',
+            'NewsArticle' => 'News Article',
             'Partnership' => 'Partnership',
+            'User' => 'User',
             'Application' => 'Application',
-            default => $subjectType,
+            default => $basename ?: 'Unknown',
         };
     }
 
@@ -164,34 +247,64 @@ class ActivityLogController extends Controller
      */
     private function getSubjectDisplay($log): string
     {
-        if ($log->subject_type === 'JobPosting') {
-            $oldValues = json_decode($log->old_values, true);
-            return $oldValues['title'] ?? 'Deleted Job Posting';
+        // Try to get the actual subject
+        $subject = $this->getSubject($log);
+
+        if ($subject) {
+            if (isset($subject->title)) {
+                return $subject->title;
+            }
+            if (isset($subject->name)) {
+                return $subject->name;
+            }
+            if (method_exists($subject, 'getDisplayName')) {
+                return $subject->getDisplayName();
+            }
         }
 
-        $subject = match($log->subject_type) {
-            'Event' => \App\Models\Event::find($log->subject_id),
-            'News' => \App\Models\News::find($log->subject_id),
-            'JobPosting' => \App\Models\JobPosting::find($log->subject_id),
-            'Partnership' => \App\Models\Partnership::find($log->subject_id),
-            'Application' => \App\Models\Application::find($log->subject_id),
-            default => null,
+        // Fallback for deleted records or missing data
+        $properties = json_decode($log->properties ?? '{}', true);
+
+        if (isset($properties['job_title'])) {
+            return $properties['job_title'];
+        }
+
+        if (is_array($properties) && isset($properties[0]['title'])) {
+            return $properties[0]['title'];
+        }
+
+        // Generic fallback
+        return match($log->subject_type) {
+            'JobApplication' => 'Job Application #' . $log->subject_id,
+            'JobPosting' => 'Job Posting #' . $log->subject_id,
+            'Event' => 'Event #' . $log->subject_id,
+            'News' => 'News #' . $log->subject_id,
+            'User' => 'User #' . $log->subject_id,
+            'Partnership' => 'Partnership #' . $log->subject_id,
+            default => 'Record #' . $log->subject_id,
         };
+    }
 
-        if ($subject && method_exists($subject, 'getDisplayName')) {
-            return $subject->getDisplayName();
+    /**
+     * Helper: Get subject (polymorphic)
+     */
+    private function getSubject($log)
+    {
+        if (!$log->subject_type || !$log->subject_id) {
+            return null;
         }
 
-        if ($subject && isset($subject->title)) {
-            return $subject->title;
+        try {
+            $modelClass = $log->subject_type;
+
+            if (class_exists($modelClass)) {
+                return $modelClass::find($log->subject_id);
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to get subject: ' . $e->getMessage());
         }
 
-        if ($subject && isset($subject->name)) {
-            return $subject->name;
-        }
-
-        $oldValues = json_decode($log->old_values, true);
-        return $oldValues['title'] ?? $oldValues['name'] ?? 'Deleted Record';
+        return null;
     }
 
     /**
@@ -205,12 +318,14 @@ class ActivityLogController extends Controller
 
         if (stripos($log->user_agent, 'Chrome') !== false) {
             return 'Chrome';
-        } elseif (stripos($log->user_agent, 'Safari') !== false) {
-            return 'Safari';
         } elseif (stripos($log->user_agent, 'Firefox') !== false) {
             return 'Firefox';
+        } elseif (stripos($log->user_agent, 'Safari') !== false) {
+            return 'Safari';
         } elseif (stripos($log->user_agent, 'Edge') !== false) {
             return 'Edge';
+        } elseif (stripos($log->user_agent, 'Opera') !== false) {
+            return 'Opera';
         }
 
         return 'Other';
@@ -221,8 +336,9 @@ class ActivityLogController extends Controller
      */
     private function getChangedFields($log): array
     {
-        $oldValues = json_decode($log->old_values, true) ?? [];
-        $newValues = json_decode($log->new_values, true) ?? [];
+        $properties = json_decode($log->properties ?? '{}', true);
+        $oldValues = $properties['old'] ?? [];
+        $newValues = $properties['new'] ?? [];
 
         $changed = [];
 
@@ -246,5 +362,53 @@ class ActivityLogController extends Controller
     private function formatFieldName($field): string
     {
         return ucwords(str_replace('_', ' ', $field));
+    }
+
+    /**
+     * Get action color for badges
+     */
+    private function getActionColor($action): string
+    {
+        return match($action) {
+            'created' => 'success',
+            'updated' => 'info',
+            'deleted' => 'danger',
+            'approved' => 'success',
+            'rejected' => 'danger',
+            'published' => 'success',
+            'archived' => 'warning',
+            'restored' => 'info',
+            'completed' => 'success',
+            'checked_in' => 'success',
+            'applied' => 'info',
+            'paused' => 'warning',
+            'resumed' => 'success',
+            'closed' => 'danger',
+            default => 'secondary',
+        };
+    }
+
+    /**
+     * Get logs count by action
+     */
+    public function getStatistics()
+    {
+        try {
+            $stats = [
+                'total_logs' => ActivityLog::count(),
+                'today_logs' => ActivityLog::whereDate('created_at', now()->toDateString())->count(),
+                'week_logs' => ActivityLog::where('created_at', '>=', now()->subWeek())->count(),
+                'by_action' => ActivityLog::selectRaw('action, COUNT(*) as count')
+                    ->groupBy('action')
+                    ->get()
+                    ->pluck('count', 'action'),
+            ];
+
+            return response()->json($stats);
+
+        } catch (\Exception $e) {
+            \Log::error('Statistics error: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to load statistics'], 500);
+        }
     }
 }
