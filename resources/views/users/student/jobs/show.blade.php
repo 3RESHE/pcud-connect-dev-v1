@@ -131,14 +131,15 @@
                                 <form
                                     action="{{ route('student.applications.destroy', auth()->user()->jobApplications()->where('job_posting_id', $job->id)->first()->id ?? '') }}"
                                     method="POST" class="inline"
-                                    onsubmit="return confirm('Are you sure you want to withdraw this application?');">
+                                    data-application-id="{{ auth()->user()->jobApplications()->where('job_posting_id', $job->id)->first()->id ?? '' }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit"
+                                    <button type="button" onclick="openWithdrawModal(this.form.dataset.applicationId)"
                                         class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors text-sm">
                                         Withdraw Application
                                     </button>
                                 </form>
+
                             </div>
                         @endif
                     </div>
@@ -436,7 +437,6 @@
             </div>
         </div>
     </div>
-
     <!-- Application Modal -->
     <div id="applicationModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title"
         role="dialog" aria-modal="true">
@@ -468,22 +468,57 @@
                     class="p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-96 sm:max-h-none overflow-y-auto">
                     @csrf
 
+                    <!-- Error Alert -->
+                    @if ($errors->any())
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <div class="flex gap-3">
+                                <div class="flex-shrink-0">
+                                    <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</h3>
+                                    <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Cover Letter -->
                     <div>
-                        <label for="cover_letter" class="block text-sm font-medium text-gray-700 mb-2">Cover
-                            Letter</label>
+                        <label for="cover_letter" class="block text-sm font-medium text-gray-700 mb-2">
+                            Cover Letter
+                            <span class="text-red-600">*</span>
+                        </label>
                         <textarea id="cover_letter" name="cover_letter" rows="5" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none"
-                            placeholder="Tell us why you're interested and why you'd be a great fit..."></textarea>
+                            class="w-full px-3 py-2 border @error('cover_letter') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none"
+                            placeholder="Tell us why you're interested and why you'd be a great fit..." value="{{ old('cover_letter') }}"></textarea>
                         <p class="text-xs text-gray-500 mt-1">Minimum 50 characters</p>
                         @error('cover_letter')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            <p class="text-xs text-red-600 mt-1 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M18.101 12.93a1 1 0 00-1.414-1.414L9 18.586 4.707 14.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0l9-9z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                {{ $message }}
+                            </p>
                         @enderror
                     </div>
 
                     <!-- Resume Selection -->
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Resume / CV</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Resume / CV
+                            <span class="text-red-600">*</span>
+                        </label>
                         <div class="space-y-2">
                             @if (auth()->user()->studentProfile && auth()->user()->studentProfile->resume_path)
                                 <div
@@ -497,7 +532,8 @@
                                     </label>
                                 </div>
                             @endif
-                            <div class="flex items-start p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                            <div
+                                class="flex items-start p-3 bg-gray-50 border @error('resume_file') border-red-500 @else border-gray-200 @enderror rounded-lg">
                                 <input type="radio" name="resume_option" value="upload" id="uploadResume"
                                     @if (!auth()->user()->studentProfile || !auth()->user()->studentProfile->resume_path) checked @endif
                                     class="mt-1 h-4 w-4 text-primary flex-shrink-0">
@@ -511,7 +547,14 @@
                             </div>
                         </div>
                         @error('resume_file')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                            <p class="text-xs text-red-600 mt-1 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                {{ $message }}
+                            </p>
                         @enderror
                     </div>
 
@@ -521,21 +564,39 @@
                             Documents (Optional)</label>
                         <p class="text-xs text-gray-600 mb-2">Portfolio, certificates, etc.</p>
                         <input type="file" name="additional_documents[]" id="additional_documents" multiple
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="w-full text-xs">
-                        <p class="text-xs text-gray-500 mt-1">Max 10MB each</p>
-                        @error('additional_documents')
-                            <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                        @enderror
-                    </div>
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            class="w-full text-xs @error('additional_documents') border-red-500 @endif"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Max 10MB each</p>
+                    @error('additional_documents')
+                        <p class="text-xs text-red-600 mt-1 flex items-center gap-1">
+                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                            </svg>
+                            {{ $message }}
+                        </p>
+                    @enderror
+                </div>
 
-                    <!-- Confirmation -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <!-- Confirmation -->
+                <div class="bg-blue-50
+                            border border-blue-200 rounded-lg p-3">
                         <label class="flex items-start cursor-pointer">
                             <input type="checkbox" name="confirmApplication" id="confirmApplication" required
                                 class="mt-1 h-4 w-4 text-primary flex-shrink-0">
                             <span class="ml-2 text-xs sm:text-sm text-gray-700">I confirm that the information is accurate
                                 and understand that false information may disqualify my application.</span>
                         </label>
+                        @error('confirmApplication')
+                            <p class="text-xs text-red-600 mt-2 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                        clip-rule="evenodd"></path>
+                                </svg>
+                                {{ $message }}
+                            </p>
+                        @enderror
                     </div>
 
                     <!-- Modal Footer -->
@@ -554,7 +615,55 @@
         </div>
     </div>
 
+    <!-- Withdraw Confirmation Modal -->
+    <div id="withdrawConfirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto"
+        aria-labelledby="withdraw-modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
+                onclick="closeWithdrawModal()"></div>
+
+            <!-- Modal -->
+            <div
+                class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
+                <!-- Icon -->
+                <div class="flex items-center justify-center w-12 h-12 mx-auto mt-6 bg-red-100 rounded-full">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
+                        </path>
+                    </svg>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="px-4 sm:px-6 py-4 text-center">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2" id="withdraw-modal-title">
+                        Withdraw Application?
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-6">
+                        This action cannot be undone. Your application will be permanently deleted and you can apply again
+                        if needed.
+                    </p>
+
+                    <!-- Buttons -->
+                    <div class="flex flex-col-reverse sm:flex-row gap-3">
+                        <button type="button" onclick="closeWithdrawModal()"
+                            class="w-full sm:flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors">
+                            Cancel
+                        </button>
+                        <button type="button" onclick="submitWithdraw()"
+                            class="w-full sm:flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm transition-colors">
+                            Yes, Withdraw
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
+        let withdrawFormElement = null;
+
         function applyForJob() {
             document.getElementById('applicationModal').classList.remove('hidden');
         }
@@ -562,6 +671,22 @@
         function closeApplicationModal() {
             document.getElementById('applicationModal').classList.add('hidden');
             document.getElementById('applicationForm').reset();
+        }
+
+        function openWithdrawModal(applicationId) {
+            withdrawFormElement = document.querySelector(`form[data-application-id="${applicationId}"]`);
+            document.getElementById('withdrawConfirmModal').classList.remove('hidden');
+        }
+
+        function closeWithdrawModal() {
+            document.getElementById('withdrawConfirmModal').classList.add('hidden');
+            withdrawFormElement = null;
+        }
+
+        function submitWithdraw() {
+            if (withdrawFormElement) {
+                withdrawFormElement.submit();
+            }
         }
 
         function toggleDescription() {
@@ -655,11 +780,19 @@
             }
         });
 
+        document.getElementById('withdrawConfirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeWithdrawModal();
+            }
+        });
+
         // Close modal on Escape key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeApplicationModal();
+                closeWithdrawModal();
             }
         });
     </script>
+
 @endsection
