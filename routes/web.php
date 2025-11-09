@@ -479,11 +479,13 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::get('/{job}', [StudentJobController::class, 'show'])->name('show');
                 Route::post('/{job}/apply', [StudentJobController::class, 'apply'])->name('apply');
             });
-            // ✅ APPLICATIONS ROUTES
+            //  APPLICATIONS ROUTES
             Route::prefix('applications')->name('applications.')->group(function () {
                 Route::get('/', [StudentJobController::class, 'applications'])->name('index');
                 Route::get('/{application}', [StudentJobController::class, 'viewApplication'])->name('show');
+                Route::delete('/{application}', [StudentJobController::class, 'withdrawApplication'])->name('destroy');
             });
+
 
 
             // ===== EVENTS =====

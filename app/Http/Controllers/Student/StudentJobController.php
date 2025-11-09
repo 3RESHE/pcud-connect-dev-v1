@@ -295,4 +295,54 @@ class StudentJobController extends Controller
                 ->with('error', 'Unable to redirect to job posting.');
         }
     }
+
+
+    /**
+     * Withdraw a job application
+     */
+    public function withdrawApplication(JobApplication $application): RedirectResponse
+    {
+        try {
+            // Check authorization
+            if ($application->applicant_id !== auth()->id()) {
+                abort(403, 'You do not have permission to withdraw this application.');
+            }
+
+            // Check if application can be withdrawn
+            if ($application->status === 'approved') {
+                return redirect()->back()->with('error', 'Cannot withdraw an approved application.');
+            }
+
+            // Get application details before deletion for logging
+            $jobTitle = $application->jobPosting?->title ?? 'Unknown Job';
+            $applicationId = $application->id;
+
+            // Log the withdrawal activity
+            try {
+                ActivityLog::logActivity(
+                    userId: auth()->id(),
+                    action: 'withdrew',
+                    description: auth()->user()->first_name . ' ' . auth()->user()->last_name . ' withdrew application for job: ' . $jobTitle,
+                    subjectType: JobApplication::class,
+                    subjectId: $applicationId,
+                    properties: [
+                        'job_id' => $application->job_posting_id,
+                        'job_title' => $jobTitle,
+                    ]
+                );
+                \Log::info('Application withdrawal logged: ' . $applicationId);
+            } catch (\Exception $e) {
+                \Log::warning('Activity log failed for withdrawal: ' . $e->getMessage());
+            }
+
+            // Delete the application
+            $application->delete();
+
+            return redirect()->route('student.applications.index')
+                ->with('success', 'Application withdrawn successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Withdraw application error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error withdrawing application: ' . $e->getMessage());
+        }
+    }
 }
