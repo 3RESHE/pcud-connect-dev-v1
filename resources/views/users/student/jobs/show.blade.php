@@ -16,78 +16,7 @@
                     Back to Job Opportunities
                 </a>
             </div>
-
-            <!-- Error/Success Messages (Outside Modal) -->
-            @if (session('success'))
-                <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <svg class="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-medium text-green-800">Success!</h3>
-                        <p class="text-sm text-green-700 mt-1">{{ session('success') }}</p>
-                    </div>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-medium text-red-800">Error!</h3>
-                        <p class="text-sm text-red-700 mt-1">{{ session('error') }}</p>
-                    </div>
-                </div>
-            @endif
-
-            @if (session('warning'))
-                <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <svg class="w-5 h-5 text-yellow-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-medium text-yellow-800">Warning!</h3>
-                        <p class="text-sm text-yellow-700 mt-1">{{ session('warning') }}</p>
-                    </div>
-                </div>
-            @endif
-
-            @if (session('info'))
-                <div class="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-4 duration-300">
-                    <svg class="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zm6 0a1 1 0 11-2 0 1 1 0 012 0zm-6 3a1 1 0 100-2 1 1 0 000 2zm6 0a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div class="flex-1">
-                        <h3 class="text-sm font-medium text-blue-800">Info</h3>
-                        <p class="text-sm text-blue-700 mt-1">{{ session('info') }}</p>
-                    </div>
-                </div>
-            @endif
-
-            <!-- Validation Errors Outside Modal -->
-            @if ($errors->any())
-                <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div class="flex gap-3">
-                        <div class="flex-shrink-0">
-                            <svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-sm font-medium text-red-800 mb-2">Validation Errors:</h3>
-                            <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
+            @include('users.student.jobs.sessions')
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <!-- Main Content -->
                 <div class="lg:col-span-2 space-y-6">
@@ -103,6 +32,7 @@
                                 class="@if ($job->job_type === 'fulltime') bg-blue-100 text-blue-800 @elseif($job->job_type === 'parttime') bg-purple-100 text-purple-800 @elseif($job->job_type === 'internship') bg-yellow-100 text-yellow-800 @else bg-orange-100 text-orange-800 @endif px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
                                 {{ $job->getJobTypeDisplay() }}
                             </span>
+
                             @if ($alreadyApplied)
                                 <span
                                     class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs sm:text-sm font-medium">Applied</span>
@@ -195,7 +125,8 @@
                         @else
                             <div class="flex flex-col sm:flex-row gap-3">
                                 <div class="px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
-                                    <p class="text-sm text-green-700 font-medium">You have already applied for this position
+                                    <p class="text-sm text-green-700 font-medium">You have already applied for this
+                                        position
                                     </p>
                                 </div>
                                 <!-- Withdraw Button -->
@@ -366,6 +297,101 @@
                         </div>
                     </div>
 
+                    <!-- Application Timeline (Only if student already applied) -->
+                    @if ($alreadyApplied)
+                        <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Application Status</h3>
+
+                            <!-- Status Badge -->
+                            <div class="mb-4">
+                                @php
+                                    $application = auth()
+                                        ->user()
+                                        ->jobApplications()
+                                        ->where('job_posting_id', $job->id)
+                                        ->first();
+                                    $statusDisplay = $application?->getStatusDisplay();
+                                @endphp
+
+                                @if ($statusDisplay)
+                                    <span
+                                        class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                    @if ($statusDisplay['badge'] === 'warning') bg-yellow-100 text-yellow-800
+                    @elseif($statusDisplay['badge'] === 'success') bg-green-100 text-green-800
+                    @elseif($statusDisplay['badge'] === 'danger') bg-red-100 text-red-800
+                    @else bg-gray-100 text-gray-800 @endif">
+                                        {{ $statusDisplay['text'] }}
+                                    </span>
+                                @endif
+                            </div>
+
+                            <!-- Timeline -->
+                            <div class="space-y-4">
+                                <!-- Submitted -->
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        @if ($application)
+                                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        @endif
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="font-medium text-gray-900 text-sm">Application Submitted</p>
+                                        <p class="text-xs text-gray-600">
+                                            {{ $application?->created_at->format('M d, Y') ?? 'N/A' }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Under Review -->
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0">
+                                        @if ($application?->reviewed_at)
+                                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd"
+                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                    clip-rule="evenodd"></path>
+                                            </svg>
+                                        @else
+                                            <div class="w-6 h-6 border-2 border-yellow-400 rounded-full animate-pulse">
+                                            </div>
+                                        @endif
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="font-medium text-gray-900 text-sm">Under Review</p>
+                                        <p class="text-xs text-gray-600">
+                                            @if ($application?->reviewed_at)
+                                                {{ $application->reviewed_at->format('M d, Y') }}
+                                            @else
+                                                Waiting for review...
+                                            @endif
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <!-- Status Details -->
+                                <div class="border-t border-gray-200 pt-4 mt-4">
+                                    <div class="grid grid-cols-2 gap-3 text-xs">
+                                        <div>
+                                            <p class="text-gray-500 font-medium">Applied On</p>
+                                            <p class="font-semibold text-gray-900">
+                                                {{ $application?->created_at->diffForHumans() ?? 'N/A' }}</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-500 font-medium">Status</p>
+                                            <p
+                                                class="font-semibold {{ $application?->status === 'approved' ? 'text-green-600' : ($application?->status === 'rejected' ? 'text-red-600' : 'text-yellow-600') }}">
+                                                {{ ucfirst($application?->status ?? 'N/A') }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Company Info Card -->
                     <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">About Company</h3>
@@ -508,319 +534,7 @@
         </div>
     </div>
 
-    <!-- Application Modal -->
-    <div id="applicationModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title"
-        role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <!-- Background overlay -->
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                onclick="closeApplicationModal()"></div>
-
-            <!-- Modal -->
-            <div
-                class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <!-- Modal Header -->
-                <div class="px-4 sm:px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                    <h3 class="text-lg sm:text-xl font-semibold text-gray-900 break-words line-clamp-2" id="modal-title">
-                        Apply for {{ $job->title }}
-                    </h3>
-                    <button onclick="closeApplicationModal()"
-                        class="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 ml-2">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <!-- Modal Body -->
-                <form id="applicationForm" action="{{ route('student.jobs.apply', $job->id) }}" method="POST"
-                    enctype="multipart/form-data"
-                    class="p-4 sm:p-6 space-y-4 sm:space-y-6 max-h-96 sm:max-h-none overflow-y-auto">
-                    @csrf
-
-                    <!-- Cover Letter -->
-                    <div>
-                        <label for="cover_letter" class="block text-sm font-medium text-gray-700 mb-2">
-                            Cover Letter
-                            <span class="text-red-600">*</span>
-                        </label>
-                        <textarea id="cover_letter" name="cover_letter" rows="5" required
-                            class="w-full px-3 py-2 border @error('cover_letter') border-red-500 @else border-gray-300 @enderror rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm resize-none"
-                            placeholder="Tell us why you're interested and why you'd be a great fit..." value="{{ old('cover_letter') }}"></textarea>
-                        <p class="text-xs text-gray-500 mt-1">Minimum 50 characters</p>
-                        @error('cover_letter')
-                            <p class="text-xs text-red-600 mt-1 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M18.101 12.93a1 1 0 00-1.414-1.414L9 18.586 4.707 14.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0l9-9z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Resume Selection -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Resume / CV
-                            <span class="text-red-600">*</span>
-                        </label>
-                        <div class="space-y-2">
-                            @if (auth()->user()->studentProfile && auth()->user()->studentProfile->resume_path)
-                                <div
-                                    class="flex items-center p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-                                    <input type="radio" name="resume_option" value="existing" id="existingResume"
-                                        checked class="h-4 w-4 text-primary flex-shrink-0">
-                                    <label for="existingResume" class="ml-3 flex-1 cursor-pointer min-w-0">
-                                        <p class="text-sm font-medium text-gray-900">Use Current Resume</p>
-                                        <p class="text-xs text-gray-600 truncate">
-                                            {{ basename(auth()->user()->studentProfile->resume_path) }}</p>
-                                    </label>
-                                </div>
-                            @endif
-                            <div
-                                class="flex items-start p-3 bg-gray-50 border @error('resume_file') border-red-500 @else border-gray-200 @enderror rounded-lg">
-                                <input type="radio" name="resume_option" value="upload" id="uploadResume"
-                                    @if (!auth()->user()->studentProfile || !auth()->user()->studentProfile->resume_path) checked @endif
-                                    class="mt-1 h-4 w-4 text-primary flex-shrink-0">
-                                <label for="uploadResume" class="ml-3 flex-1 cursor-pointer min-w-0">
-                                    <p class="text-sm font-medium text-gray-900">Upload New Resume</p>
-                                    <p class="text-xs text-gray-600">Max 5MB (PDF, DOC, DOCX)</p>
-                                    <input type="file" name="resume_file" id="resumeFile" accept=".pdf,.doc,.docx"
-                                        class="mt-2 w-full text-xs"
-                                        onchange="document.getElementById('uploadResume').checked=true;">
-                                </label>
-                            </div>
-                        </div>
-                        @error('resume_file')
-                            <p class="text-xs text-red-600 mt-1 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Confirmation -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <label class="flex items-start cursor-pointer">
-                            <input type="checkbox" name="confirmApplication" id="confirmApplication" required
-                                class="mt-1 h-4 w-4 text-primary flex-shrink-0">
-                            <span class="ml-2 text-xs sm:text-sm text-gray-700">I confirm that the information is accurate
-                                and understand that false information may disqualify my application.</span>
-                        </label>
-                        @error('confirmApplication')
-                            <p class="text-xs text-red-600 mt-2 flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                {{ $message }}
-                            </p>
-                        @enderror
-                    </div>
-
-                    <!-- Modal Footer -->
-                    <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-gray-200">
-                        <button type="button" onclick="closeApplicationModal()"
-                            class="w-full sm:flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            class="w-full sm:flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium text-sm transition-colors">
-                            Submit Application
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Withdraw Confirmation Modal -->
-    <div id="withdrawConfirmModal" class="hidden fixed inset-0 z-50 overflow-y-auto"
-        aria-labelledby="withdraw-modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <!-- Background overlay -->
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                onclick="closeWithdrawModal()"></div>
-
-            <!-- Modal -->
-            <div
-                class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-sm sm:w-full">
-                <!-- Icon -->
-                <div class="flex items-center justify-center w-12 h-12 mx-auto mt-6 bg-red-100 rounded-full">
-                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16">
-                        </path>
-                    </svg>
-                </div>
-
-                <!-- Modal Body -->
-                <div class="px-4 sm:px-6 py-4 text-center">
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2" id="withdraw-modal-title">
-                        Withdraw Application?
-                    </h3>
-                    <p class="text-sm text-gray-600 mb-6">
-                        This action cannot be undone. Your application will be permanently deleted and you can apply again
-                        if needed.
-                    </p>
-
-                    <!-- Buttons -->
-                    <div class="flex flex-col-reverse sm:flex-row gap-3">
-                        <button type="button" onclick="closeWithdrawModal()"
-                            class="w-full sm:flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-sm transition-colors">
-                            Cancel
-                        </button>
-                        <button type="button" onclick="submitWithdraw()"
-                            class="w-full sm:flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium text-sm transition-colors">
-                            Yes, Withdraw
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let withdrawFormElement = null;
-
-        function applyForJob() {
-            document.getElementById('applicationModal').classList.remove('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function closeApplicationModal() {
-            document.getElementById('applicationModal').classList.add('hidden');
-            document.getElementById('applicationForm').reset();
-        }
-
-        function openWithdrawModal(applicationId) {
-            withdrawFormElement = document.querySelector(`form[data-application-id="${applicationId}"]`);
-            document.getElementById('withdrawConfirmModal').classList.remove('hidden');
-        }
-
-        function closeWithdrawModal() {
-            document.getElementById('withdrawConfirmModal').classList.add('hidden');
-            withdrawFormElement = null;
-        }
-
-        function submitWithdraw() {
-            if (withdrawFormElement) {
-                withdrawFormElement.submit();
-            }
-        }
-
-        function toggleDescription() {
-            const container = document.getElementById('descriptionContainer');
-            const toggle = document.getElementById('descriptionToggle');
-            const icon = document.getElementById('descriptionIcon');
-
-            if (container.style.maxHeight === '400px') {
-                container.style.maxHeight = 'none';
-                toggle.textContent = 'Read Less';
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                container.style.maxHeight = '400px';
-                toggle.textContent = 'Read More';
-                icon.style.transform = 'rotate(0deg)';
-            }
-        }
-
-        function toggleRequirements() {
-            const container = document.getElementById('requirementsContainer');
-            const toggle = document.getElementById('requirementsToggle');
-            const icon = document.getElementById('requirementsIcon');
-
-            if (container.style.maxHeight === '400px') {
-                container.style.maxHeight = 'none';
-                toggle.textContent = 'Read Less';
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                container.style.maxHeight = '400px';
-                toggle.textContent = 'Read More';
-                icon.style.transform = 'rotate(0deg)';
-            }
-        }
-
-        function toggleBenefits() {
-            const container = document.getElementById('benefitsContainer');
-            const toggle = document.getElementById('benefitsToggle');
-            const icon = document.getElementById('benefitsIcon');
-
-            if (container.style.maxHeight === '400px') {
-                container.style.maxHeight = 'none';
-                toggle.textContent = 'Read Less';
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                container.style.maxHeight = '400px';
-                toggle.textContent = 'Read More';
-                icon.style.transform = 'rotate(0deg)';
-            }
-        }
-
-        function toggleCompanyDesc() {
-            const container = document.getElementById('companyDescContainer');
-            const toggle = document.getElementById('companyDescToggle');
-            const icon = document.getElementById('companyDescIcon');
-
-            if (container.style.maxHeight === '200px') {
-                container.style.maxHeight = 'none';
-                toggle.textContent = 'Read Less';
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                container.style.maxHeight = '200px';
-                toggle.textContent = 'Read More';
-                icon.style.transform = 'rotate(0deg)';
-            }
-        }
-
-        function shareJob(platform) {
-            const jobTitle = "{{ $job->title }}";
-            const jobUrl = window.location.href;
-            const shareText = `Check out this job opportunity: ${jobTitle}`;
-
-            let url;
-            if (platform === 'facebook') {
-                url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(jobUrl)}`;
-            } else if (platform === 'twitter') {
-                url =
-                    `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(jobUrl)}`;
-            } else if (platform === 'linkedin') {
-                url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(jobUrl)}`;
-            }
-
-            if (url) {
-                window.open(url, '_blank', 'width=600,height=400');
-            }
-        }
-
-        // Close modal when clicking outside
-        document.getElementById('applicationModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeApplicationModal();
-            }
-        });
-
-        document.getElementById('withdrawConfirmModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeWithdrawModal();
-            }
-        });
-
-        // Close modal on Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeApplicationModal();
-                closeWithdrawModal();
-            }
-        });
-    </script>
-
+    @include('users.student.jobs.application-modal')
+    @include('users.student.jobs.withdraw-modal')
+    @include('users.student.jobs.script')
 @endsection
