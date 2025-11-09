@@ -131,6 +131,10 @@ class StudentJobController extends Controller
         }
     }
 
+    /**
+     * Apply for a job posting
+     * ✅ FIXED: Updated route name to use student.applications
+     */
     public function apply(JobPosting $job, Request $request): RedirectResponse
     {
         try {
@@ -205,7 +209,8 @@ class StudentJobController extends Controller
                 // Don't fail the application if logging fails
             }
 
-            return redirect()->route('student.jobs.applications.show', $application->id)
+            // ✅ FIXED: Using correct route name for outside applications group
+            return redirect()->route('student.applications.show', $application->id)
                 ->with('success', 'Application submitted!');
         } catch (\Exception $e) {
             \Log::error('Apply error: ' . $e->getMessage());
@@ -213,19 +218,34 @@ class StudentJobController extends Controller
         }
     }
 
-
-
     /**
      * View student's job applications
+     */
+    /**
+     * View student's job applications with search
      */
     public function applications(): View
     {
         try {
-            $applications = JobApplication::where('applicant_id', auth()->id())
+            $query = JobApplication::where('applicant_id', auth()->id())
                 ->where('applicant_type', 'student')
-                ->with(['jobPosting', 'applicant'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
+                ->with(['jobPosting', 'applicant']);
+
+            // Search by job title or company name
+            if (request('search')) {
+                $search = request('search');
+                $query->whereHas('jobPosting', function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('department', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter by status
+            if (request('status')) {
+                $query->where('status', request('status'));
+            }
+
+            $applications = $query->orderBy('created_at', 'desc')->paginate(10);
 
             // Count by status
             $statuses = [
@@ -253,10 +273,12 @@ class StudentJobController extends Controller
         }
     }
 
+
     /**
      * View single job application details
+     * Redirects to job posting instead of separate page
      */
-    public function viewApplication(JobApplication $application): View
+    public function viewApplication(JobApplication $application): RedirectResponse
     {
         try {
             // Check authorization
@@ -264,12 +286,13 @@ class StudentJobController extends Controller
                 abort(403, 'You do not have permission to view this application.');
             }
 
-            return view('users.student.applications.show', [
-                'application' => $application,
-            ]);
+            // Redirect to the job posting details page
+            return redirect()->route('student.jobs.show', $application->jobPosting->id)
+                ->with('info', 'Viewing the job posting for your application.');
         } catch (\Exception $e) {
             \Log::error('Application view error: ' . $e->getMessage());
-            abort(500, 'An error occurred while loading this application.');
+            return redirect()->route('student.applications.index')
+                ->with('error', 'Unable to redirect to job posting.');
         }
     }
 }

@@ -6,12 +6,18 @@
 <div class="bg-gray-50 min-h-screen">
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <!-- Header -->
-        <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Job Opportunities</h1>
-            <p class="text-gray-600">
-                Discover career opportunities from registered partner organizations tailored for PCU-DASMA students and alumni
-            </p>
+        <!-- Header with View Applications Button -->
+        <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Job Opportunities</h1>
+                <p class="text-gray-600">
+                    Discover career opportunities from registered partner organizations tailored for PCU-DASMA students and alumni
+                </p>
+            </div>
+            <!-- ✅ VIEW APPLICATIONS BUTTON -->
+            <a href="{{ route('student.applications.index') }}" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors whitespace-nowrap text-center">
+                View Applications
+            </a>
         </div>
 
         <!-- Search and Filters -->

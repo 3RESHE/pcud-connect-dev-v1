@@ -1,473 +1,253 @@
 @extends('layouts.student')
 
-@section('title', $job->title . ' - PCU-DASMA Connect')
+@section('title', 'My Applications - PCU-DASMA Connect')
+@section('page-title', 'My Job Applications')
 
 @section('content')
     <div class="bg-gray-50 min-h-screen">
         <!-- Main Content -->
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <!-- Back Button -->
-            <div class="mb-6">
+
+
+            <!-- Header Section -->
+            <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">My Job Applications</h1>
+                    <p class="text-gray-600">Track and manage all your job applications</p>
+                </div>
                 <a href="{{ route('student.jobs.index') }}"
-                    class="inline-flex items-center text-primary hover:text-blue-700 font-medium text-sm">
-                    <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                    Back to Job Opportunities
+                    class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium transition-colors whitespace-nowrap text-center">
+                    Apply for Jobs
                 </a>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                <!-- Main Content -->
-                <div class="lg:col-span-2 space-y-4 sm:space-y-6">
-                    <!-- Job Header -->
-                    <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                        <!-- Badges -->
-                        <div class="flex flex-wrap items-center mb-4 gap-2">
-                            @if ($job->is_featured)
-                                <span
-                                    class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs sm:text-sm font-medium">Featured</span>
-                            @endif
-                            <span
-                                class="@if ($job->job_type === 'fulltime') bg-blue-100 text-blue-800 @elseif($job->job_type === 'parttime') bg-purple-100 text-purple-800 @elseif($job->job_type === 'internship') bg-yellow-100 text-yellow-800 @else bg-orange-100 text-orange-800 @endif px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                                {{ $job->getJobTypeDisplay() }}
-                            </span>
-                            @if ($alreadyApplied)
-                                <span
-                                    class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs sm:text-sm font-medium">Applied</span>
-                            @endif
+            <!-- Statistics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Pending Applications -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Pending</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ $statuses['pending'] }}</p>
                         </div>
-
-                        <!-- Title - No Line Clamp -->
-                        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">
-                            {{ $job->title }}</h1>
-
-                        <!-- Job Info Grid - Fully Responsive -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-xs sm:text-sm text-gray-600">
-                            <!-- Company -->
-                            <div class="flex items-start sm:items-center gap-2 min-w-0">
-                                <svg class="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0 text-gray-400 mt-0.5 sm:mt-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                    </path>
-                                </svg>
-                                <span
-                                    class="font-semibold break-words">{{ $job->partnerProfile->company_name ?? 'N/A' }}</span>
-                            </div>
-
-                            <!-- Location -->
-                            <div class="flex items-start sm:items-center gap-2 min-w-0">
-                                <svg class="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0 text-gray-400 mt-0.5 sm:mt-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z">
-                                    </path>
-                                </svg>
-                                <span class="break-words">{{ $job->location ?? 'Remote' }}</span>
-                            </div>
-
-                            <!-- Department -->
-                            <div class="flex items-start sm:items-center gap-2 min-w-0">
-                                <svg class="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0 text-gray-400 mt-0.5 sm:mt-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V6a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2V8a2 2 0 012-2V6">
-                                    </path>
-                                </svg>
-                                <span class="break-words">{{ $job->department ?? 'N/A' }}</span>
-                            </div>
-
-                            <!-- Posted -->
-                            <div class="flex items-start sm:items-center gap-2 min-w-0">
-                                <svg class="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0 text-gray-400 mt-0.5 sm:mt-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="break-words">Posted {{ $job->created_at->diffForHumans() }}</span>
-                            </div>
-
-                            <!-- Applicants -->
-                            <div class="flex items-start sm:items-center gap-2">
-                                <svg class="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0 text-gray-400 mt-0.5 sm:mt-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 715.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 919.288 0M15 7a3 3 0 11-6 0 3 3 0 616 0zm6 3a2 2 0 11-4 0 2 2 0 614 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z">
-                                    </path>
-                                </svg>
-                                <span class="break-words">{{ $applicantCount }} applicants</span>
-                            </div>
-
-                            <!-- Work Setup -->
-                            <div class="flex items-start sm:items-center gap-2 min-w-0">
-                                <svg class="w-4 sm:w-5 h-4 sm:h-5 flex-shrink-0 text-gray-400 mt-0.5 sm:mt-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                    </path>
-                                </svg>
-                                <span class="break-words">{{ $job->getWorkSetupDisplay() ?? 'N/A' }}</span>
-                            </div>
-                        </div>
-
-                        <!-- Salary -->
-                        <div class="text-xl sm:text-2xl font-bold text-green-600 mb-4 break-words">
-                            {{ $job->getSalaryRangeDisplay() }}
-                        </div>
-
-                        <!-- Action Buttons -->
-                        @if (!$alreadyApplied)
-                            <button onclick="applyForJob()"
-                                class="w-full sm:w-auto px-6 sm:px-8 py-2 sm:py-3 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium transition-colors text-sm sm:text-base">
-                                Apply Now
-                            </button>
-                        @else
-                            <div
-                                class="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-green-50 border border-green-200 rounded-lg">
-                                <svg class="w-4 sm:w-5 h-4 sm:h-5 text-green-600 flex-shrink-0" fill="none"
-                                    stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <span class="text-green-700 font-medium text-xs sm:text-sm">Application Submitted</span>
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Job Description -->
-                    <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                        <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
-                        <div
-                            class="text-gray-600 leading-relaxed space-y-3 text-sm sm:text-base break-words whitespace-pre-wrap">
-                            {!! nl2br(e($job->description)) !!}
-                        </div>
-                    </div>
-
-                    <!-- Requirements -->
-                    @if ($job->requirements)
-                        <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Requirements</h2>
-                            <div
-                                class="text-gray-600 leading-relaxed space-y-2 text-sm sm:text-base break-words whitespace-pre-wrap">
-                                {!! nl2br(e($job->requirements)) !!}
-                            </div>
-                        </div>
-                    @endif
-
-                    <!-- Benefits -->
-                    @if ($job->benefits)
-                        <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Benefits & Perks</h2>
-                            <ul class="list-disc list-inside text-gray-700 space-y-2 text-sm sm:text-base">
-                                @foreach (explode("\n", $job->benefits) as $benefit)
-                                    @if (trim($benefit))
-                                        <li class="break-words">{{ trim($benefit) }}</li>
-                                    @endif
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
-
-                    <!-- Related Jobs -->
-                    @if ($relatedJobs->count() > 0)
-                        <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                            <h2 class="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Similar Opportunities</h2>
-                            <div class="space-y-3">
-                                @foreach ($relatedJobs as $relatedJob)
-                                    <div
-                                        class="p-3 sm:p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
-                                        <div class="flex flex-col sm:flex-row justify-between items-start gap-3">
-                                            <div class="flex-1 min-w-0 w-full">
-                                                <h3 class="font-semibold text-gray-900 text-sm sm:text-base break-words">
-                                                    {{ $relatedJob->title }}</h3>
-                                                <p class="text-xs sm:text-sm text-gray-600 break-words">
-                                                    {{ $relatedJob->partnerProfile->company_name ?? 'N/A' }} ·
-                                                    {{ $relatedJob->location ?? 'Remote' }}</p>
-                                            </div>
-                                            <a href="{{ route('student.jobs.show', $relatedJob->id) }}"
-                                                class="text-primary hover:text-blue-700 font-medium text-xs sm:text-sm whitespace-nowrap flex-shrink-0">View</a>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                </div>
-
-                <!-- Sidebar -->
-                <div class="space-y-4 sm:space-y-6">
-                    <!-- Quick Info Card -->
-                    <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6 sticky top-4">
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">Job Details</h3>
-                        <div class="space-y-3 text-xs sm:text-sm">
-                            <div>
-                                <div class="text-gray-500 text-xs font-medium">Job Type</div>
-                                <div class="font-semibold text-gray-900 break-words">{{ $job->getJobTypeDisplay() }}</div>
-                            </div>
-                            <div>
-                                <div class="text-gray-500 text-xs font-medium">Experience Level</div>
-                                <div class="font-semibold text-gray-900 break-words">
-                                    {{ $job->getExperienceLevelDisplay() }}</div>
-                            </div>
-                            <div>
-                                <div class="text-gray-500 text-xs font-medium">Work Setup</div>
-                                <div class="font-semibold text-gray-900 break-words">
-                                    {{ $job->getWorkSetupDisplay() ?? 'N/A' }}</div>
-                            </div>
-                            <div class="border-t border-gray-200 pt-3">
-                                <div class="text-gray-500 text-xs font-medium">Positions Available</div>
-                                <div class="font-semibold text-gray-900">{{ $job->positions_available ?? 'N/A' }}</div>
-                            </div>
-                            <div>
-                                <div class="text-gray-500 text-xs font-medium">Total Applicants</div>
-                                <div class="font-semibold text-gray-900">{{ $applicantCount }}</div>
-                            </div>
-                            <div>
-                                <div class="text-gray-500 text-xs font-medium">Application Deadline</div>
-                                <div
-                                    class="font-semibold @if ($job->application_deadline < now()) text-red-600 @else text-gray-900 @endif">
-                                    {{ $job->application_deadline->format('M d, Y') }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Company Info Card -->
-                    <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">About Company</h3>
-
-                        <div
-                            class="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 rounded-lg flex items-center justify-center mb-4 flex-shrink-0">
-                            <svg class="w-6 sm:w-8 h-6 sm:h-8 text-blue-600" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
+                        <div class="bg-yellow-100 rounded-full p-3">
+                            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4">
-                                </path>
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-
-                        <p class="text-xs sm:text-sm text-gray-600 mb-4 break-words">
-                            {{ $job->partnerProfile->company_description ?? 'Information about the company is not available.' }}
-                        </p>
-
-                        <div class="space-y-3 mb-4 text-xs">
-                            @if ($job->partnerProfile->company_size)
-                                <div>
-                                    <div class="text-gray-500 font-medium">Company Size</div>
-                                    <div class="text-gray-900 break-words">{{ $job->partnerProfile->company_size }}</div>
-                                </div>
-                            @endif
-                            @if ($job->partnerProfile->industry)
-                                <div>
-                                    <div class="text-gray-500 font-medium">Industry</div>
-                                    <div class="text-gray-900 break-words">{{ $job->partnerProfile->industry }}</div>
-                                </div>
-                            @endif
-                            @if ($job->partnerProfile->year_established)
-                                <div>
-                                    <div class="text-gray-500 font-medium">Founded</div>
-                                    <div class="text-gray-900">{{ $job->partnerProfile->year_established }}</div>
-                                </div>
-                            @endif
-                        </div>
-
-                        @if ($job->partnerProfile->company_website)
-                            <a href="{{ $job->partnerProfile->company_website }}" target="_blank"
-                                rel="noopener noreferrer"
-                                class="text-primary hover:text-blue-700 font-medium text-xs sm:text-sm inline-flex items-center gap-1 break-all">
-                                Visit Website
-                                <svg class="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14">
-                                    </path>
-                                </svg>
-                            </a>
-                        @endif
                     </div>
+                </div>
 
-                    <!-- Contact Info -->
-                    @if ($job->partnerProfile->contact_email || $job->partnerProfile->contact_phone || $job->partnerProfile->address)
-                        <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
-                            <h3 class="text-base sm:text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-                            <div class="space-y-3 text-xs sm:text-sm">
-                                @if ($job->partnerProfile->contact_email)
-                                    <div>
-                                        <div class="text-gray-500 text-xs font-medium mb-1">Email Address</div>
-                                        <a href="mailto:{{ $job->partnerProfile->contact_email }}"
-                                            class="text-primary hover:text-blue-700 break-all inline-block">
-                                            {{ $job->partnerProfile->contact_email }}
-                                        </a>
-                                    </div>
-                                @endif
-                                @if ($job->partnerProfile->contact_phone)
-                                    <div>
-                                        <div class="text-gray-500 text-xs font-medium mb-1">Phone Number</div>
-                                        <a href="tel:{{ $job->partnerProfile->contact_phone }}"
-                                            class="text-primary hover:text-blue-700 block break-all">
-                                            {{ $job->partnerProfile->contact_phone }}
-                                        </a>
-                                    </div>
-                                @endif
-                                @if ($job->partnerProfile->address)
-                                    <div>
-                                        <div class="text-gray-500 text-xs font-medium mb-1">Office Address</div>
-                                        <p class="text-gray-900 break-words">{{ $job->partnerProfile->address }}</p>
-                                    </div>
-                                @endif
-                            </div>
+                <!-- Approved Applications -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Approved</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ $statuses['approved'] }}</p>
                         </div>
-                    @endif
+                        <div class="bg-green-100 rounded-full p-3">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rejected Applications -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-gray-600 text-sm font-medium">Rejected</p>
+                            <p class="text-3xl font-bold text-gray-900">{{ $statuses['rejected'] }}</p>
+                        </div>
+                        <div class="bg-red-100 rounded-full p-3">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2"></path>
+                            </svg>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Application Modal -->
-    <div id="applicationModal" class="hidden fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title"
-        role="dialog" aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"
-                onclick="closeApplicationModal()"></div>
-
-            <div
-                class="relative inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                <div class="px-4 sm:px-6 py-4 border-b border-gray-200 flex justify-between items-center gap-4">
-                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words" id="modal-title">
-                        Apply for {{ $job->title }}
-                    </h3>
-                    <button onclick="closeApplicationModal()"
-                        class="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
-                        </svg>
-                    </button>
-                </div>
-
-                <form id="applicationForm" action="{{ route('student.jobs.apply', $job->id) }}" method="POST"
-                    enctype="multipart/form-data" class="p-4 sm:p-6 space-y-4 sm:space-y-6">
-                    @csrf
-
-                    <div>
-                        <label for="cover_letter" class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Cover
-                            Letter</label>
-                        <textarea id="cover_letter" name="cover_letter" rows="5" required
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-xs sm:text-sm resize-none"
-                            placeholder="Tell us why you're interested..."></textarea>
-                        <p class="text-xs text-gray-500 mt-1">Minimum 50 characters</p>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Resume / CV</label>
-                        <div class="space-y-2">
-                            @if (auth()->user()->studentProfile && auth()->user()->studentProfile->resume_path)
-                                <div
-                                    class="flex items-center p-3 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-100 transition-colors">
-                                    <input type="radio" name="resume_option" value="existing" id="existingResume"
-                                        checked class="h-4 w-4 text-primary flex-shrink-0">
-                                    <label for="existingResume" class="ml-3 flex-1 cursor-pointer min-w-0">
-                                        <p class="text-xs sm:text-sm font-medium text-gray-900">Use Current Resume</p>
-                                        <p class="text-xs text-gray-600 truncate">
-                                            {{ basename(auth()->user()->studentProfile->resume_path) }}</p>
-                                    </label>
-                                </div>
-                            @endif
-                            <div class="flex items-start p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                                <input type="radio" name="resume_option" value="upload" id="uploadResume"
-                                    class="mt-1 h-4 w-4 text-primary flex-shrink-0">
-                                <label for="uploadResume" class="ml-3 flex-1 cursor-pointer min-w-0">
-                                    <p class="text-xs sm:text-sm font-medium text-gray-900">Upload New Resume</p>
-                                    <p class="text-xs text-gray-600">Max 5MB (PDF, DOC, DOCX)</p>
-                                    <input type="file" name="resume_file" id="resumeFile" accept=".pdf,.doc,.docx"
-                                        class="mt-2 w-full text-xs"
-                                        onchange="document.getElementById('uploadResume').checked=true;">
-                                </label>
-                            </div>
+            <!-- Search and Filter Section -->
+            <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+                <form action="{{ route('student.applications.index') }}" method="GET">
+                    <div class="flex flex-col sm:flex-row gap-3">
+                        <!-- Search Input -->
+                        <div class="flex-1">
+                            <input type="text" name="search" placeholder="Search by job title or company..."
+                                value="{{ request('search') }}"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary" />
                         </div>
-                    </div>
 
-                    <div>
-                        <label for="additional_documents"
-                            class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Additional Documents
-                            (Optional)</label>
-                        <p class="text-xs text-gray-600 mb-2">Portfolio, certificates, etc.</p>
-                        <input type="file" name="additional_documents[]" id="additional_documents" multiple
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" class="w-full text-xs">
-                        <p class="text-xs text-gray-500 mt-1">Max 10MB each</p>
-                    </div>
+                        <!-- Status Filter -->
+                        <div>
+                            <select name="status"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                                <option value="">All Status</option>
+                                <option value="pending" @if (request('status') === 'pending') selected @endif>Pending</option>
+                                <option value="approved" @if (request('status') === 'approved') selected @endif>Approved</option>
+                                <option value="rejected" @if (request('status') === 'rejected') selected @endif>Rejected</option>
+                            </select>
+                        </div>
 
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <label class="flex items-start cursor-pointer">
-                            <input type="checkbox" name="confirmApplication" id="confirmApplication" required
-                                class="mt-1 h-4 w-4 text-primary flex-shrink-0">
-                            <span class="ml-2 text-xs text-gray-700">I confirm the information is accurate and understand
-                                false information may disqualify my application.</span>
-                        </label>
-                    </div>
-
-                    <div class="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-gray-200">
-                        <button type="button" onclick="closeApplicationModal()"
-                            class="w-full sm:flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-xs sm:text-sm transition-colors">
-                            Cancel
-                        </button>
+                        <!-- Search Button -->
                         <button type="submit"
-                            class="w-full sm:flex-1 px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium text-xs sm:text-sm transition-colors">
-                            Submit
+                            class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium transition-colors whitespace-nowrap">
+                            Search
                         </button>
+
+                        <!-- Clear Button -->
+                        <a href="{{ route('student.applications.index') }}"
+                            class="px-6 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 font-medium transition-colors whitespace-nowrap text-center">
+                            Clear
+                        </a>
                     </div>
                 </form>
             </div>
+
+
+            <!-- Applications List -->
+            <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Application Timeline</h3>
+                </div>
+
+                @forelse($applications as $application)
+                    <div class="border-b border-gray-200 last:border-b-0">
+                        <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                            <!-- Application Header -->
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
+                                <div class="flex-1">
+                                    <!-- Job Title -->
+                                    <h4 class="text-lg font-semibold text-gray-900 mb-1">
+                                        {{ $application->jobPosting?->title ?? 'Job Posting' }}
+                                    </h4>
+                                    <!-- Company Name -->
+                                    <p class="text-gray-600 text-sm">
+                                        <span class="font-medium">Company:</span>
+                                        {{ $application->jobPosting?->partnerProfile?->company_name ?? 'N/A' }}
+                                    </p>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div>
+                                    @if ($application->status === 'pending')
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                            Pending Review
+                                        </span>
+                                    @elseif($application->status === 'approved')
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                            Approved
+                                        </span>
+                                    @elseif($application->status === 'rejected')
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                            Rejected
+                                        </span>
+                                    @else
+                                        <span
+                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                            {{ ucfirst($application->status) }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Application Details -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 text-sm text-gray-600">
+                                <!-- Job Type -->
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Job Type</p>
+                                    <p class="font-medium">{{ ucfirst($application->jobPosting?->job_type ?? 'N/A') }}</p>
+                                </div>
+
+                                <!-- Location -->
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Location</p>
+                                    <p class="font-medium">{{ $application->jobPosting?->location ?? 'Remote' }}</p>
+                                </div>
+
+                                <!-- Applied Date -->
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Applied On</p>
+                                    <p class="font-medium">{{ $application->created_at->format('M d, Y') }}</p>
+                                </div>
+
+                                <!-- Status Update -->
+                                <div>
+                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Status Update</p>
+                                    <p class="font-medium">{{ $application->updated_at->diffForHumans() }}</p>
+                                </div>
+                            </div>
+
+                            <!-- Application Meta -->
+                            <div
+                                class="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">
+                                @if ($application->jobPosting?->salary_min && $application->jobPosting?->salary_max)
+                                    <div class="flex items-center">
+                                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
+                                            </path>
+                                        </svg>
+                                        <span class="font-semibold text-green-600">
+                                            PHP {{ number_format($application->jobPosting->salary_min) }} - PHP
+                                            {{ number_format($application->jobPosting->salary_max) }}
+                                        </span>
+                                    </div>
+                                @endif
+                                <div class="flex items-center">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Application ID: {{ $application->id }}
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap gap-3">
+                                @if ($application->jobPosting)
+                                    <a href="{{ route('student.applications.show', $application->id) }}"
+                                        class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-blue-700 font-medium transition-colors">
+                                        View Application Details
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @empty
+                    <!-- Empty State -->
+                    <div class="px-6 py-12 text-center">
+                        <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4">
+                            </path>
+                        </svg>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">No applications yet</h3>
+                        <p class="text-gray-600 mb-6">Start exploring job opportunities and submit your first application
+                        </p>
+                        <a href="{{ route('student.jobs.index') }}"
+                            class="inline-block px-6 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium transition-colors">
+                            Browse Jobs
+                        </a>
+                    </div>
+                @endforelse
+            </div>
+
+            <!-- Pagination -->
+            @if ($applications->hasPages())
+                <div class="mt-8">
+                    {{ $applications->links('pagination::tailwind') }}
+                </div>
+            @endif
         </div>
-
-        <!-- Add this INSIDE the Modal Body after opening the form, before the fields -->
-
-        @if ($errors->any())
-            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <h4 class="text-sm font-medium text-red-800 mb-2">Application Errors:</h4>
-                <ul class="list-disc list-inside text-xs text-red-700 space-y-1">
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p class="text-xs text-red-700">{{ session('error') }}</p>
-            </div>
-        @endif
-
-        @if (session('success'))
-            <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p class="text-xs text-green-700">{{ session('success') }}</p>
-            </div>
-        @endif
-
     </div>
-
-    <script>
-        function applyForJob() {
-            document.getElementById('applicationModal').classList.remove('hidden');
-        }
-
-        function closeApplicationModal() {
-            document.getElementById('applicationModal').classList.add('hidden');
-            document.getElementById('applicationForm').reset();
-        }
-
-        document.getElementById('applicationModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeApplicationModal();
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                closeApplicationModal();
-            }
-        });
-    </script>
 @endsection
