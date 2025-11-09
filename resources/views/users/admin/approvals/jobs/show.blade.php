@@ -108,23 +108,55 @@
                 <!-- Job Content -->
                 <div class="bg-white shadow rounded-lg p-6">
                     <h2 class="text-xl font-semibold text-gray-900 mb-4">Job Description</h2>
-                    <div class="prose max-w-none">
-                        <p class="text-gray-700 mb-4 whitespace-pre-wrap break-words">{{ $jobPosting->description }}</p>
+                    <div class="prose max-w-none space-y-4">
+                        <p class="text-gray-700 whitespace-pre-wrap break-words">{{ $jobPosting->description }}</p>
 
-                        @if ($jobPosting->requirements)
-                            <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3">Requirements</h3>
-                            <p class="text-gray-700 whitespace-pre-wrap break-words">{{ $jobPosting->requirements }}</p>
+                        @php
+                            $skills = is_string($jobPosting->technical_skills)
+                                ? json_decode($jobPosting->technical_skills, true)
+                                : ($jobPosting->technical_skills ?? []);
+                            $skills = is_array($skills) ? $skills : [];
+                        @endphp
+
+                        @if(!empty($skills))
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Technical Skills Required</h3>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach($skills as $skill)
+                                        <span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-lg break-words inline-block">
+                                            {{ $skill }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
+
+                        @if ($jobPosting->education_requirements)
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Education Requirements</h3>
+                                <p class="text-gray-700 whitespace-pre-wrap break-words">{{ $jobPosting->education_requirements }}</p>
+                            </div>
+                        @endif
+
+                        @if ($jobPosting->experience_requirements)
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Experience Requirements</h3>
+                                <p class="text-gray-700 whitespace-pre-wrap break-words">{{ $jobPosting->experience_requirements }}</p>
+                            </div>
                         @endif
 
                         @if ($jobPosting->benefits)
-                            <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3">Benefits & Perks</h3>
-                            <p class="text-gray-700 whitespace-pre-wrap break-words">{{ $jobPosting->benefits }}</p>
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Benefits & Perks</h3>
+                                <p class="text-gray-700 whitespace-pre-wrap break-words">{{ $jobPosting->benefits }}</p>
+                            </div>
                         @endif
 
-                        @if ($jobPosting->application_instructions)
-                            <h3 class="text-lg font-semibold text-gray-900 mt-6 mb-3">Application Process</h3>
-                            <p class="text-gray-700 whitespace-pre-wrap break-words">
-                                {{ $jobPosting->application_instructions }}</p>
+                        @if ($jobPosting->application_process)
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-3">Application Process</h3>
+                                <p class="text-gray-700 whitespace-pre-wrap break-words">{{ $jobPosting->application_process }}</p>
+                            </div>
                         @endif
                     </div>
                 </div>
@@ -173,6 +205,7 @@
                     </div>
                 </div>
             </div>
+
             <!-- Sidebar -->
             <div class="space-y-6">
                 <!-- Review Actions -->
@@ -194,7 +227,8 @@
                     <div class="bg-white shadow rounded-lg p-6">
                         <h2 class="text-lg font-semibold text-gray-900 mb-4">Post Actions</h2>
                         <div class="space-y-3">
-                            <button type="button" id="featureBtn" onclick="toggleFeature()"
+                            <!-- ✅ Feature Button with Confirmation Modal -->
+                            <button type="button" id="featureBtn" onclick="openFeatureModal()"
                                 class="w-full px-4 py-2 border border-yellow-300 text-yellow-700 rounded-md hover:bg-yellow-50 focus:outline-none focus:ring-2 focus:ring-yellow-500 flex items-center justify-center font-medium text-sm transition-colors">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -234,8 +268,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-900">Partnership Status</p>
-                            <span class="text-sm text-gray-600 px-2 py-1 bg-green-100 text-green-800 rounded">Active
-                                Partner</span>
+                            <span class="text-sm text-gray-600 px-2 py-1 bg-green-100 text-green-800 rounded">Active Partner</span>
                         </div>
                     </div>
                 </div>
@@ -291,19 +324,15 @@
                     @csrf
                     <div class="px-6 py-8">
                         <div class="flex items-center justify-center mb-4">
-                            <div
-                                class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
-                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M5 13l4 4L19 7" />
+                            <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                                <svg class="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                                 </svg>
                             </div>
                         </div>
                         <h3 class="text-lg font-medium text-gray-900 mb-2">Approve Job Posting</h3>
                         <p class="text-sm text-gray-600">
-                            Are you sure you want to approve and publish this job posting? It will become visible to all
-                            alumni immediately.
+                            Are you sure you want to approve and publish this job posting? It will become visible to all alumni immediately.
                         </p>
                     </div>
                     <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
@@ -331,10 +360,8 @@
                     <div class="px-6 py-8">
                         <div class="flex items-center justify-center mb-4">
                             <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                         </div>
@@ -368,6 +395,42 @@
         </div>
     </div>
 
+    <!-- ✅ Feature/Unfeature Confirmation Modal (NEW) -->
+    <div id="featureModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeFeatureModal()"></div>
+            <div class="relative bg-white rounded-lg max-w-md w-full shadow-xl mx-auto">
+                <form id="featureForm" action="" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <div class="px-6 py-8">
+                        <div class="flex items-center justify-center mb-4">
+                            <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                                <svg class="h-6 w-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2" id="featureModalTitle">Feature Job Posting</h3>
+                        <p class="text-sm text-gray-600" id="featureModalMessage">
+                            Are you sure you want to feature this job posting? Featured jobs are displayed prominently on the platform.
+                        </p>
+                    </div>
+                    <div class="px-6 py-4 border-t border-gray-200 flex justify-end gap-3">
+                        <button type="button" onclick="closeFeatureModal()"
+                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm font-medium" id="featureConfirmBtn">
+                            Feature Job
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Unpublish Modal -->
     <div id="unpublishModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
@@ -378,12 +441,9 @@
                     @method('PUT')
                     <div class="px-6 py-8">
                         <div class="flex items-center justify-center mb-4">
-                            <div
-                                class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
-                                <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
+                            <div class="flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                                <svg class="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
                             </div>
                         </div>
@@ -393,7 +453,7 @@
 
                         <div class="text-left">
                             <textarea name="unpublish_reason" rows="4"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent text-sm"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                                 placeholder="Enter reason for unpublishing"></textarea>
                         </div>
                     </div>
@@ -404,7 +464,7 @@
                             Cancel
                         </button>
                         <button type="submit"
-                            class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 text-sm font-medium">
+                            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm font-medium">
                             Unpublish Job
                         </button>
                     </div>
@@ -431,7 +491,35 @@
             document.getElementById('rejection_reason').value = '';
         }
 
+        // ✅ Feature Modal Functions (NEW)
+        function openFeatureModal() {
+            const isFeatured = {{ $jobPosting->is_featured ? 'true' : 'false' }};
+            const form = document.getElementById('featureForm');
+            const title = document.getElementById('featureModalTitle');
+            const message = document.getElementById('featureModalMessage');
+            const button = document.getElementById('featureConfirmBtn');
+
+            if (isFeatured) {
+                form.action = '{{ route("admin.jobs.unfeature", $jobPosting->id) }}';
+                title.textContent = 'Unfeature Job Posting';
+                message.textContent = 'Are you sure you want to unfeature this job posting? It will no longer be displayed prominently.';
+                button.textContent = 'Unfeature Job';
+            } else {
+                form.action = '{{ route("admin.jobs.feature", $jobPosting->id) }}';
+                title.textContent = 'Feature Job Posting';
+                message.textContent = 'Are you sure you want to feature this job posting? Featured jobs are displayed prominently on the platform.';
+                button.textContent = 'Feature Job';
+            }
+
+            document.getElementById('featureModal').classList.remove('hidden');
+        }
+
+        function closeFeatureModal() {
+            document.getElementById('featureModal').classList.add('hidden');
+        }
+
         function openUnpublishModal() {
+            document.getElementById('unpublishForm').action = '{{ route("admin.jobs.unpublish", $jobPosting->id) }}';
             document.getElementById('unpublishModal').classList.remove('hidden');
         }
 
@@ -439,28 +527,12 @@
             document.getElementById('unpublishModal').classList.add('hidden');
         }
 
-        function toggleFeature() {
-            const btn = document.getElementById('featureBtn');
-            const isFeatured = {{ $jobPosting->is_featured ? 'true' : 'false' }};
-
-            if (!isFeatured) {
-                btn.innerHTML = `
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-            </svg>
-            Unfeature Job
-        `;
-                btn.classList.remove('border-yellow-300', 'text-yellow-700', 'hover:bg-yellow-50');
-                btn.classList.add('bg-yellow-600', 'text-white', 'hover:bg-yellow-700');
-                alert('Job has been marked as featured!');
-            }
-        }
-
         // Close modals on ESC key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeApproveModal();
                 closeRejectModal();
+                closeFeatureModal();
                 closeUnpublishModal();
             }
         });

@@ -89,6 +89,15 @@ class JobApprovalController extends Controller
     }
 
     /**
+     * Show job posting details
+     */
+    public function show($id)
+    {
+        $jobPosting = JobPosting::with(['partner', 'partnerProfile'])->findOrFail($id);
+        return view('users.admin.approvals.jobs.show', compact('jobPosting'));
+    }
+
+    /**
      * Approve a job posting
      */
     public function approve($id)
@@ -184,11 +193,124 @@ class JobApprovalController extends Controller
     }
 
     /**
-     * Show job posting details
+     * ✅ Feature a job posting
      */
-    public function show($id)
+    public function feature($id)
     {
-        $jobPosting = JobPosting::with(['partner', 'partnerProfile'])->findOrFail($id);
-        return view('users.admin.approvals.jobs.show', compact('jobPosting'));
+        try {
+            DB::beginTransaction();
+
+            $jobPosting = JobPosting::findOrFail($id);
+
+            if ($jobPosting->is_featured) {
+                return redirect()->back()->with('warning', 'Job posting is already featured.');
+            }
+
+            $jobPosting->update(['is_featured' => true]);
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'featured',
+                'description' => "Featured job posting: {$jobPosting->title}",
+                'subject_type' => JobPosting::class,
+                'subject_id' => $jobPosting->id,
+                'properties' => json_encode([
+                    'job_title' => $jobPosting->title,
+                    'is_featured' => true,
+                ]),
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Job posting featured successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to feature job posting: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Unfeature a job posting
+     */
+    public function unfeature($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $jobPosting = JobPosting::findOrFail($id);
+
+            if (!$jobPosting->is_featured) {
+                return redirect()->back()->with('warning', 'Job posting is not featured.');
+            }
+
+            $jobPosting->update(['is_featured' => false]);
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'unfeatured',
+                'description' => "Unfeatured job posting: {$jobPosting->title}",
+                'subject_type' => JobPosting::class,
+                'subject_id' => $jobPosting->id,
+                'properties' => json_encode([
+                    'job_title' => $jobPosting->title,
+                    'is_featured' => false,
+                ]),
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Job posting unfeatured successfully!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to unfeature job posting: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ Unpublish a job posting
+     */
+    public function unpublish(Request $request, $id)
+    {
+        $request->validate([
+            'unpublish_reason' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $jobPosting = JobPosting::findOrFail($id);
+
+            if ($jobPosting->status !== 'approved') {
+                return redirect()->back()->with('warning', 'Only approved jobs can be unpublished.');
+            }
+
+            $jobPosting->update([
+                'status' => 'unpublished',
+                'sub_status' => null,
+                'unpublish_reason' => $request->unpublish_reason,
+                'unpublished_at' => now(),
+                'unpublished_by' => auth()->id(),
+            ]);
+
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'unpublished',
+                'description' => "Unpublished job posting: {$jobPosting->title}",
+                'subject_type' => JobPosting::class,
+                'subject_id' => $jobPosting->id,
+                'properties' => json_encode([
+                    'job_title' => $jobPosting->title,
+                    'unpublish_reason' => $request->unpublish_reason,
+                    'unpublished_at' => now(),
+                ]),
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', 'Job posting unpublished successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Failed to unpublish job posting: ' . $e->getMessage());
+        }
     }
 }

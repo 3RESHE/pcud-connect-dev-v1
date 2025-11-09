@@ -167,13 +167,25 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::prefix('approvals/jobs')->name('approvals.jobs.')->group(function () {
             Route::get('/', [JobApprovalController::class, 'index'])
                 ->name('index');
-            Route::get('/{id}', [JobApprovalController::class, 'show'])  // ✅ ADD THIS LINE
+            Route::get('/{id}', [JobApprovalController::class, 'show'])
                 ->name('show');
             Route::post('/{id}/approve', [JobApprovalController::class, 'approve'])
                 ->name('approve');
             Route::post('/{id}/reject', [JobApprovalController::class, 'reject'])
                 ->name('reject');
         });
+
+        // ===== JOB MANAGEMENT (Feature, Unfeature, Unpublish) =====
+        Route::prefix('jobs')->name('jobs.')->middleware('role:admin')->group(function () {
+            Route::put('/{id}/feature', [JobApprovalController::class, 'feature'])
+                ->name('feature');
+            Route::put('/{id}/unfeature', [JobApprovalController::class, 'unfeature'])
+                ->name('unfeature');
+            Route::put('/{id}/unpublish', [JobApprovalController::class, 'unpublish'])
+                ->name('unpublish');
+        });
+
+
 
 
 

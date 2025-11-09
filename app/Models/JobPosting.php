@@ -16,13 +16,13 @@ class JobPosting extends Model
         'partner_id',
         'approved_by',
         'rejected_by',
+        'unpublished_by', // ✅ NEW
         'job_type',
         'title',
         'department',
         'custom_department',
         'experience_level',
         'description',
-        'requirements',
         'benefits',
         'work_setup',
         'location',
@@ -43,9 +43,11 @@ class JobPosting extends Model
         'status',
         'sub_status',
         'rejection_reason',
+        'unpublish_reason', // ✅ NEW
         'published_at',
         'approved_at',
         'rejected_at',
+        'unpublished_at', // ✅ NEW
         'closed_at',
     ];
 
@@ -61,6 +63,7 @@ class JobPosting extends Model
         'published_at' => 'datetime',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
+        'unpublished_at' => 'datetime', // ✅ NEW
         'closed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -106,6 +109,14 @@ class JobPosting extends Model
     public function rejector(): BelongsTo
     {
         return $this->belongsTo(User::class, 'rejected_by');
+    }
+
+    /**
+     * Get the admin who unpublished this job posting.
+     */
+    public function unpublisher(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'unpublished_by');
     }
 
     /**
@@ -158,6 +169,14 @@ class JobPosting extends Model
     public function scopeRejected($query)
     {
         return $query->where('status', 'rejected');
+    }
+
+    /**
+     * Scope: Get unpublished job postings.
+     */
+    public function scopeUnpublished($query)
+    {
+        return $query->where('status', 'unpublished');
     }
 
     /**
@@ -321,6 +340,7 @@ class JobPosting extends Model
             'pending' => 'Pending Approval',
             'approved' => $this->sub_status === 'paused' ? 'Paused' : 'Approved',
             'rejected' => 'Rejected',
+            'unpublished' => 'Unpublished', // ✅ NEW
             'completed' => 'Completed',
             default => ucfirst($this->status),
         };
@@ -408,13 +428,27 @@ class JobPosting extends Model
     {
         $this->update([
             'status' => 'rejected',
-            'sub_status' => null,  // ✅ MUST BE NULL
+            'sub_status' => null,
             'rejected_by' => $adminId,
             'rejection_reason' => $reason,
             'rejected_at' => now(),
             'approved_by' => null,
             'approved_at' => null,
             'published_at' => null,
+        ]);
+    }
+
+    /**
+     * Unpublish this job posting. ✅ NEW
+     */
+    public function unpublish($adminId, $reason = null)
+    {
+        $this->update([
+            'status' => 'unpublished',
+            'sub_status' => null,
+            'unpublished_by' => $adminId,
+            'unpublish_reason' => $reason,
+            'unpublished_at' => now(),
         ]);
     }
 
@@ -477,7 +511,7 @@ class JobPosting extends Model
      */
     public function canBeEdited(): bool
     {
-        return in_array($this->status, ['pending', 'rejected', 'approved']);
+        return in_array($this->status, ['pending', 'rejected']);
     }
 
     /**
@@ -492,6 +526,14 @@ class JobPosting extends Model
      * Check if the job posting can be closed.
      */
     public function canBeClosed(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    /**
+     * Check if the job posting can be unpublished.
+     */
+    public function canBeUnpublished(): bool
     {
         return $this->status === 'approved';
     }

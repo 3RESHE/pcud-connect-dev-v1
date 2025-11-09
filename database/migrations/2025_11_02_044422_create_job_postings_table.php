@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('job_postings', function (Blueprint $table) {
             $table->id();
 
-            // Creator & Approver & Rejector
+            // Creator & Approver & Rejector & Unpublisher
             $table->foreignId('partner_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('rejected_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('unpublished_by')->nullable()->constrained('users')->nullOnDelete(); // ✅ NEW
 
             // Job type & basics
             $table->enum('job_type', ['fulltime', 'parttime', 'internship', 'other'])->default('fulltime');
@@ -30,7 +31,8 @@ return new class extends Migration
 
             // Job description
             $table->longText('description');
-            $table->longText('requirements')->nullable();
+            $table->longText('education_requirements')->nullable(); // ✅ CHANGED from text
+            $table->longText('experience_requirements')->nullable(); // ✅ CHANGED from text
             $table->longText('benefits')->nullable();
 
             // Work setup
@@ -49,25 +51,25 @@ return new class extends Migration
             $table->date('application_deadline');
 
             // Requirements & Skills
-            $table->text('education_requirements')->nullable();
             $table->json('technical_skills')->nullable();
-            $table->text('experience_requirements')->nullable();
+            $table->longText('application_process')->nullable(); // ✅ CHANGED from text
 
             // Positions & process
             $table->integer('positions_available')->default(1);
-            $table->text('application_process')->nullable();
-            $table->text('application_instructions')->nullable();
+            $table->text('application_instructions')->nullable(); // REMOVED - Not needed
 
             // Approval workflow
-            $table->enum('status', ['pending', 'approved', 'rejected', 'completed'])->default('pending');
-            $table->enum('sub_status', ['active', 'paused'])->nullable();  // ✅ NULLABLE
+            $table->enum('status', ['pending', 'approved', 'rejected', 'unpublished', 'completed'])->default('pending'); // ✅ ADDED 'unpublished'
+            $table->enum('sub_status', ['active', 'paused'])->nullable();
             $table->boolean('is_featured')->default(false);
             $table->text('rejection_reason')->nullable();
+            $table->text('unpublish_reason')->nullable(); // ✅ NEW
 
             // Timestamps
             $table->timestamp('published_at')->nullable();
             $table->timestamp('approved_at')->nullable();
             $table->timestamp('rejected_at')->nullable();
+            $table->timestamp('unpublished_at')->nullable(); // ✅ NEW
             $table->timestamp('closed_at')->nullable();
             $table->timestamps();
         });
@@ -79,6 +81,7 @@ return new class extends Migration
             $table->index('published_at', 'idx_job_postings_published');
             $table->index(['status', 'published_at'], 'idx_jobs_status_published');
             $table->index('application_deadline', 'idx_job_postings_deadline');
+            $table->index('is_featured', 'idx_job_postings_featured'); // ✅ NEW
         });
     }
 
