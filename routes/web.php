@@ -20,7 +20,6 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
-use App\Http\Controllers\Dashboard\StudentDashboardController;
 use App\Http\Controllers\Partner\JobPostingController;
 use App\Http\Controllers\Partner\NewsController as PartnerNewsController;
 use App\Http\Controllers\Partner\PartnerDashboardController;
@@ -35,6 +34,7 @@ use App\Http\Controllers\Student\StudentEventController;
 use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
+use App\Http\Controllers\Student\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -441,7 +441,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     Route::middleware('role:student')->prefix('student')->name('student.')->group(function () {
 
         // ===== DASHBOARD =====
-        Route::get('/dashboard', [StudentDashboardController::class, 'dashboard'])
+        Route::get('/dashboard', [DashboardController::class, 'dashboard'])
             ->name('dashboard');
 
         // ===== PROFILE (NO MIDDLEWARE - Can access anytime) =====
