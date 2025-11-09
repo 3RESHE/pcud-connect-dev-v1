@@ -9,21 +9,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class JobPosting extends Model
 {
+    protected $table = 'job_postings';
+
     protected $fillable = [
         'partner_id',
         'approved_by',
+        'rejected_by',
         'job_type',
         'title',
         'department',
         'custom_department',
         'experience_level',
         'description',
+        'requirements',
+        'benefits',
         'work_setup',
         'location',
         'salary_min',
         'salary_max',
         'salary_period',
         'is_unpaid',
+        'is_featured',
         'duration_months',
         'preferred_start_date',
         'education_requirements',
@@ -32,11 +38,13 @@ class JobPosting extends Model
         'application_deadline',
         'positions_available',
         'application_process',
-        'benefits',
+        'application_instructions',
         'status',
         'sub_status',
         'rejection_reason',
         'published_at',
+        'approved_at',
+        'rejected_at',
         'closed_at',
     ];
 
@@ -44,23 +52,19 @@ class JobPosting extends Model
         'salary_min' => 'decimal:2',
         'salary_max' => 'decimal:2',
         'is_unpaid' => 'boolean',
+        'is_featured' => 'boolean',
         'duration_months' => 'integer',
         'positions_available' => 'integer',
         'preferred_start_date' => 'date',
         'application_deadline' => 'date',
         'published_at' => 'datetime',
+        'approved_at' => 'datetime',
+        'rejected_at' => 'datetime',
         'closed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'technical_skills' => 'json',
     ];
-
-    // ✅ FIX: Auto-decode technical_skills from JSON
-    protected function technicalSkills(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => $value ? json_decode($value, true) : [],
-        );
-    }
 
     // ===== RELATIONSHIPS =====
 
@@ -78,6 +82,14 @@ class JobPosting extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Get the admin who rejected this job posting.
+     */
+    public function rejector(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'rejected_by');
     }
 
     /**
@@ -125,6 +137,14 @@ class JobPosting extends Model
     }
 
     /**
+     * Scope: Get rejected job postings.
+     */
+    public function scopeRejected($query)
+    {
+        return $query->where('status', 'rejected');
+    }
+
+    /**
      * Scope: Get job postings by partner.
      */
     public function scopeByPartner($query, $partnerId)
@@ -166,6 +186,16 @@ class JobPosting extends Model
     }
 
     /**
+     * Scope: Featured jobs.
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true)
+            ->where('status', 'approved')
+            ->where('sub_status', 'active');
+    }
+
+    /**
      * Scope: Search by title, description, or department.
      */
     public function scopeSearch($query, $keyword)
@@ -191,17 +221,17 @@ class JobPosting extends Model
         }
 
         if ($this->salary_min && $this->salary_max) {
-            $period = $this->salary_period ?? 'per period';
-            return "₱" . number_format($this->salary_min) . " - ₱" . number_format($this->salary_max) . " {$period}";
+            $period = $this->salary_period ? strtolower($this->salary_period) : 'monthly';
+            return "₱" . number_format($this->salary_min) . " - ₱" . number_format($this->salary_max) . " /{$period}";
         }
 
         if ($this->salary_min) {
-            $period = $this->salary_period ?? 'per period';
-            return "₱" . number_format($this->salary_min) . "+ {$period}";
+            $period = $this->salary_period ? strtolower($this->salary_period) : 'monthly';
+            return "₱" . number_format($this->salary_min) . "+ /{$period}";
         }
 
-        $period = $this->salary_period ?? 'per period';
-        return "Up to ₱" . number_format($this->salary_max) . " {$period}";
+        $period = $this->salary_period ? strtolower($this->salary_period) : 'monthly';
+        return "Up to ₱" . number_format($this->salary_max) . " /{$period}";
     }
 
     /**
@@ -228,6 +258,14 @@ class JobPosting extends Model
     public function isPaused(): bool
     {
         return $this->status === 'approved' && $this->sub_status === 'paused';
+    }
+
+    /**
+     * Check if job posting is featured.
+     */
+    public function isFeatured(): bool
+    {
+        return $this->is_featured === true;
     }
 
     /**
@@ -314,10 +352,24 @@ class JobPosting extends Model
         };
     }
 
+    /**
+     * Get salary period display.
+     */
+    public function getSalaryPeriodDisplay(): string
+    {
+        return match($this->salary_period) {
+            'monthly' => 'Monthly',
+            'hourly' => 'Hourly',
+            'daily' => 'Daily',
+            'project' => 'Per Project',
+            default => 'Per Period',
+        };
+    }
+
     // ===== ACTION METHODS =====
 
     /**
-     * Approve this job posting (set status and approver).
+     * Approve this job posting.
      */
     public function approve($adminId)
     {
@@ -325,6 +377,11 @@ class JobPosting extends Model
             'status' => 'approved',
             'sub_status' => 'active',
             'approved_by' => $adminId,
+            'approved_at' => now(),
+            'published_at' => now(),
+            'rejected_by' => null,
+            'rejection_reason' => null,
+            'rejected_at' => null,
         ]);
     }
 
@@ -335,8 +392,13 @@ class JobPosting extends Model
     {
         $this->update([
             'status' => 'rejected',
-            'approved_by' => $adminId,
+            'sub_status' => null,  // ✅ MUST BE NULL
+            'rejected_by' => $adminId,
             'rejection_reason' => $reason,
+            'rejected_at' => now(),
+            'approved_by' => null,
+            'approved_at' => null,
+            'published_at' => null,
         ]);
     }
 
@@ -363,6 +425,26 @@ class JobPosting extends Model
     }
 
     /**
+     * Feature this job posting.
+     */
+    public function feature()
+    {
+        $this->update([
+            'is_featured' => true,
+        ]);
+    }
+
+    /**
+     * Unfeature this job posting.
+     */
+    public function unfeature()
+    {
+        $this->update([
+            'is_featured' => false,
+        ]);
+    }
+
+    /**
      * Close this job posting.
      */
     public function closePosting()
@@ -370,6 +452,7 @@ class JobPosting extends Model
         $this->update([
             'status' => 'completed',
             'closed_at' => now(),
+            'sub_status' => 'paused',
         ]);
     }
 
@@ -386,6 +469,14 @@ class JobPosting extends Model
      */
     public function canBeWithdrawn(): bool
     {
-        return $this->status === 'pending' || $this->status === 'rejected';
+        return in_array($this->status, ['pending', 'rejected']);
+    }
+
+    /**
+     * Check if the job posting can be closed.
+     */
+    public function canBeClosed(): bool
+    {
+        return $this->status === 'approved';
     }
 }

@@ -167,11 +167,16 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::prefix('approvals/jobs')->name('approvals.jobs.')->group(function () {
             Route::get('/', [JobApprovalController::class, 'index'])
                 ->name('index');
+            Route::get('/{id}', [JobApprovalController::class, 'show'])  // ✅ ADD THIS LINE
+                ->name('show');
             Route::post('/{id}/approve', [JobApprovalController::class, 'approve'])
                 ->name('approve');
             Route::post('/{id}/reject', [JobApprovalController::class, 'reject'])
                 ->name('reject');
         });
+
+
+
 
         // ===== EVENTS APPROVALS =====
         Route::prefix('approvals/events')->name('approvals.events.')->group(function () {
@@ -318,109 +323,109 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // PARTNER DASHBOARD ROUTES
     // =====================================================
 
-Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
+    Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
 
-    // ===== DASHBOARD =====
-    Route::get('/dashboard', [PartnerDashboardController::class, 'index'])
-        ->name('dashboard');
+        // ===== DASHBOARD =====
+        Route::get('/dashboard', [PartnerDashboardController::class, 'index'])
+            ->name('dashboard');
 
-    // ===== PROFILE & SETTINGS (ALWAYS ACCESSIBLE - NO MIDDLEWARE) =====
-    Route::prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', [PartnerProfileController::class, 'show'])
-            ->name('show');
-        Route::get('/edit', [PartnerProfileController::class, 'edit'])
-            ->name('edit');
-        Route::post('/', [PartnerProfileController::class, 'update'])
-            ->name('update');
-    });
-
-    Route::prefix('settings')->name('settings.')->group(function () {
-        Route::get('/', [PartnerSettingsController::class, 'show'])
-            ->name('show');
-        Route::put('/', [PartnerSettingsController::class, 'update'])
-            ->name('update');
-    });
-
-    // ===== ROUTES REQUIRING COMPLETE PROFILE =====
-    Route::middleware('partner.profile.complete')->group(function () {
-
-        // ===== JOB POSTINGS =====
-        Route::prefix('job-postings')->name('job-postings.')->group(function () {
-            Route::get('/', [JobPostingController::class, 'index'])
-                ->name('index');
-            Route::get('/create', [JobPostingController::class, 'create'])
-                ->name('create');
-            Route::post('/', [JobPostingController::class, 'store'])
-                ->name('store');
-            Route::get('/{jobPosting}', [JobPostingController::class, 'show'])
+        // ===== PROFILE & SETTINGS (ALWAYS ACCESSIBLE - NO MIDDLEWARE) =====
+        Route::prefix('profile')->name('profile.')->group(function () {
+            Route::get('/', [PartnerProfileController::class, 'show'])
                 ->name('show');
-            Route::get('/{jobPosting}/edit', [JobPostingController::class, 'edit'])
+            Route::get('/edit', [PartnerProfileController::class, 'edit'])
                 ->name('edit');
-            Route::put('/{jobPosting}', [JobPostingController::class, 'update'])
+            Route::post('/', [PartnerProfileController::class, 'update'])
                 ->name('update');
-            Route::delete('/{jobPosting}', [JobPostingController::class, 'destroy'])
-                ->name('destroy');
-            Route::post('/{jobPosting}/pause', [JobPostingController::class, 'pause'])
-                ->name('pause');
-            Route::post('/{jobPosting}/resume', [JobPostingController::class, 'resume'])
-                ->name('resume');
-            Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])
-                ->name('close');
-            Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])
-                ->name('applications');
         });
 
-        // ===== JOB APPLICATIONS =====
-        Route::prefix('applications')->name('applications.')->group(function () {
-            Route::get('/{application}', [ApplicationController::class, 'show'])
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [PartnerSettingsController::class, 'show'])
                 ->name('show');
-            Route::post('/{application}/approve', [ApplicationController::class, 'approve'])
-                ->name('approve');
-            Route::post('/{application}/reject', [ApplicationController::class, 'reject'])
-                ->name('reject');
+            Route::put('/', [PartnerSettingsController::class, 'update'])
+                ->name('update');
         });
 
-        // ===== PARTNERSHIPS =====
-        Route::prefix('partnerships')->name('partnerships.')->group(function () {
-            Route::get('/', [PartnershipController::class, 'index'])
-                ->name('index');
-            Route::get('/create', [PartnershipController::class, 'create'])
-                ->name('create');
-            Route::post('/', [PartnershipController::class, 'store'])
-                ->name('store');
-            Route::get('/{partnership}', [PartnershipController::class, 'show'])
-                ->name('show');
-            Route::get('/{partnership}/edit', [PartnershipController::class, 'edit'])
-                ->name('edit');
-            Route::put('/{partnership}', [PartnershipController::class, 'update'])
-                ->name('update');
-            Route::post('/{partnership}/complete', [PartnershipController::class, 'complete'])
-                ->name('complete');
-            Route::delete('/{partnership}', [PartnershipController::class, 'destroy'])
-                ->name('destroy');
-        });
+        // ===== ROUTES REQUIRING COMPLETE PROFILE =====
+        Route::middleware('partner.profile.complete')->group(function () {
 
-        // ===== NEWS =====
-        Route::prefix('news')->name('news.')->group(function () {
-            Route::get('/', [PartnerNewsController::class, 'index'])
-                ->name('index');
-            Route::get('/create', [PartnerNewsController::class, 'create'])
-                ->name('create');
-            Route::post('/', [PartnerNewsController::class, 'store'])
-                ->name('store');
-            Route::get('/{news}', [PartnerNewsController::class, 'show'])
-                ->name('show');
-            Route::get('/{news}/edit', [PartnerNewsController::class, 'edit'])
-                ->name('edit');
-            Route::put('/{news}', [PartnerNewsController::class, 'update'])
-                ->name('update');
-            Route::post('/{news}/publish', [PartnerNewsController::class, 'publish'])
-                ->name('publish');
-            Route::delete('/{news}', [PartnerNewsController::class, 'destroy'])
-                ->name('destroy');
+            // ===== JOB POSTINGS =====
+            Route::prefix('job-postings')->name('job-postings.')->group(function () {
+                Route::get('/', [JobPostingController::class, 'index'])
+                    ->name('index');
+                Route::get('/create', [JobPostingController::class, 'create'])
+                    ->name('create');
+                Route::post('/', [JobPostingController::class, 'store'])
+                    ->name('store');
+                Route::get('/{jobPosting}', [JobPostingController::class, 'show'])
+                    ->name('show');
+                Route::get('/{jobPosting}/edit', [JobPostingController::class, 'edit'])
+                    ->name('edit');
+                Route::put('/{jobPosting}', [JobPostingController::class, 'update'])
+                    ->name('update');
+                Route::delete('/{jobPosting}', [JobPostingController::class, 'destroy'])
+                    ->name('destroy');
+                Route::post('/{jobPosting}/pause', [JobPostingController::class, 'pause'])
+                    ->name('pause');
+                Route::post('/{jobPosting}/resume', [JobPostingController::class, 'resume'])
+                    ->name('resume');
+                Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])
+                    ->name('close');
+                Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])
+                    ->name('applications');
+            });
+
+            // ===== JOB APPLICATIONS =====
+            Route::prefix('applications')->name('applications.')->group(function () {
+                Route::get('/{application}', [ApplicationController::class, 'show'])
+                    ->name('show');
+                Route::post('/{application}/approve', [ApplicationController::class, 'approve'])
+                    ->name('approve');
+                Route::post('/{application}/reject', [ApplicationController::class, 'reject'])
+                    ->name('reject');
+            });
+
+            // ===== PARTNERSHIPS =====
+            Route::prefix('partnerships')->name('partnerships.')->group(function () {
+                Route::get('/', [PartnershipController::class, 'index'])
+                    ->name('index');
+                Route::get('/create', [PartnershipController::class, 'create'])
+                    ->name('create');
+                Route::post('/', [PartnershipController::class, 'store'])
+                    ->name('store');
+                Route::get('/{partnership}', [PartnershipController::class, 'show'])
+                    ->name('show');
+                Route::get('/{partnership}/edit', [PartnershipController::class, 'edit'])
+                    ->name('edit');
+                Route::put('/{partnership}', [PartnershipController::class, 'update'])
+                    ->name('update');
+                Route::post('/{partnership}/complete', [PartnershipController::class, 'complete'])
+                    ->name('complete');
+                Route::delete('/{partnership}', [PartnershipController::class, 'destroy'])
+                    ->name('destroy');
+            });
+
+            // ===== NEWS =====
+            Route::prefix('news')->name('news.')->group(function () {
+                Route::get('/', [PartnerNewsController::class, 'index'])
+                    ->name('index');
+                Route::get('/create', [PartnerNewsController::class, 'create'])
+                    ->name('create');
+                Route::post('/', [PartnerNewsController::class, 'store'])
+                    ->name('store');
+                Route::get('/{news}', [PartnerNewsController::class, 'show'])
+                    ->name('show');
+                Route::get('/{news}/edit', [PartnerNewsController::class, 'edit'])
+                    ->name('edit');
+                Route::put('/{news}', [PartnerNewsController::class, 'update'])
+                    ->name('update');
+                Route::post('/{news}/publish', [PartnerNewsController::class, 'publish'])
+                    ->name('publish');
+                Route::delete('/{news}', [PartnerNewsController::class, 'destroy'])
+                    ->name('destroy');
+            });
         });
     });
-});
 
     // =====================================================
     // STUDENT DASHBOARD ROUTES

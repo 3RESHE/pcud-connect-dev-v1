@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('job_postings', function (Blueprint $table) {
             $table->id();
 
-            // Creator & Approver
+            // Creator & Approver & Rejector
             $table->foreignId('partner_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('rejected_by')->nullable()->constrained('users')->nullOnDelete();
 
             // Job type & basics
             $table->enum('job_type', ['fulltime', 'parttime', 'internship', 'other'])->default('fulltime');
@@ -29,6 +30,8 @@ return new class extends Migration
 
             // Job description
             $table->longText('description');
+            $table->longText('requirements')->nullable();
+            $table->longText('benefits')->nullable();
 
             // Work setup
             $table->enum('work_setup', ['onsite', 'remote', 'hybrid'])->default('onsite');
@@ -45,7 +48,7 @@ return new class extends Migration
             $table->date('preferred_start_date')->nullable();
             $table->date('application_deadline');
 
-            // Requirements
+            // Requirements & Skills
             $table->text('education_requirements')->nullable();
             $table->json('technical_skills')->nullable();
             $table->text('experience_requirements')->nullable();
@@ -53,15 +56,19 @@ return new class extends Migration
             // Positions & process
             $table->integer('positions_available')->default(1);
             $table->text('application_process')->nullable();
-            $table->text('benefits')->nullable();
+            $table->text('application_instructions')->nullable();
 
-            // Approval workflow - FIXED
+            // Approval workflow
             $table->enum('status', ['pending', 'approved', 'rejected', 'completed'])->default('pending');
-            $table->enum('sub_status', ['active', 'paused'])->default('active');
+            $table->enum('sub_status', ['active', 'paused'])->nullable();  // ✅ NULLABLE
+            $table->boolean('is_featured')->default(false);
             $table->text('rejection_reason')->nullable();
-            $table->timestamp('published_at')->nullable();
-            $table->timestamp('closed_at')->nullable();
 
+            // Timestamps
+            $table->timestamp('published_at')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->timestamp('rejected_at')->nullable();
+            $table->timestamp('closed_at')->nullable();
             $table->timestamps();
         });
 
@@ -71,6 +78,7 @@ return new class extends Migration
             $table->index('status', 'idx_job_postings_status');
             $table->index('published_at', 'idx_job_postings_published');
             $table->index(['status', 'published_at'], 'idx_jobs_status_published');
+            $table->index('application_deadline', 'idx_job_postings_deadline');
         });
     }
 
