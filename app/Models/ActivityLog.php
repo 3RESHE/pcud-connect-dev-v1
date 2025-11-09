@@ -136,6 +136,14 @@ class ActivityLog extends Model
         return $query->where('action', 'rejected');
     }
 
+    /**
+     * Scope: Get logs for application action.
+     */
+    public function scopeApplied($query)
+    {
+        return $query->where('action', 'applied');
+    }
+
     // ===== HELPER METHODS =====
 
     /**
@@ -154,6 +162,10 @@ class ActivityLog extends Model
             'restored' => 'Restored',
             'completed' => 'Completed',
             'checked_in' => 'Checked In',
+            'applied' => 'Applied',
+            'paused' => 'Paused',
+            'resumed' => 'Resumed',
+            'closed' => 'Closed',
             default => ucfirst($this->action),
         };
     }
@@ -174,6 +186,10 @@ class ActivityLog extends Model
             'restored' => 'info',
             'completed' => 'success',
             'checked_in' => 'success',
+            'applied' => 'indigo',
+            'paused' => 'warning',
+            'resumed' => 'success',
+            'closed' => 'danger',
             default => 'secondary',
         };
     }
@@ -193,6 +209,7 @@ class ActivityLog extends Model
             'NewsArticle' => 'News Article',
             'Partnership' => 'Partnership',
             'User' => 'User',
+            'Application' => 'Application',
             default => $basename ?: 'Unknown',
         };
     }
@@ -278,7 +295,6 @@ class ActivityLog extends Model
             return 'Unknown';
         }
 
-        // Simple parsing - in production use a proper user agent parser
         if (strpos($this->user_agent, 'Chrome') !== false) {
             return 'Chrome';
         }
@@ -290,6 +306,9 @@ class ActivityLog extends Model
         }
         if (strpos($this->user_agent, 'Edge') !== false) {
             return 'Edge';
+        }
+        if (strpos($this->user_agent, 'Opera') !== false) {
+            return 'Opera';
         }
 
         return 'Other';
@@ -306,7 +325,7 @@ class ActivityLog extends Model
             'description' => $description,
             'subject_type' => $subjectType,
             'subject_id' => $subjectId,
-            'properties' => $properties,
+            'properties' => is_array($properties) ? json_encode($properties) : $properties,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'created_at' => now(),

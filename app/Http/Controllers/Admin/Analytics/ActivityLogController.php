@@ -57,6 +57,7 @@ class ActivityLogController extends Controller
                     'archived' => 'Archived',
                     'restored' => 'Restored',
                     'closed' => 'Closed',
+                    'applied' => 'Applied',  // ✅ ADDED
                 ],
                 'subject_types' => [
                     'Event',
@@ -216,7 +217,7 @@ class ActivityLogController extends Controller
             'restored' => 'Restored',
             'completed' => 'Completed',
             'checked_in' => 'Checked In',
-            'applied' => 'Applied',
+            'applied' => 'Applied',  // ✅ ADDED
             default => ucfirst($action),
         };
     }
@@ -275,12 +276,12 @@ class ActivityLogController extends Controller
 
         // Generic fallback
         return match($log->subject_type) {
-            'JobApplication' => 'Job Application #' . $log->subject_id,
-            'JobPosting' => 'Job Posting #' . $log->subject_id,
-            'Event' => 'Event #' . $log->subject_id,
-            'News' => 'News #' . $log->subject_id,
-            'User' => 'User #' . $log->subject_id,
-            'Partnership' => 'Partnership #' . $log->subject_id,
+            'App\Models\JobApplication' => 'Job Application #' . $log->subject_id,
+            'App\Models\JobPosting' => 'Job Posting #' . $log->subject_id,
+            'App\Models\Event' => 'Event #' . $log->subject_id,
+            'App\Models\News' => 'News #' . $log->subject_id,
+            'App\Models\User' => 'User #' . $log->subject_id,
+            'App\Models\Partnership' => 'Partnership #' . $log->subject_id,
             default => 'Record #' . $log->subject_id,
         };
     }
@@ -380,7 +381,7 @@ class ActivityLogController extends Controller
             'restored' => 'info',
             'completed' => 'success',
             'checked_in' => 'success',
-            'applied' => 'info',
+            'applied' => 'indigo',  // ✅ ADDED
             'paused' => 'warning',
             'resumed' => 'success',
             'closed' => 'danger',

@@ -30,23 +30,18 @@ function viewLogDetails(logId) {
 function displayLogDetails(log) {
     const content = document.getElementById('logDetailsContent');
 
-    let changedFieldsHTML = '';
-    if (Object.keys(log.changed_fields).length > 0) {
-        changedFieldsHTML = '<div class="mt-4"><h4 class="font-semibold text-gray-900 mb-2">Changed Fields:</h4>';
-        Object.keys(log.changed_fields).forEach(field => {
-            const change = log.changed_fields[field];
-            changedFieldsHTML += `
-                <div class="bg-gray-50 p-3 rounded mb-2">
-                    <div class="font-medium text-gray-900">${field}</div>
-                    <div class="text-sm text-gray-600">
-                        <span class="text-red-600">Old: ${change.old ?? 'N/A'}</span>
-                        <span class="mx-2">→</span>
-                        <span class="text-green-600">New: ${change.new ?? 'N/A'}</span>
-                    </div>
+    let propertiesHTML = '';
+    if (log.properties && Object.keys(log.properties).length > 0) {
+        propertiesHTML = '<div class="mt-4 border-t pt-4"><h4 class="font-semibold text-gray-900 mb-2">Additional Information:</h4>';
+        Object.entries(log.properties).forEach(([key, value]) => {
+            propertiesHTML += `
+                <div class="flex justify-between py-1">
+                    <span class="text-sm text-gray-600 capitalize">${key.replace(/_/g, ' ')}:</span>
+                    <span class="text-sm text-gray-900 font-medium">${value || 'N/A'}</span>
                 </div>
             `;
         });
-        changedFieldsHTML += '</div>';
+        propertiesHTML += '</div>';
     }
 
     content.innerHTML = `
@@ -78,17 +73,17 @@ function displayLogDetails(log) {
                 </div>
             </div>
 
-            <div>
-                <h4 class="text-xs font-semibold text-gray-500 uppercase">Subject</h4>
+            <div class="border-t pt-4">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Subject</h4>
                 <p class="text-sm font-medium text-gray-900">${log.subject}</p>
             </div>
 
             <div>
-                <h4 class="text-xs font-semibold text-gray-500 uppercase">Description</h4>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase mb-2">Description</h4>
                 <p class="text-sm text-gray-700">${log.description || 'N/A'}</p>
             </div>
 
-            ${changedFieldsHTML}
+            ${propertiesHTML}
         </div>
     `;
 }

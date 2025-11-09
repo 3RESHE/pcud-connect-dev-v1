@@ -28,9 +28,9 @@ class StudentJobController extends Controller
                 $search = request('search');
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                      ->orWhere('department', 'like', "%{$search}%")
-                      ->orWhere('location', 'like', "%{$search}%")
-                      ->orWhere('description', 'like', "%{$search}%");
+                        ->orWhere('department', 'like', "%{$search}%")
+                        ->orWhere('location', 'like', "%{$search}%")
+                        ->orWhere('description', 'like', "%{$search}%");
                 });
             }
 
@@ -70,7 +70,6 @@ class StudentJobController extends Controller
             }
 
             $jobs = $query->paginate(10);
-
         } catch (\Exception $e) {
             \Log::error('Student jobs index error: ' . $e->getMessage());
             $jobs = JobPosting::where('status', 'approved')
@@ -105,7 +104,7 @@ class StudentJobController extends Controller
                 ->where('id', '!=', $job->id)
                 ->where(function ($q) use ($job) {
                     $q->where('job_type', $job->job_type)
-                      ->orWhere('partner_id', $job->partner_id);
+                        ->orWhere('partner_id', $job->partner_id);
                 })
                 ->orderBy('created_at', 'desc')
                 ->limit(4)
@@ -117,8 +116,8 @@ class StudentJobController extends Controller
             // Check if current student already applied
             $alreadyApplied = auth()->check() &&
                 $job->applications()
-                    ->where('applicant_id', auth()->id())
-                    ->exists();
+                ->where('applicant_id', auth()->id())
+                ->exists();
 
             return view('users.student.jobs.show', [
                 'job' => $job,
@@ -126,190 +125,95 @@ class StudentJobController extends Controller
                 'applicantCount' => $applicantCount,
                 'alreadyApplied' => $alreadyApplied,
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Student job show error: ' . $e->getMessage());
             abort(500, 'An error occurred while loading the job details.');
         }
     }
 
-    /**
-     * Store job application from student
-     * ✅ COMPLETE FIX: Records to ActivityLog database properly
-     */
     public function apply(JobPosting $job, Request $request): RedirectResponse
     {
         try {
-            // Check if job is still available
+            // Basic checks
             if ($job->status !== 'approved' || $job->sub_status !== 'active') {
-                return redirect()->back()
-                    ->with('error', 'This job position is no longer available.');
+                return redirect()->back()->with('error', 'Job not available.');
             }
 
-            // Check if deadline has passed
-            if ($job->application_deadline < now()->toDateString()) {
-                return redirect()->back()
-                    ->with('error', 'The application deadline for this position has passed.');
-            }
-
-            // Check if student already applied
+            // Check duplicate
             $existingApplication = JobApplication::where('job_posting_id', $job->id)
                 ->where('applicant_id', auth()->id())
                 ->first();
 
             if ($existingApplication) {
-                return redirect()->back()
-                    ->with('warning', 'You have already applied for this position.');
+                return redirect()->back()->with('warning', 'Already applied.');
             }
 
-            // Validate input
+            // Validate
             $validated = $request->validate([
                 'cover_letter' => 'required|string|min:50|max:5000',
                 'resume_option' => 'required|in:existing,upload',
                 'resume_file' => 'nullable|mimes:pdf,doc,docx|max:5120',
-                'additional_documents.*' => 'nullable|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
                 'confirmApplication' => 'required|accepted',
-            ], [
-                'cover_letter.required' => 'Cover letter is required.',
-                'cover_letter.min' => 'Cover letter must be at least 50 characters.',
-                'cover_letter.max' => 'Cover letter must not exceed 5000 characters.',
-                'resume_option.required' => 'Please select a resume option.',
-                'resume_file.mimes' => 'Resume must be a PDF, DOC, or DOCX file.',
-                'resume_file.max' => 'Resume file must not exceed 5MB.',
-                'additional_documents.*.mimes' => 'Additional documents must be PDF, DOC, DOCX, JPG, or PNG.',
-                'additional_documents.*.max' => 'Each file must not exceed 10MB.',
-                'confirmApplication.required' => 'You must confirm the application.',
-                'confirmApplication.accepted' => 'You must accept the terms to apply.',
             ]);
 
-            // Get resume path - Use 'public' disk
+            // Handle resume
             $resumePath = null;
 
             if ($request->resume_option === 'upload' && $request->hasFile('resume_file')) {
-                // Store new resume to PUBLIC storage
                 $file = $request->file('resume_file');
                 $filename = auth()->id() . '_' . time() . '_' . $file->getClientOriginalName();
-
-                $path = $file->storeAs(
-                    'resumes/job-applications/' . auth()->id(),
-                    $filename,
-                    'public'
-                );
-
-                if (!$path) {
-                    \Log::error('Failed to store resume for user: ' . auth()->id());
-                    throw new \Exception('Failed to upload resume. Please try again.');
-                }
-
-                $resumePath = $path;
-                \Log::info('Resume stored successfully: ' . $resumePath);
-
-            } else if ($request->resume_option === 'existing') {
-                // Use existing resume from student profile
+                $resumePath = $file->storeAs('resumes/job-applications/' . auth()->id(), $filename, 'public');
+            } else {
                 $studentProfile = auth()->user()->studentProfile;
-
                 if ($studentProfile && $studentProfile->resume_path) {
                     $resumePath = $studentProfile->resume_path;
-                    \Log::info('Using existing resume: ' . $resumePath);
                 } else {
-                    return redirect()->back()
-                        ->with('error', 'No existing resume found. Please upload a new resume.')
-                        ->withInput();
+                    return redirect()->back()->with('error', 'No resume found.')->withInput();
                 }
             }
 
             if (!$resumePath) {
-                return redirect()->back()
-                    ->with('error', 'Resume is required to apply.')
-                    ->withInput();
+                return redirect()->back()->with('error', 'Resume required.')->withInput();
             }
 
-            // Process additional documents
-            $additionalDocuments = [];
-            if ($request->hasFile('additional_documents')) {
-                foreach ($request->file('additional_documents') as $file) {
-                    $filename = auth()->id() . '_' . time() . '_' . $file->getClientOriginalName();
-
-                    $path = $file->storeAs(
-                        'applications/documents/' . auth()->id() . '/' . $job->id,
-                        $filename,
-                        'public'
-                    );
-
-                    if ($path) {
-                        $additionalDocuments[] = $path;
-                        \Log::info('Additional document stored: ' . $path);
-                    }
-                }
-            }
-
-            // Create job application
+            // Create application
             $application = JobApplication::create([
                 'job_posting_id' => $job->id,
                 'applicant_id' => auth()->id(),
                 'applicant_type' => 'student',
                 'cover_letter' => $validated['cover_letter'],
                 'resume_path' => $resumePath,
-                'additional_documents' => !empty($additionalDocuments) ? json_encode($additionalDocuments) : null,
                 'status' => 'pending',
             ]);
 
-            if (!$application) {
-                \Log::error('Failed to create JobApplication record for user: ' . auth()->id());
-                throw new \Exception('Failed to create application record.');
-            }
-
-            \Log::info('Application created successfully - ID: ' . $application->id . ' for job: ' . $job->id);
-
-            // ✅ RECORD TO ACTIVITY LOG DATABASE - THIS IS THE KEY FIX
+            // ✅ LOG TO ACTIVITY LOG TABLE
             try {
-                $studentName = auth()->user()->first_name . ' ' . auth()->user()->last_name;
-
-                // Create activity log entry
-                ActivityLog::create([
-                    'user_id' => auth()->id(),
-                    'action' => 'created',
-                    'description' => $studentName . ' applied for job: ' . $job->title,
-                    'subject_type' => JobApplication::class,  // ✅ Use fully qualified class name
-                    'subject_id' => $application->id,
-                    'properties' => json_encode([
+                ActivityLog::logActivity(
+                    userId: auth()->id(),
+                    action: 'applied',
+                    description: auth()->user()->first_name . ' ' . auth()->user()->last_name . ' applied for job: ' . $job->title,
+                    subjectType: JobApplication::class,
+                    subjectId: $application->id,
+                    properties: [
                         'job_id' => $job->id,
                         'job_title' => $job->title,
-                        'company_name' => $job->partnerProfile?->company_name ?? 'Unknown Company',
-                        'student_name' => $studentName,
-                        'student_id' => auth()->id(),
-                    ]),
-                    'ip_address' => request()->ip(),
-                    'user_agent' => request()->userAgent(),
-                    'created_at' => now(),
-                ]);
-
-                \Log::info('✅ Activity log recorded successfully for application: ' . $application->id);
-
+                    ]
+                );
+                \Log::info('Activity logged for application: ' . $application->id);
             } catch (\Exception $e) {
-                \Log::error('⚠️ Failed to record activity log: ' . $e->getMessage());
-                \Log::error('Stack trace: ' . $e->getTraceAsString());
-                // Continue anyway - application was created, just log wasn't recorded
+                \Log::warning('Activity log failed: ' . $e->getMessage());
+                // Don't fail the application if logging fails
             }
 
             return redirect()->route('student.jobs.applications.show', $application->id)
-                ->with('success', 'Application submitted successfully! The employer will review your application soon.');
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation error: ' . json_encode($e->errors()));
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput();
-
+                ->with('success', 'Application submitted!');
         } catch (\Exception $e) {
-            \Log::error('Application error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-
-            return redirect()->back()
-                ->with('error', 'Error: ' . $e->getMessage())
-                ->withInput();
+            \Log::error('Apply error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
     }
+
+
 
     /**
      * View student's job applications
@@ -343,7 +247,6 @@ class StudentJobController extends Controller
                 'applications' => $applications,
                 'statuses' => $statuses,
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Applications index error: ' . $e->getMessage());
             abort(500, 'An error occurred while loading your applications.');
@@ -356,7 +259,7 @@ class StudentJobController extends Controller
     public function viewApplication(JobApplication $application): View
     {
         try {
-            // Check authorization - ensure user owns this application
+            // Check authorization
             if ($application->applicant_id !== auth()->id()) {
                 abort(403, 'You do not have permission to view this application.');
             }
@@ -364,7 +267,6 @@ class StudentJobController extends Controller
             return view('users.student.applications.show', [
                 'application' => $application,
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Application view error: ' . $e->getMessage());
             abort(500, 'An error occurred while loading this application.');
