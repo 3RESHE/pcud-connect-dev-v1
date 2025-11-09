@@ -97,14 +97,27 @@
                 @elseif($application->status === 'approved') border-green-500
                 @elseif($application->status === 'rejected') border-red-500
                 @else border-gray-500 @endif"
-                    data-status="{{ $application->status }}">
+                    data-status="{{ $application->status }}"
+                    data-app-id="{{ $application->id }}"
+                    data-app-name="{{ $application->applicant->first_name }} {{ $application->applicant->last_name }}">
 
                     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-4 gap-4">
                         <!-- Applicant Info -->
                         <div class="flex items-center flex-1">
-                            @if ($application->alumni && $application->alumni->avatar)
-                                <img src="{{ asset($application->alumni->avatar) }}"
-                                    alt="{{ $application->alumni->full_name }}"
+                            @php
+                                $applicantName = $application->applicant->first_name . ' ' . $application->applicant->last_name;
+                                $profilePhoto = null;
+
+                                if ($application->applicant_type === 'alumni' && $application->alumni) {
+                                    $profilePhoto = $application->alumni->profile_photo;
+                                } elseif ($application->applicant_type === 'student' && $application->student) {
+                                    $profilePhoto = $application->student->profile_photo;
+                                }
+                            @endphp
+
+                            @if ($profilePhoto)
+                                <img src="{{ asset($profilePhoto) }}"
+                                    alt="{{ $applicantName }}"
                                     class="w-12 h-12 rounded-full object-cover mr-4 flex-shrink-0">
                             @else
                                 <div
@@ -119,19 +132,23 @@
                                     @elseif($application->status === 'reviewed') text-blue-600
                                     @elseif($application->status === 'rejected') text-red-600
                                     @else text-purple-600 @endif">
-                                        {{ substr($application->alumni->full_name ?? 'U', 0, 1) }}{{ substr(explode(' ', $application->alumni->full_name ?? 'U')[1] ?? '', 0, 1) }}
+                                        {{ substr($applicantName, 0, 1) }}{{ substr(explode(' ', $applicantName)[1] ?? '', 0, 1) }}
                                     </span>
                                 </div>
                             @endif
+
                             <div class="min-w-0 flex-1">
                                 <h3 class="text-lg font-semibold text-gray-900 break-words">
-                                    {{ $application->alumni->full_name ?? 'Unknown Applicant' }}
+                                    {{ $applicantName }}
                                 </h3>
                                 <p class="text-sm text-gray-600">Applied {{ $application->created_at->format('F d, Y') }}
                                 </p>
                                 <div class="flex items-center space-x-3 mt-1">
-                                    <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">PCU-DASMA
-                                        Alumni</span>
+                                    @if ($application->applicant_type === 'alumni')
+                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">PCU-DASMA Alumni</span>
+                                    @else
+                                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs">PCU-DASMA Student</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -139,20 +156,16 @@
                         <!-- Status Dropdown -->
                         <div class="flex flex-col items-start lg:items-end">
                             <div class="text-sm text-gray-500 mb-2">Status</div>
-                            <form action="{{ route('partner.applications.update-status', $application->id) }}"
+                            <form action=""
                                 method="POST" class="inline">
                                 @csrf
-                                @method('PUT')
+                                @method('PATCH')
                                 <select name="status" onchange="this.form.submit()"
                                     class="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary">
-                                    <option value="pending" @if ($application->status === 'pending') selected @endif>Pending
-                                        Review</option>
-                                    <option value="reviewed" @if ($application->status === 'reviewed') selected @endif>Reviewed
-                                    </option>
-                                    <option value="approved" @if ($application->status === 'approved') selected @endif>Approved
-                                    </option>
-                                    <option value="rejected" @if ($application->status === 'rejected') selected @endif>Rejected
-                                    </option>
+                                    <option value="pending" @if ($application->status === 'pending') selected @endif>Pending Review</option>
+                                    <option value="reviewed" @if ($application->status === 'reviewed') selected @endif>Reviewed</option>
+                                    <option value="approved" @if ($application->status === 'approved') selected @endif>Approved</option>
+                                    <option value="rejected" @if ($application->status === 'rejected') selected @endif>Rejected</option>
                                 </select>
                             </form>
                         </div>
@@ -162,9 +175,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <h4 class="font-medium text-gray-900 mb-2">Contact Information</h4>
-                            <p class="text-sm text-gray-600">📧 {{ $application->alumni->email ?? 'N/A' }}</p>
-                            <p class="text-sm text-gray-600">📱 {{ $application->alumni->phone ?? 'N/A' }}</p>
-                            <p class="text-sm text-gray-600">📍 {{ $application->alumni->address ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-600">📧 {{ $application->applicant->email ?? 'N/A' }}</p>
+                            @if ($application->applicant_type === 'alumni' && $application->alumni)
+                                <p class="text-sm text-gray-600">📱 {{ $application->alumni->phone ?? 'N/A' }}</p>
+                                <p class="text-sm text-gray-600">📍 {{ $application->alumni->current_location ?? 'N/A' }}</p>
+                            @elseif ($application->applicant_type === 'student' && $application->student)
+                                <p class="text-sm text-gray-600">📱 {{ $application->student->phone ?? 'N/A' }}</p>
+                                <p class="text-sm text-gray-600">📍 {{ $application->student->address ?? 'N/A' }}</p>
+                            @endif
                         </div>
                     </div>
 
@@ -192,13 +210,15 @@
                         <div class="flex flex-wrap gap-2">
                             <button onclick="viewFullProfile({{ $application->id }})"
                                 class="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
-                                View Full Profile
+                                View Profile & Resume
                             </button>
 
                             @if ($application->status !== 'approved')
-                                <form action="{{ route('partner.applications.approve', $application->id) }}"
+                                <form action=""
                                     method="POST" class="inline">
                                     @csrf
+                                    @method('PATCH')
+                                    <input type="hidden" name="status" value="approved">
                                     <button type="submit"
                                         class="px-4 py-2 border border-green-300 text-green-700 text-sm rounded-md hover:bg-green-50 transition-colors">
                                         Approve
@@ -208,7 +228,7 @@
 
                             @if ($application->status !== 'rejected')
                                 <button
-                                    onclick="openRejectModal({{ $application->id }}, '{{ $application->alumni->full_name ?? 'Applicant' }}')"
+                                    onclick="openRejectModal({{ $application->id }}, '{{ $applicantName }}')"
                                     class="px-4 py-2 border border-red-300 text-red-700 text-sm rounded-md hover:bg-red-50 transition-colors">
                                     Reject
                                 </button>
@@ -238,14 +258,14 @@
         @endif
     </div>
 
-    <!-- View Full Profile Modal (AJAX-loaded content) -->
+    <!-- View Full Profile Modal -->
     <div id="profileModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
             <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeProfileModal()"></div>
-            <div class="relative bg-white rounded-lg max-w-3xl w-full shadow-xl max-h-screen overflow-y-auto">
+            <div class="relative bg-white rounded-lg max-w-4xl w-full shadow-xl max-h-screen overflow-y-auto">
+                <!-- Header -->
                 <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
-                    <h3 class="text-lg font-semibold text-gray-900 break-words" id="modalProfileTitle">Applicant Profile
-                    </h3>
+                    <h3 class="text-lg font-semibold text-gray-900 break-words" id="modalProfileTitle">Applicant Profile</h3>
                     <button onclick="closeProfileModal()" class="text-gray-400 hover:text-gray-600">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -253,8 +273,19 @@
                         </svg>
                     </button>
                 </div>
-                <div class="px-6 py-6" id="modalProfileContent">
-                    <!-- AJAX loaded -->
+
+                <!-- Content -->
+                <div class="px-6 py-6 space-y-6" id="modalProfileContent">
+                    <!-- Loading state -->
+                    <div class="text-center py-12">
+                        <div class="inline-block">
+                            <svg class="animate-spin h-8 w-8 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600 mt-4">Loading profile...</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -273,12 +304,11 @@
                                     d="M6 18L18 6M6 6l12 12" />
                             </svg>
                         </div>
-                        <h3 class="ml-4 text-lg font-medium text-gray-900" id="rejectApplicantName">Reject Application
-                        </h3>
+                        <h3 class="ml-4 text-lg font-medium text-gray-900" id="rejectApplicantName">Reject Application</h3>
                     </div>
                     <form id="rejectForm" action="" method="POST">
                         @csrf
-                        <input type="hidden" id="rejectReason" name="rejection_reason">
+                        @method('PATCH')
                         <textarea id="rejection_reason" name="rejection_reason" rows="3"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent text-sm"
                             placeholder="Tell the applicant why their application was rejected..."></textarea>
@@ -286,8 +316,7 @@
                             <button type="button" onclick="closeRejectModal()"
                                 class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 text-sm font-medium">Cancel</button>
                             <button type="submit"
-                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium">Reject
-                                Application</button>
+                                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium">Reject Application</button>
                         </div>
                     </form>
                 </div>
@@ -298,7 +327,7 @@
 
 @push('scripts')
     <script>
-        /* AJAX view profile modal */
+        /* View Full Profile with Resume */
         function viewFullProfile(appId) {
             fetch(`/partner/applications/${appId}`, {
                     headers: {
@@ -308,15 +337,136 @@
                 })
                 .then(res => res.json())
                 .then(data => {
-                    document.getElementById('modalProfileContent').innerHTML = data.html ||
-                        '<div class="text-red-600">Failed to load profile</div>';
-                    document.getElementById('profileModal').classList.remove('hidden');
+                    if (data.success) {
+                        const application = data.application;
+                        const profile = data.profile;
+
+                        let profileHTML = buildProfileHTML(application, profile);
+
+                        document.getElementById('modalProfileContent').innerHTML = profileHTML;
+                        document.getElementById('modalProfileTitle').textContent = `${application.applicant.first_name} ${application.applicant.last_name}`;
+                        document.getElementById('profileModal').classList.remove('hidden');
+                    } else {
+                        document.getElementById('modalProfileContent').innerHTML =
+                            '<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">Failed to load profile</div>';
+                        document.getElementById('profileModal').classList.remove('hidden');
+                    }
                 })
-                .catch(() => {
+                .catch(err => {
+                    console.error(err);
                     document.getElementById('modalProfileContent').innerHTML =
-                        '<div class="text-red-600">Failed to load profile</div>';
+                        '<div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">Error loading profile</div>';
                     document.getElementById('profileModal').classList.remove('hidden');
                 });
+        }
+
+        function buildProfileHTML(application, profile) {
+            const applicantName = `${application.applicant.first_name} ${application.applicant.last_name}`;
+            const applicantType = application.applicant_type === 'alumni' ? 'Alumni' : 'Student';
+            const profilePhoto = profile?.profile_photo ? `<img src="${profile.profile_photo}" alt="${applicantName}" class="w-24 h-24 rounded-full object-cover">` :
+                `<div class="w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center"><span class="text-2xl font-bold text-purple-600">${applicantName.charAt(0)}</span></div>`;
+
+            let resumeHTML = '';
+            if (application.resume_path) {
+                const resumeExt = application.resume_path.split('.').pop().toLowerCase();
+                resumeHTML = `
+                    <div class="border-t border-gray-200 pt-4 mt-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">📄 Resume</h4>
+                        <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <svg class="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M4 3a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V3zm2 4a1 1 0 100 2h4a1 1 0 100-2H6zm0 4a1 1 0 100 2h4a1 1 0 100-2H6z"/>
+                                </svg>
+                                <div>
+                                    <p class="font-medium text-gray-900">Resume</p>
+                                    <p class="text-xs text-gray-500">${resumeExt.toUpperCase()}</p>
+                                </div>
+                            </div>
+                            <a href="${application.resume_path}" target="_blank" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let coverLetterHTML = '';
+            if (application.cover_letter) {
+                coverLetterHTML = `
+                    <div class="border-t border-gray-200 pt-4 mt-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">📝 Cover Letter</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg max-h-48 overflow-y-auto">
+                            <p class="text-sm text-gray-700 whitespace-pre-wrap">${application.cover_letter}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            let profileDetailsHTML = '';
+            if (application.applicant_type === 'alumni' && profile) {
+                profileDetailsHTML = `
+                    <div class="border-t border-gray-200 pt-4 mt-4 grid grid-cols-2 gap-4">
+                        ${profile.current_position ? `<div><p class="text-xs text-gray-500">Position</p><p class="font-medium">${profile.current_position}</p></div>` : ''}
+                        ${profile.current_organization ? `<div><p class="text-xs text-gray-500">Organization</p><p class="font-medium">${profile.current_organization}</p></div>` : ''}
+                        ${profile.current_industry ? `<div><p class="text-xs text-gray-500">Industry</p><p class="font-medium">${profile.current_industry}</p></div>` : ''}
+                        ${profile.current_location ? `<div><p class="text-xs text-gray-500">Location</p><p class="font-medium">${profile.current_location}</p></div>` : ''}
+                        ${profile.graduation_year ? `<div><p class="text-xs text-gray-500">Graduation</p><p class="font-medium">Class of ${profile.graduation_year}</p></div>` : ''}
+                        ${profile.phone ? `<div><p class="text-xs text-gray-500">Phone</p><p class="font-medium">${profile.phone}</p></div>` : ''}
+                    </div>
+                `;
+            } else if (application.applicant_type === 'student' && profile) {
+                profileDetailsHTML = `
+                    <div class="border-t border-gray-200 pt-4 mt-4 grid grid-cols-2 gap-4">
+                        ${profile.phone ? `<div><p class="text-xs text-gray-500">Phone</p><p class="font-medium">${profile.phone}</p></div>` : ''}
+                        ${profile.address ? `<div><p class="text-xs text-gray-500">Address</p><p class="font-medium">${profile.address}</p></div>` : ''}
+                        ${profile.year_level ? `<div><p class="text-xs text-gray-500">Year Level</p><p class="font-medium">${profile.year_level}</p></div>` : ''}
+                        ${profile.course ? `<div><p class="text-xs text-gray-500">Course</p><p class="font-medium">${profile.course}</p></div>` : ''}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="space-y-4">
+                    <!-- Profile Header -->
+                    <div class="flex items-center gap-4">
+                        ${profilePhoto}
+                        <div class="flex-1">
+                            <h3 class="text-2xl font-bold text-gray-900">${applicantName}</h3>
+                            <p class="text-gray-600">${application.applicant.email}</p>
+                            <span class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-medium ${application.applicant_type === 'alumni' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                                ${applicantType}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <p class="text-sm text-gray-500 mb-1">Application Status</p>
+                        <div class="inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                            application.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            application.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            application.status === 'reviewed' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }">
+                            ${application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                        </div>
+                    </div>
+
+                    <!-- Profile Details -->
+                    ${profileDetailsHTML}
+
+                    <!-- Resume -->
+                    ${resumeHTML}
+
+                    <!-- Cover Letter -->
+                    ${coverLetterHTML}
+
+                    <!-- Application Date -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <p class="text-xs text-gray-500">Applied on: <span class="font-medium text-gray-900">${new Date(application.created_at).toLocaleDateString()}</span></p>
+                    </div>
+                </div>
+            `;
         }
 
         function closeProfileModal() {
@@ -324,10 +474,10 @@
             document.getElementById('modalProfileContent').innerHTML = "";
         }
 
-        /* Reject modal logic */
+        /* Reject Modal Logic */
         function openRejectModal(appId, name) {
             document.getElementById('rejectApplicantName').textContent = `Reject Application for ${name}`;
-            document.getElementById('rejectForm').action = `/partner/applications/${appId}/reject`;
+            document.getElementById('rejectForm').action = `/partner/jobs/{{ $jobPosting->id }}/applications/${appId}/reject`;
             document.getElementById('rejection_reason').value = "";
             document.getElementById('rejectModal').classList.remove('hidden');
         }
@@ -336,13 +486,13 @@
             document.getElementById('rejectModal').classList.add('hidden');
             document.getElementById('rejection_reason').value = "";
         }
-        document.getElementById('rejectForm').addEventListener('submit', function(e) {
+
+        document.getElementById('rejectForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
-            // Optionally, add AJAX submission here for better UX
             this.submit();
         });
 
-        /* FILTER & SEARCH (client-side) */
+        /* Filter & Search */
         document.getElementById('statusFilter').addEventListener('change', filterApplicants);
         document.getElementById('searchApplicants').addEventListener('input', filterApplicants);
 

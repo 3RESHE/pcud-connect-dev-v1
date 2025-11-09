@@ -56,4 +56,31 @@ class ApplicationController extends Controller
 
         return redirect()->back()->with('success', 'Application rejected successfully!');
     }
+
+
+    /**
+     * Get application details as JSON (for AJAX modal)
+     */
+    public function getApplicationDetails($applicationId)
+    {
+        $application = JobApplication::with(['applicant', 'student', 'alumni', 'jobPosting'])->findOrFail($applicationId);
+
+        // Check authorization
+        if ($application->jobPosting->partner_id !== auth()->id()) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 403);
+        }
+
+        $profile = null;
+        if ($application->applicant_type === 'alumni') {
+            $profile = $application->alumni;
+        } else {
+            $profile = $application->student;
+        }
+
+        return response()->json([
+            'success' => true,
+            'application' => $application,
+            'profile' => $profile,
+        ]);
+    }
 }

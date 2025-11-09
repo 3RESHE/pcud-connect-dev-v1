@@ -390,6 +390,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                     ->name('reject');
             });
 
+
+
             // ===== PARTNERSHIPS =====
             Route::prefix('partnerships')->name('partnerships.')->group(function () {
                 Route::get('/', [PartnershipController::class, 'index'])

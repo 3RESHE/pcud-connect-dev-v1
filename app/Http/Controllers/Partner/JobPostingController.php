@@ -497,12 +497,7 @@ class JobPostingController extends Controller
             ->with('success', 'Job posting closed successfully');
     }
 
-    /**
-     * View applications for a job posting
-     */
-    /**
-     * View applications for a job posting
-     */
+
     public function applications(JobPosting $jobPosting)
     {
         if ($jobPosting->partner_id !== auth()->id()) {
