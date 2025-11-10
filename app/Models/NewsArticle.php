@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 
 class NewsArticle extends Model
@@ -13,8 +14,11 @@ class NewsArticle extends Model
         'approved_by',
         'title',
         'slug',
+        'summary',              // ✅ NEW
         'content',
         'category',
+        'event_date',           // ✅ NEW
+        'partnership_with',     // ✅ NEW
         'featured_image',
         'is_featured',
         'is_archived',
@@ -28,6 +32,7 @@ class NewsArticle extends Model
         'is_featured' => 'boolean',
         'is_archived' => 'boolean',
         'views_count' => 'integer',
+        'event_date' => 'date',         // ✅ NEW
         'published_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -49,6 +54,15 @@ class NewsArticle extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * ✅ NEW: Get tags for this article
+     */
+    public function tags(): BelongsToMany
+    {
+        return $this->belongsToMany(NewsTag::class, 'news_article_tag', 'news_article_id', 'news_tag_id')
+                    ->withTimestamps();
     }
 
     // ===== SCOPES =====
@@ -137,6 +151,25 @@ class NewsArticle extends Model
             ->orderBy('published_at', 'desc');
     }
 
+    /**
+     * ✅ NEW: Scope by event date
+     */
+    public function scopeUpcomingEvents($query)
+    {
+        return $query->where('event_date', '>=', now()->toDateString())
+                    ->where('status', 'published')
+                    ->orderBy('event_date', 'asc');
+    }
+
+    /**
+     * ✅ NEW: Scope by partnership
+     */
+    public function scopeByPartnership($query, $partnership)
+    {
+        return $query->where('partnership_with', $partnership)
+                    ->where('status', 'published');
+    }
+
     // ===== HELPER METHODS =====
 
     /**
@@ -167,6 +200,34 @@ class NewsArticle extends Model
             'general' => 'secondary',
             default => 'secondary',
         };
+    }
+
+    /**
+     * ✅ NEW: Get formatted event date
+     */
+    public function getEventDateDisplay(): string
+    {
+        if (!$this->event_date) {
+            return 'N/A';
+        }
+
+        return $this->event_date->format('M d, Y');
+    }
+
+    /**
+     * ✅ NEW: Get excerpt from summary
+     */
+    public function getSummaryExcerpt($length = 100): string
+    {
+        if (!$this->summary) {
+            return $this->getExcerpt($length);
+        }
+
+        if (strlen($this->summary) <= $length) {
+            return $this->summary;
+        }
+
+        return substr($this->summary, 0, $length) . '...';
     }
 
     /**
@@ -225,6 +286,46 @@ class NewsArticle extends Model
     public function isFeatured(): bool
     {
         return $this->is_featured && $this->isPublished();
+    }
+
+    /**
+     * ✅ NEW: Sync tags from comma-separated string
+     */
+    public function syncTagsFromString(string $tagsString): void
+    {
+        $tagNames = array_map('trim', explode(',', $tagsString));
+        $tagIds = [];
+
+        foreach ($tagNames as $tagName) {
+            if (empty($tagName)) {
+                continue;
+            }
+
+            $tag = NewsTag::firstOrCreate(
+                ['name' => $tagName],
+                ['slug' => Str::slug($tagName)]
+            );
+
+            $tagIds[] = $tag->id;
+        }
+
+        $this->tags()->sync($tagIds);
+    }
+
+    /**
+     * ✅ NEW: Get tags as comma-separated string
+     */
+    public function getTagsString(): string
+    {
+        return $this->tags->pluck('name')->join(', ');
+    }
+
+    /**
+     * ✅ NEW: Get tags as array
+     */
+    public function getTagsArray(): array
+    {
+        return $this->tags->pluck('name')->toArray();
     }
 
     /**
@@ -320,6 +421,36 @@ class NewsArticle extends Model
         }
 
         return $this->published_at->diffForHumans();
+    }
+
+    /**
+     * ✅ NEW: Get status display badge
+     */
+    public function getStatusBadgeClass(): string
+    {
+        return match($this->status) {
+            'draft' => 'bg-gray-100 text-gray-800',
+            'pending' => 'bg-yellow-100 text-yellow-800',
+            'approved' => 'bg-blue-100 text-blue-800',
+            'published' => 'bg-green-100 text-green-800',
+            'rejected' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
+        };
+    }
+
+    /**
+     * ✅ NEW: Get status display text
+     */
+    public function getStatusDisplay(): string
+    {
+        return match($this->status) {
+            'draft' => 'Draft',
+            'pending' => 'Pending Review',
+            'approved' => 'Approved',
+            'published' => 'Published',
+            'rejected' => 'Rejected',
+            default => ucfirst($this->status),
+        };
     }
 
     // ===== MODEL EVENTS =====

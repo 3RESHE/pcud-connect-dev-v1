@@ -315,6 +315,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('submit');
             Route::post('/{newsArticle}/withdraw', [StaffNewsController::class, 'withdraw'])
                 ->name('withdraw');
+            Route::post('/{newsArticle}/publish', [StaffNewsController::class, 'publish'])  // ✅ ADD THIS LINE
+                ->name('publish');
             Route::delete('/{newsArticle}', [StaffNewsController::class, 'destroy'])
                 ->name('destroy');
         });

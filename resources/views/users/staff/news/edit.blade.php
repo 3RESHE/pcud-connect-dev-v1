@@ -163,7 +163,7 @@
                     <div class="mb-4">
                         <p class="text-sm text-gray-600 mb-2">Current Image:</p>
                         <div class="relative inline-block">
-                            <img src="{{ asset('storage/' . $article->featured_image) }}" alt="Current featured image" class="h-32 w-auto rounded-md border border-gray-300">
+                            <img src="{{ Storage::url($article->featured_image) }}" alt="Current featured image" class="h-32 w-auto rounded-md border border-gray-300">
                             <input type="hidden" name="keep_existing_image" id="keepExistingImage" value="1">
                         </div>
                     </div>
@@ -269,7 +269,7 @@
                     id="tags"
                     name="tags"
                     required
-                    value="{{ old('tags', $article->tags) }}"
+                    value="{{ old('tags', $article->getTagsString()) }}"
                     class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-primary focus:border-primary @error('tags') border-red-500 @enderror"
                     placeholder="e.g., university, event, community, partnership (separate with commas)"
                 />
@@ -283,7 +283,7 @@
 
     <!-- Action Buttons -->
     <div class="flex justify-between items-center">
-        <a href="{{ route('staff.news.show', $article->id) }}" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
+        <a href="{{ route('staff.news.index') }}" class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
             Cancel
         </a>
         <div class="space-x-3">
@@ -362,7 +362,7 @@
     @if($article->featured_image)
         document.addEventListener('DOMContentLoaded', function() {
             const previewModalImg = document.getElementById('previewModalImg');
-            previewModalImg.src = "{{ asset('storage/' . $article->featured_image) }}";
+            previewModalImg.src = "{{ Storage::url($article->featured_image) }}";
         });
     @endif
 </script>

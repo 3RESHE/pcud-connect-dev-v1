@@ -10,25 +10,13 @@
                 <h1 class="text-3xl font-bold text-gray-900 mb-2">View Article</h1>
                 <p class="text-gray-600">View details of your news article</p>
             </div>
-            <span
-                class="mt-4 sm:mt-0 inline-block
-            @if ($article->status === 'published') bg-blue-100 text-blue-800
-            @elseif($article->status === 'pending') bg-yellow-100 text-yellow-800
-            @elseif($article->status === 'approved') bg-green-100 text-green-800
-            @elseif($article->status === 'rejected') bg-red-100 text-red-800
-            @else bg-gray-100 text-gray-800 @endif
-            px-4 py-2 rounded-full text-sm font-semibold">
-                @if ($article->status === 'published')
-                    Published
-                @elseif($article->status === 'pending')
-                    Pending Approval
-                @elseif($article->status === 'approved')
-                    Approved
-                @elseif($article->status === 'rejected')
-                    Rejected
-                @else
-                    {{ ucfirst($article->status) }}
-                @endif
+            <span class="mt-4 sm:mt-0 inline-block px-4 py-2 rounded-full text-sm font-semibold
+                @if ($article->status === 'published') bg-blue-100 text-blue-800
+                @elseif($article->status === 'pending') bg-yellow-100 text-yellow-800
+                @elseif($article->status === 'approved') bg-green-100 text-green-800
+                @elseif($article->status === 'rejected') bg-red-100 text-red-800
+                @else bg-gray-100 text-gray-800 @endif">
+                {{ $article->getStatusDisplay() }}
             </span>
         </div>
     </div>
@@ -41,29 +29,35 @@
             <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-3">
-                            {{ $article->title }}
-                        </h2>
+                        <h2 class="text-2xl font-bold text-gray-900 mb-3">{{ $article->title }}</h2>
                         <div class="flex flex-wrap gap-2 mb-4">
-                            <span
-                                class="
-                            @if ($article->category === 'university_updates') bg-blue-100 text-blue-800
-                            @elseif($article->category === 'alumni_success') bg-yellow-100 text-yellow-800
-                            @elseif($article->category === 'campus_events') bg-red-100 text-red-800
-                            @elseif($article->category === 'partnership_highlights') bg-emerald-100 text-emerald-800
-                            @else bg-gray-100 text-gray-800 @endif
-                            px-3 py-1 rounded-full text-xs font-medium">
+                            <!-- Status Badge -->
+                            <span class="px-3 py-1 rounded-full text-xs font-medium
+                                @if ($article->status === 'published') bg-blue-100 text-blue-800
+                                @elseif($article->status === 'pending') bg-yellow-100 text-yellow-800
+                                @elseif($article->status === 'approved') bg-green-100 text-green-800
+                                @elseif($article->status === 'rejected') bg-red-100 text-red-800
+                                @else bg-gray-100 text-gray-800 @endif">
+                                {{ $article->getStatusDisplay() }}
+                            </span>
+
+                            <!-- Category Badge -->
+                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                                 {{ $article->getCategoryDisplayName() }}
                             </span>
+
+                            <!-- Featured Badge -->
                             @if ($article->is_featured)
                                 <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium">
-                                    Featured
+                                    ⭐ Featured
                                 </span>
                             @endif
-                            @if ($article->tags)
-                                @foreach (array_slice(explode(',', $article->tags), 0, 3) as $tag)
-                                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">
-                                        {{ trim($tag) }}
+
+                            <!-- Tags (First 3) -->
+                            @if ($article->tags && $article->tags->count() > 0)
+                                @foreach ($article->tags->take(3) as $tag)
+                                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium">
+                                        {{ $tag->name }}
                                     </span>
                                 @endforeach
                             @endif
@@ -84,7 +78,7 @@
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Featured Image</h3>
                     <div class="rounded-lg overflow-hidden bg-gray-100">
-                        <img src="{{ asset('storage/' . $article->featured_image) }}" alt="{{ $article->title }}"
+                        <img src="{{ Storage::url($article->featured_image) }}" alt="{{ $article->title }}"
                             class="w-full h-64 object-cover" />
                     </div>
                 </div>
@@ -112,8 +106,7 @@
                         <div class="ml-3 flex-1">
                             <h3 class="text-lg font-semibold text-red-900 mb-2">Admin Feedback</h3>
                             <p class="text-red-700">{{ $article->rejection_reason }}</p>
-                            <p class="text-sm text-red-600 mt-2">Please revise the article based on this feedback and
-                                resubmit.</p>
+                            <p class="text-sm text-red-600 mt-2">Please revise the article based on this feedback and resubmit.</p>
                         </div>
                     </div>
                 </div>
@@ -131,8 +124,7 @@
                         </div>
                         <div class="ml-3 flex-1">
                             <h3 class="text-lg font-semibold text-green-900 mb-2">Article Approved!</h3>
-                            <p class="text-green-700">Your article has been approved by the administrator and is ready for
-                                publication.</p>
+                            <p class="text-green-700">Your article has been approved by the administrator and is ready for publication.</p>
                         </div>
                     </div>
                 </div>
@@ -147,38 +139,44 @@
                 <div class="space-y-4">
                     <div>
                         <label class="text-sm font-medium text-gray-500">Author</label>
-                        <p class="text-gray-900">{{ $article->creator->first_name }} {{ $article->creator->last_name }}</p>
+                        <p class="text-gray-900 font-medium">{{ $article->creator->first_name }} {{ $article->creator->last_name }}</p>
                     </div>
+
                     <div>
                         <label class="text-sm font-medium text-gray-500">Category</label>
                         <p class="text-gray-900">{{ $article->getCategoryDisplayName() }}</p>
                     </div>
+
                     @if ($article->event_date)
                         <div>
                             <label class="text-sm font-medium text-gray-500">Event Date</label>
-                            <p class="text-gray-900">{{ $article->event_date->format('F j, Y') }}</p>
+                            <p class="text-gray-900">{{ $article->getEventDateDisplay() }}</p>
                         </div>
                     @endif
-                    <div>
-                        <label class="text-sm font-medium text-gray-500">Created On</label>
-                        <p class="text-gray-900">{{ $article->created_at->format('F j, Y - g:i A') }}</p>
-                    </div>
-                    @if ($article->published_at)
-                        <div>
-                            <label class="text-sm font-medium text-gray-500">Published On</label>
-                            <p class="text-gray-900">{{ $article->published_at->format('F j, Y - g:i A') }}</p>
-                        </div>
-                    @endif
+
                     @if ($article->partnership_with)
                         <div>
                             <label class="text-sm font-medium text-gray-500">Partnership With</label>
                             <p class="text-gray-900">{{ $article->partnership_with }}</p>
                         </div>
                     @endif
+
+                    <div>
+                        <label class="text-sm font-medium text-gray-500">Created On</label>
+                        <p class="text-gray-900">{{ $article->created_at->format('F j, Y - g:i A') }}</p>
+                    </div>
+
+                    @if ($article->published_at)
+                        <div>
+                            <label class="text-sm font-medium text-gray-500">Published On</label>
+                            <p class="text-gray-900">{{ $article->published_at->format('F j, Y - g:i A') }}</p>
+                        </div>
+                    @endif
+
                     @if ($article->status === 'published')
                         <div>
                             <label class="text-sm font-medium text-gray-500">Views</label>
-                            <p class="text-gray-900">{{ $article->getViewsDisplay() }}</p>
+                            <p class="text-gray-900 font-semibold text-lg">{{ $article->getViewsDisplay() }}</p>
                         </div>
                     @endif
                 </div>
@@ -228,6 +226,7 @@
                                 <p class="text-sm text-gray-600 mt-1">Current Status</p>
                             </div>
                         </div>
+
                     @elseif($article->status === 'approved')
                         <!-- Approved -->
                         <div class="flex gap-3">
@@ -239,16 +238,11 @@
                                             clip-rule="evenodd"></path>
                                     </svg>
                                 </div>
-                                @if ($article->status === 'approved')
-                                    <div class="w-0.5 h-full bg-gray-200"></div>
-                                @endif
+                                <div class="w-0.5 h-full bg-gray-200"></div>
                             </div>
                             <div class="flex-1 pb-6">
                                 <p class="text-sm font-medium text-gray-900">Approved by Admin</p>
-                                <p class="text-xs text-gray-500">
-                                    {{ $article->approved_at ? $article->approved_at->format('M j, Y - g:i A') : 'Recently' }}
-                                </p>
-                                <p class="text-sm text-gray-600 mt-1">Ready to publish</p>
+                                <p class="text-xs text-gray-500">Ready to publish</p>
                             </div>
                         </div>
 
@@ -257,11 +251,8 @@
                             <div class="flex flex-col items-center">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z">
-                                        </path>
-                                        <path
-                                            d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z">
-                                        </path>
+                                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
                                     </svg>
                                 </div>
                             </div>
@@ -271,6 +262,7 @@
                                 <p class="text-sm text-gray-600 mt-1">Current Status</p>
                             </div>
                         </div>
+
                     @elseif($article->status === 'published')
                         <!-- Approved -->
                         <div class="flex gap-3">
@@ -286,8 +278,6 @@
                             </div>
                             <div class="flex-1 pb-6">
                                 <p class="text-sm font-medium text-gray-900">Approved by Admin</p>
-                                <p class="text-xs text-gray-500">
-                                    {{ $article->approved_at ? $article->approved_at->format('M j, Y') : 'N/A' }}</p>
                             </div>
                         </div>
 
@@ -305,11 +295,11 @@
                             </div>
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-gray-900">Published</p>
-                                <p class="text-xs text-gray-500">{{ $article->published_at->format('M j, Y - g:i A') }}
-                                </p>
+                                <p class="text-xs text-gray-500">{{ $article->published_at->format('M j, Y - g:i A') }}</p>
                                 <p class="text-sm text-gray-600 mt-1">Live and visible to public</p>
                             </div>
                         </div>
+
                     @elseif($article->status === 'rejected')
                         <!-- Rejected -->
                         <div class="flex gap-3">
@@ -333,13 +323,13 @@
             </div>
 
             <!-- All Tags -->
-            @if ($article->tags)
+            @if ($article->tags && $article->tags->count() > 0)
                 <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">All Tags</h3>
                     <div class="flex flex-wrap gap-2">
-                        @foreach (explode(',', $article->tags) as $tag)
-                            <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">
-                                {{ trim($tag) }}
+                        @foreach ($article->tags as $tag)
+                            <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-xs font-medium">
+                                {{ $tag->name }}
                             </span>
                         @endforeach
                     </div>
@@ -362,40 +352,28 @@
                         Edit Article
                     </a>
                     @if ($article->status === 'draft')
-                        <form action="{{ route('staff.news.submit', $article->id) }}" method="POST"
-                            class="w-full sm:w-auto">
-                            @csrf
-                            <button type="submit"
-                                class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200"
-                                onclick="return confirm('Submit this article for admin review?')">
-                                Submit for Review
-                            </button>
-                        </form>
+                        <button onclick="openSubmitModal()"
+                            class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200">
+                            Submit for Review
+                        </button>
                     @endif
+
                 @elseif($article->status === 'pending')
                     <a href="{{ route('staff.news.edit', $article->id) }}"
                         class="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-center transition-colors duration-200">
                         Edit Article
                     </a>
-                    <form action="{{ route('staff.news.withdraw', $article->id) }}" method="POST"
-                        class="w-full sm:w-auto">
-                        @csrf
-                        <button type="submit"
-                            class="w-full px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium transition-colors duration-200"
-                            onclick="return confirm('Withdraw this article from review?')">
-                            Withdraw Submission
-                        </button>
-                    </form>
+                    <button onclick="openWithdrawModal()"
+                        class="w-full sm:w-auto px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium transition-colors duration-200">
+                        Withdraw Submission
+                    </button>
+
                 @elseif($article->status === 'approved')
-                    {{-- <form action="{{ route('staff.news.publish', $article->id) }}" method="POST" class="w-full sm:w-auto"> --}}
-                    <form action="" method="POST" class="w-full sm:w-auto">
-                        @csrf
-                        <button type="submit"
-                            class="w-full px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200"
-                            onclick="return confirm('Publish this approved article now?')">
-                            Publish Now
-                        </button>
-                    </form>
+                    <button onclick="openPublishModal()"
+                        class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200">
+                        Publish Now
+                    </button>
+
                 @elseif($article->status === 'published')
                     <a href="{{ route('staff.news.edit', $article->id) }}"
                         class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium text-center transition-colors duration-200">
@@ -405,4 +383,149 @@
             </div>
         </div>
     </div>
+
+    <!-- ========== MODALS ========== -->
+
+    <!-- Submit Modal -->
+    <div id="submitModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-green-100 rounded-full mb-4">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Submit Article for Review?</h3>
+                <p class="text-gray-600 text-center mb-6">
+                    Your article will be sent to the admin for review. You'll be notified once they approve or reject it.
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="closeSubmitModal()"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+                        Cancel
+                    </button>
+                    <form action="{{ route('staff.news.submit', $article->id) }}" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit"
+                            class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors">
+                            Yes, Submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-yellow-100 rounded-full mb-4">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Withdraw Article?</h3>
+                <p class="text-gray-600 text-center mb-6">
+                    This article will be returned to draft status. You can edit and resubmit it later.
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="closeWithdrawModal()"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+                        Cancel
+                    </button>
+                    <form action="{{ route('staff.news.withdraw', $article->id) }}" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit"
+                            class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium transition-colors">
+                            Yes, Withdraw
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Publish Modal -->
+    <div id="publishModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-blue-100 rounded-full mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Publish Article?</h3>
+                <p class="text-gray-600 text-center mb-6">
+                    This article will be published and visible to all users. This action cannot be undone easily.
+                </p>
+                <div class="flex gap-3">
+                    <button onclick="closePublishModal()"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+                        Cancel
+                    </button>
+                    <form action="{{ route('staff.news.publish', $article->id) }}" method="POST" class="flex-1">
+                        @csrf
+                        <button type="submit"
+                            class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors">
+                            Yes, Publish
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript for Modals -->
+    <script>
+        function openSubmitModal() {
+            document.getElementById('submitModal').classList.remove('hidden');
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submitModal').classList.add('hidden');
+        }
+
+        function openWithdrawModal() {
+            document.getElementById('withdrawModal').classList.remove('hidden');
+        }
+
+        function closeWithdrawModal() {
+            document.getElementById('withdrawModal').classList.add('hidden');
+        }
+
+        function openPublishModal() {
+            document.getElementById('publishModal').classList.remove('hidden');
+        }
+
+        function closePublishModal() {
+            document.getElementById('publishModal').classList.add('hidden');
+        }
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const submitModal = document.getElementById('submitModal');
+            const withdrawModal = document.getElementById('withdrawModal');
+            const publishModal = document.getElementById('publishModal');
+
+            if (event.target === submitModal) {
+                closeSubmitModal();
+            }
+            if (event.target === withdrawModal) {
+                closeWithdrawModal();
+            }
+            if (event.target === publishModal) {
+                closePublishModal();
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeSubmitModal();
+                closeWithdrawModal();
+                closePublishModal();
+            }
+        });
+    </script>
 @endsection
