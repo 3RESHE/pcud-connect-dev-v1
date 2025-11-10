@@ -195,15 +195,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('reject');
         });
 
-        // ===== NEWS ARTICLES APPROVALS =====
+        // News Approval Routes
         Route::prefix('approvals/news')->name('approvals.news.')->group(function () {
-            Route::get('/', [NewsApprovalController::class, 'index'])
-                ->name('index');
-            Route::post('/{id}/approve', [NewsApprovalController::class, 'approve'])
-                ->name('approve');
-            Route::post('/{id}/reject', [NewsApprovalController::class, 'reject'])
-                ->name('reject');
+            Route::get('/', [NewsApprovalController::class, 'index'])->name('index');
+            Route::get('/{newsArticle}', [NewsApprovalController::class, 'show'])->name('show');
+            Route::post('/{newsArticle}/approve', [NewsApprovalController::class, 'approve'])->name('approve');
+            Route::post('/{newsArticle}/reject', [NewsApprovalController::class, 'reject'])->name('reject');
         });
+
 
         // ===== PARTNERSHIPS APPROVALS =====
         Route::prefix('approvals/partnerships')->name('approvals.partnerships.')->group(function () {

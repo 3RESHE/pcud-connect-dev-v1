@@ -25,7 +25,6 @@ class NewsArticle extends Model
         'status',
         'rejection_reason',
         'published_at',
-        'views_count',
     ];
 
     protected $casts = [

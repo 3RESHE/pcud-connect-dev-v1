@@ -46,8 +46,6 @@ return new class extends Migration
             $table->text('rejection_reason')->nullable();
             $table->timestamp('published_at')->nullable();
 
-            // Engagement metrics
-            $table->integer('views_count')->default(0);
 
             $table->timestamps();
         });
