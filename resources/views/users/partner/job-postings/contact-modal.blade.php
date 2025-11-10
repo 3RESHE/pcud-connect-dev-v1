@@ -20,6 +20,9 @@
         <form id="contactForm" class="p-6 space-y-4">
             @csrf
 
+            <!-- Hidden Application ID -->
+            <input type="hidden" id="applicationId" name="application_id">
+
             <!-- Subject Input -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -100,6 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const messageInput = contactForm.querySelector('textarea[name="message"]');
     const templateBtns = document.querySelectorAll('.template-btn');
     const closeButtons = document.querySelectorAll('.close-modal');
+    const applicationIdInput = document.getElementById('applicationId');
 
     // Close modal
     closeButtons.forEach(btn => {
@@ -138,14 +142,30 @@ document.addEventListener('DOMContentLoaded', function() {
     contactForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        const applicationId = modal.dataset.applicationId;
-        const formData = new FormData(contactForm);
+        const applicationId = applicationIdInput.value;
+
+        if (!applicationId) {
+            console.error('No application ID found');
+            showToast('❌ Error: Application ID not found', 'error');
+            return;
+        }
+
+        const subject = contactForm.querySelector('input[name="subject"]').value;
+        const message = contactForm.querySelector('textarea[name="message"]').value;
+
+        // Validation
+        if (!subject || !message) {
+            showToast('❌ Please fill in all fields', 'error');
+            return;
+        }
 
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<svg class="w-5 h-5 animate-spin" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg> Sending...';
 
         try {
+            console.log('Sending email to application:', applicationId);
+
             const response = await fetch(`/partner/applications/${applicationId}/contact`, {
                 method: 'POST',
                 headers: {
@@ -153,24 +173,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                 },
                 body: JSON.stringify({
-                    subject: formData.get('subject'),
-                    message: formData.get('message')
+                    subject: subject,
+                    message: message
                 })
             });
 
+            console.log('Response status:', response.status);
+
             const data = await response.json();
+            console.log('Response data:', data);
 
             if (data.success) {
-                showToast('✓ Message sent successfully!', 'success');
+                showToast('✓ Email sent successfully to ' + (data.applicant_email || 'applicant'), 'success');
                 modal.classList.add('hidden');
                 contactForm.reset();
                 charCountSpan.textContent = '0/2000';
                 setTimeout(() => location.reload(), 1500);
             } else {
-                showToast('❌ ' + data.message, 'error');
+                showToast('❌ ' + (data.message || 'Failed to send email'), 'error');
             }
         } catch (error) {
-            showToast('❌ An error occurred', 'error');
+            console.error('Error:', error);
+            showToast('❌ An error occurred: ' + error.message, 'error');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg> Send Message';
@@ -181,8 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 shadow-lg
-        ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}
-        animate-pulse`;
+        ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
     toast.textContent = message;
     document.body.appendChild(toast);
 

@@ -42,7 +42,6 @@ class ApplicationController extends Controller
                 'applicant' => $applicant,
                 'applicantProfile' => $applicantProfile,
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Application show error: ' . $e->getMessage());
             return back()->with('error', 'Failed to load application: ' . $e->getMessage());
@@ -80,7 +79,6 @@ class ApplicationController extends Controller
                 'message' => 'Application approved successfully',
                 'status' => 'approved',
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Approve error: ' . $e->getMessage());
             return response()->json([
@@ -128,7 +126,6 @@ class ApplicationController extends Controller
                 'message' => 'Application rejected successfully',
                 'status' => 'rejected',
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Reject error: ' . $e->getMessage());
             return response()->json([
@@ -138,21 +135,21 @@ class ApplicationController extends Controller
         }
     }
 
-    /**
-     * Contact applicant via email
-     */
     public function contact(Request $request, JobApplication $application)
     {
         try {
             // ✅ Validation
-            $request->validate([
+            $validated = $request->validate([
                 'subject' => 'required|string|max:255',
                 'message' => 'required|string|min:10|max:2000',
             ]);
 
             // ✅ Authorization
             if ($application->jobPosting->partner_id !== auth()->id()) {
-                abort(403);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Unauthorized action.',
+                ], 403);
             }
 
             // ✅ Prepare email data
@@ -160,16 +157,22 @@ class ApplicationController extends Controller
             $partner = auth()->user();
             $jobPosting = $application->jobPosting;
 
-            // ✅ Send email
-            Mail::to($applicant->email)->send(
-                new ContactApplicantMailable(
+            \Log::info('Sending email', [
+                'to' => $applicant->email,
+                'subject' => $validated['subject'],
+            ]);
+
+            // ✅ Send email using simple approach
+            \Mail::to($applicant->email)
+                ->send(new ContactApplicantMailable(
                     $applicant,
                     $partner,
                     $jobPosting,
-                    $request->subject,
-                    $request->message
-                )
-            );
+                    $validated['subject'],
+                    $validated['message']
+                ));
+
+            \Log::info('Email sent successfully', ['email' => $applicant->email]);
 
             // ✅ Update status to "contacted"
             $application->update([
@@ -185,25 +188,30 @@ class ApplicationController extends Controller
                 'subject_type' => JobApplication::class,
                 'subject_id' => $application->id,
                 'properties' => [
-                    'subject' => $request->subject,
+                    'subject' => $validated['subject'],
                     'email_sent_to' => $applicant->email,
                 ],
             ]);
 
             return response()->json([
                 'success' => true,
-                'message' => 'Email sent successfully. Application marked as contacted.',
+                'message' => '✓ Email sent successfully to ' . $applicant->email,
+                'applicant_email' => $applicant->email,
                 'status' => 'contacted',
             ]);
-
         } catch (\Exception $e) {
-            \Log::error('Contact error: ' . $e->getMessage());
+            \Log::error('Contact error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to send email: ' . $e->getMessage(),
             ], 500);
         }
     }
+
 
     /**
      * ✅ FIXED: Download applicant resume with proper path handling
@@ -259,7 +267,6 @@ class ApplicationController extends Controller
 
             // ✅ Return file download
             return response()->download($fullPath, $filename);
-
         } catch (\Exception $e) {
             \Log::error('Resume download error: ' . $e->getMessage(), [
                 'application_id' => $application->id,
@@ -309,7 +316,6 @@ class ApplicationController extends Controller
                 'message' => 'Status updated successfully',
                 'status' => $newStatus,
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Status update error: ' . $e->getMessage());
             return response()->json([

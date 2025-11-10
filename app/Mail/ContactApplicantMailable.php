@@ -3,48 +3,43 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class ContactApplicantMailable extends Mailable implements ShouldQueue
+class ContactApplicantMailable extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(
-        public $applicant,
-        public $partner,
-        public $jobPosting,
-        public $subject,
-        public $message
-    ) {}
+    public $applicant;
+    public $partner;
+    public $jobPosting;
+    public $subject;
+    public $messageContent;
 
     /**
-     * Get the message envelope.
+     * Create a new message instance.
      */
-    public function envelope(): Envelope
+    public function __construct($applicant, $partner, $jobPosting, $subject, $messageContent)
     {
-        return new Envelope(
-            from: $this->partner->email,
-            subject: $this->subject,
-        );
+        $this->applicant = $applicant;
+        $this->partner = $partner;
+        $this->jobPosting = $jobPosting;
+        $this->subject = $subject;
+        $this->messageContent = $messageContent;
     }
 
     /**
-     * Get the message content definition.
+     * Build the message.
      */
-    public function content(): Content
+    public function build()
     {
-        return new Content(
-            view: 'emails.contact-applicant',
-            with: [
-                'applicant' => $this->applicant,
-                'partner' => $this->partner,
-                'jobPosting' => $this->jobPosting,
-                'message' => $this->message,
-            ],
-        );
+        return $this->subject($this->subject)
+                    ->view('emails.contact-applicant')
+                    ->with([
+                        'applicant' => $this->applicant,
+                        'partner' => $this->partner,
+                        'jobPosting' => $this->jobPosting,
+                        'messageContent' => $this->messageContent,
+                    ]);
     }
 }
