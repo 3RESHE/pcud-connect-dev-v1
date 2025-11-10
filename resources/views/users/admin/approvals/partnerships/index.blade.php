@@ -209,7 +209,7 @@
                     <!-- Partner Info -->
                     <div class="bg-gray-50 p-3 rounded-lg mb-4 border border-gray-100">
                         <p class="text-xs text-gray-600 font-medium">Submitted by:</p>
-                        <p class="text-sm text-gray-900 font-semibold">{{ $partnership->partner->name ?? 'Unknown Partner' }}</p>
+                        <p class="text-sm text-gray-900 font-semibold">{{ $partnership->partner->first_name . " " . $partnership->partner->last_name ?? 'Unknown Partner' }}</p>
                         <p class="text-xs text-gray-600">{{ $partnership->partner->email ?? '' }}</p>
                     </div>
 

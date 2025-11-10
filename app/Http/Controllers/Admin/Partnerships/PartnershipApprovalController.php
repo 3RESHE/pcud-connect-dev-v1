@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Partnerships;
 use App\Http\Controllers\Controller;
 use App\Models\Partnership;
 use App\Models\ActivityLog;
+use App\Mail\PartnershipDiscussionMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
@@ -45,7 +46,8 @@ class PartnershipApprovalController extends Controller
     }
 
     /**
-     * Move partnership to "Under Discussion" status
+     * Move partnership to "Under Discussion" status and send email to partner
+     * THIS IS THE ONLY METHOD THAT SENDS EMAIL
      */
     public function moveToDiscussion(Request $request, $id)
     {
@@ -53,70 +55,65 @@ class PartnershipApprovalController extends Controller
 
         // Validate that it's currently submitted
         if ($partnership->status !== 'submitted') {
-            return response()->json([
-                'message' => 'Only pending proposals can be moved to discussion',
-            ], 400);
+            return redirect()->back()->with('error', 'Only pending proposals can be moved to discussion');
         }
 
-        // Update status
-        $partnership->update([
-            'status' => 'under_review',
+        // Validate the message from the form
+        $validated = $request->validate([
+            'admin_notes' => 'required|string|min:10|max:2000',
         ]);
 
-        // Send email to partner
-        $this->sendEmailToPartner(
-            $partnership,
-            'under_review',
-            $request->input('admin_notes') ?? 'We are currently reviewing your proposal. Please check your email for any clarifications or additional information needed.'
-        );
+        try {
+            // Send email to partner with the admin's message
+            Mail::send(new PartnershipDiscussionMail(
+                $partnership,
+                $validated['admin_notes'],
+                auth()->user()->name
+            ));
 
-        // Log activity
-        ActivityLog::create([
-            'user_id' => auth()->id(),
-            'action' => 'moved_to_discussion',
-            'description' => "Admin moved partnership '{$partnership->activity_title}' to under discussion",
-            'model_type' => 'Partnership',
-            'model_id' => $partnership->id,
-        ]);
+            // Update partnership status
+            $partnership->update([
+                'status' => 'under_review',
+                'admin_notes' => $validated['admin_notes'],
+            ]);
 
-        return response()->json([
-            'message' => 'Partnership moved to under discussion. Email sent to partner.',
-            'partnership' => $partnership,
-        ]);
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'moved_to_discussion',
+                'description' => "Admin moved partnership '{$partnership->activity_title}' to under discussion and sent email to partner",
+                'model_type' => 'Partnership',
+                'model_id' => $partnership->id,
+            ]);
+
+            return redirect()->back()->with('success', 'Partnership moved to discussion and email sent to partner successfully!');
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to send partnership discussion email: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Email failed to send. Please try again.');
+        }
     }
 
     /**
-     * Approve partnership proposal
+     * Approve partnership proposal (NO EMAIL)
      */
     public function approve(Request $request, $id)
     {
         $partnership = Partnership::findOrFail($id);
 
-        // Validate that it's either submitted or under review
         if (!in_array($partnership->status, ['submitted', 'under_review'])) {
-            return response()->json([
-                'message' => 'Only pending or under review proposals can be approved',
-            ], 400);
+            return redirect()->back()->with('error', 'Only pending or under review proposals can be approved');
         }
 
         $validated = $request->validate([
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
-        // Update partnership
         $partnership->update([
             'status' => 'approved',
             'admin_notes' => $validated['admin_notes'] ?? null,
         ]);
 
-        // Send approval email to partner
-        $this->sendEmailToPartner(
-            $partnership,
-            'approved',
-            $validated['admin_notes'] ?? 'Congratulations! Your partnership proposal has been approved. Please check your email for coordination details and next steps.'
-        );
-
-        // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => 'approved',
@@ -125,44 +122,29 @@ class PartnershipApprovalController extends Controller
             'model_id' => $partnership->id,
         ]);
 
-        return response()->json([
-            'message' => 'Partnership approved successfully. Email sent to partner.',
-            'partnership' => $partnership,
-        ]);
+        return redirect()->back()->with('success', 'Partnership approved successfully!');
     }
 
     /**
-     * Reject partnership proposal
+     * Reject partnership proposal (NO EMAIL)
      */
     public function reject(Request $request, $id)
     {
         $partnership = Partnership::findOrFail($id);
 
-        // Validate that it's either submitted or under review
         if (!in_array($partnership->status, ['submitted', 'under_review'])) {
-            return response()->json([
-                'message' => 'Only pending or under review proposals can be rejected',
-            ], 400);
+            return redirect()->back()->with('error', 'Only pending or under review proposals can be rejected');
         }
 
         $validated = $request->validate([
             'admin_notes' => 'required|string|max:1000',
         ]);
 
-        // Update partnership
         $partnership->update([
             'status' => 'rejected',
             'admin_notes' => $validated['admin_notes'],
         ]);
 
-        // Send rejection email to partner
-        $this->sendEmailToPartner(
-            $partnership,
-            'rejected',
-            "We appreciate your submission. However, your partnership proposal was not approved at this time. Here's our feedback: " . $validated['admin_notes'] . "\n\nYou are welcome to revise and resubmit your proposal."
-        );
-
-        // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => 'rejected',
@@ -171,45 +153,30 @@ class PartnershipApprovalController extends Controller
             'model_id' => $partnership->id,
         ]);
 
-        return response()->json([
-            'message' => 'Partnership rejected. Email sent to partner.',
-            'partnership' => $partnership,
-        ]);
+        return redirect()->back()->with('success', 'Partnership rejected successfully!');
     }
 
     /**
-     * Mark partnership as completed
+     * Mark partnership as completed (NO EMAIL)
      */
     public function markComplete(Request $request, $id)
     {
         $partnership = Partnership::findOrFail($id);
 
-        // Validate that it's approved
         if ($partnership->status !== 'approved') {
-            return response()->json([
-                'message' => 'Only approved partnerships can be marked as complete',
-            ], 400);
+            return redirect()->back()->with('error', 'Only approved partnerships can be marked as complete');
         }
 
         $validated = $request->validate([
             'admin_notes' => 'nullable|string|max:1000',
         ]);
 
-        // Update partnership
         $partnership->update([
             'status' => 'completed',
             'completed_at' => now(),
             'admin_notes' => $validated['admin_notes'] ?? null,
         ]);
 
-        // Send completion email to partner
-        $this->sendEmailToPartner(
-            $partnership,
-            'completed',
-            'Your partnership activity has been successfully marked as complete. Thank you for partnering with PCU-DASMA!'
-        );
-
-        // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => 'completed',
@@ -218,47 +185,6 @@ class PartnershipApprovalController extends Controller
             'model_id' => $partnership->id,
         ]);
 
-        return response()->json([
-            'message' => 'Partnership marked as complete. Email sent to partner.',
-            'partnership' => $partnership,
-        ]);
-    }
-
-    /**
-     * Send email to partner based on status
-     */
-    private function sendEmailToPartner(Partnership $partnership, $status, $message)
-    {
-        try {
-            $partner = $partnership->partner;
-
-            $emailData = [
-                'partner_name' => $partner->name ?? 'Partner',
-                'activity_title' => $partnership->activity_title,
-                'status' => $status,
-                'message' => $message,
-                'partnership_id' => $partnership->id,
-            ];
-
-            // Determine email subject
-            $subjects = [
-                'under_review' => 'Partnership Proposal Under Discussion - ' . $partnership->activity_title,
-                'approved' => 'Partnership Proposal Approved! - ' . $partnership->activity_title,
-                'rejected' => 'Partnership Proposal Review - ' . $partnership->activity_title,
-                'completed' => 'Partnership Successfully Completed - ' . $partnership->activity_title,
-            ];
-
-            $subject = $subjects[$status] ?? 'Partnership Update';
-
-            // Send email
-            Mail::send('emails.partnership-status-update', $emailData, function ($message) use ($partner, $subject) {
-                $message->to($partner->email)
-                    ->subject($subject);
-            });
-
-        } catch (\Exception $e) {
-            // Log error but don't fail the operation
-            \Log::error('Failed to send partnership email: ' . $e->getMessage());
-        }
+        return redirect()->back()->with('success', 'Partnership marked as complete!');
     }
 }
