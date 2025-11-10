@@ -69,7 +69,7 @@
                                 Staff Profile
                             </a>
                             <a
-                                href="{{ route('staff.settings') }}"
+                                href=""
                                 class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors duration-200"
                                 role="menuitem"
                             >
@@ -191,7 +191,7 @@
                         Staff Profile
                     </a>
                     <a
-                        href="{{ route('staff.settings') }}"
+                        href=""
                         class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200"
                     >
                         Settings

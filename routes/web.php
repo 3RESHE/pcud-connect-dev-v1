@@ -16,10 +16,10 @@ use App\Http\Controllers\Alumni\AlumniNewsController;
 use App\Http\Controllers\Alumni\AlumniProfileController;
 use App\Http\Controllers\Alumni\AlumniProjectController;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboardController;
-use App\Http\Controllers\Partner\ApplicationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
+use App\Http\Controllers\Partner\ApplicationController;
 use App\Http\Controllers\Partner\JobPostingController;
 use App\Http\Controllers\Partner\NewsController as PartnerNewsController;
 use App\Http\Controllers\Partner\PartnerDashboardController;
@@ -28,14 +28,16 @@ use App\Http\Controllers\Partner\ProfileController as PartnerProfileController;
 use App\Http\Controllers\Partner\SettingsController as PartnerSettingsController;
 use App\Http\Controllers\Staff\Events\EventController;
 use App\Http\Controllers\Staff\News\NewsController as StaffNewsController;
+use App\Http\Controllers\Staff\ProfileController;
+use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\ExperienceController;
 use App\Http\Controllers\Student\ProjectController;
 use App\Http\Controllers\Student\StudentEventController;
 use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
-use App\Http\Controllers\Student\DashboardController;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -235,16 +237,10 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])
             ->name('dashboard');
 
-        // ===== PROFILE & SETTINGS =====
-        Route::get('/profile', [StaffDashboardController::class, 'profile'])
-            ->name('profile');
-        Route::put('/profile', [StaffDashboardController::class, 'updateProfile'])
-            ->name('profile.update');
 
-        Route::get('/settings', [StaffDashboardController::class, 'settings'])
-            ->name('settings');
-        Route::put('/settings', [StaffDashboardController::class, 'updateSettings'])
-            ->name('settings.update');
+        Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+        Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
         // ===== EVENT MANAGEMENT =====
         Route::prefix('events')->name('events.')->group(function () {

@@ -15,6 +15,9 @@ class StaffProfile extends Model
         'employee_id',
     ];
 
+    /**
+     * Get the user that owns the staff profile
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
