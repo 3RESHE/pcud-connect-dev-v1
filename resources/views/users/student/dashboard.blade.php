@@ -90,7 +90,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             @forelse($latestNews as $article)
                 <!-- News Card -->
-                <a href="{{ route('student.news.show', $article->id) }}" class="group cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <a href="{{ route('news.show', $article->id) }}" class="group cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
                     @if($article->featured_image)
                         <img class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" src="{{ asset('storage/' . $article->featured_image) }}" alt="{{ $article->title }}" />
                     @else
