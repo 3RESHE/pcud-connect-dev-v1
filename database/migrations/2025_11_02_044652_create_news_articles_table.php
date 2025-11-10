@@ -45,6 +45,7 @@ return new class extends Migration
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected', 'published'])->default('draft');
             $table->text('rejection_reason')->nullable();
             $table->timestamp('published_at')->nullable();
+            $table->integer('views_count')->default(0);
 
 
             $table->timestamps();
