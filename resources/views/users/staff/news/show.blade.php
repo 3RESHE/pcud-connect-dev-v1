@@ -21,15 +21,15 @@
         </div>
     </div>
 
-    <!-- Bento Box Grid -->
+    <!-- Bento Box Grid - Responsive -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Main Article Content - Spans 2 columns -->
         <div class="lg:col-span-2 space-y-6">
             <!-- Article Title & Summary Card -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-                <div class="flex items-start justify-between mb-4">
-                    <div class="flex-1">
-                        <h2 class="text-2xl font-bold text-gray-900 mb-3">{{ $article->title }}</h2>
+            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-4">
+                    <div class="flex-1 min-w-0">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-3 break-words">{{ $article->title }}</h2>
                         <div class="flex flex-wrap gap-2 mb-4">
                             <!-- Status Badge -->
                             <span class="px-3 py-1 rounded-full text-xs font-medium
@@ -67,7 +67,7 @@
 
                 <div class="border-t border-gray-200 pt-4">
                     <h3 class="text-sm font-semibold text-gray-700 mb-2">Article Summary</h3>
-                    <p class="text-gray-600 leading-relaxed">
+                    <p class="text-gray-600 leading-relaxed break-words">
                         {{ $article->summary ?? $article->getExcerpt(200) }}
                     </p>
                 </div>
@@ -75,27 +75,27 @@
 
             <!-- Featured Image Card -->
             @if ($article->featured_image)
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">Featured Image</h3>
                     <div class="rounded-lg overflow-hidden bg-gray-100">
                         <img src="{{ Storage::url($article->featured_image) }}" alt="{{ $article->title }}"
-                            class="w-full h-64 object-cover" />
+                            class="w-full h-auto max-h-96 object-cover" />
                     </div>
                 </div>
             @endif
 
             <!-- Full Article Content Card -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Full Article Content</h3>
-                <div class="prose max-w-none text-gray-700 leading-relaxed space-y-4">
-                    {!! nl2br(e($article->content)) !!}
+                <div class="prose prose-sm sm:prose max-w-full text-gray-700 leading-relaxed space-y-4 overflow-x-auto">
+                    {!! $article->content !!}
                 </div>
             </div>
 
             <!-- Rejection Reason (if rejected) -->
             @if ($article->status === 'rejected' && $article->rejection_reason)
-                <div class="bg-red-50 rounded-xl shadow-sm p-6 border border-red-200">
-                    <div class="flex items-start">
+                <div class="bg-red-50 rounded-xl shadow-sm p-4 sm:p-6 border border-red-200">
+                    <div class="flex flex-col sm:flex-row sm:items-start gap-3">
                         <div class="flex-shrink-0">
                             <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -103,9 +103,9 @@
                                 </path>
                             </svg>
                         </div>
-                        <div class="ml-3 flex-1">
+                        <div class="flex-1 min-w-0">
                             <h3 class="text-lg font-semibold text-red-900 mb-2">Admin Feedback</h3>
-                            <p class="text-red-700">{{ $article->rejection_reason }}</p>
+                            <p class="text-red-700 break-words">{{ $article->rejection_reason }}</p>
                             <p class="text-sm text-red-600 mt-2">Please revise the article based on this feedback and resubmit.</p>
                         </div>
                     </div>
@@ -114,15 +114,15 @@
 
             <!-- Approval Message (if approved) -->
             @if ($article->status === 'approved')
-                <div class="bg-green-50 rounded-xl shadow-sm p-6 border border-green-200">
-                    <div class="flex items-start">
+                <div class="bg-green-50 rounded-xl shadow-sm p-4 sm:p-6 border border-green-200">
+                    <div class="flex flex-col sm:flex-row sm:items-start gap-3">
                         <div class="flex-shrink-0">
                             <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                         </div>
-                        <div class="ml-3 flex-1">
+                        <div class="flex-1">
                             <h3 class="text-lg font-semibold text-green-900 mb-2">Article Approved!</h3>
                             <p class="text-green-700">Your article has been approved by the administrator and is ready for publication.</p>
                         </div>
@@ -131,58 +131,57 @@
             @endif
         </div>
 
-        <!-- Sidebar - Details & Timeline -->
+        <!-- Sidebar - Details & Timeline - Responsive -->
         <div class="lg:col-span-1 space-y-6">
             <!-- Article Details Card -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Article Details</h3>
-                <div class="space-y-4">
+                <div class="space-y-4 text-sm">
                     <div>
-                        <label class="text-sm font-medium text-gray-500">Author</label>
-                        <p class="text-gray-900 font-medium">{{ $article->creator->first_name }} {{ $article->creator->last_name }}</p>
+                        <label class="font-medium text-gray-500">Author</label>
+                        <p class="text-gray-900 font-medium break-words">{{ $article->creator->first_name ?? '' }} {{ $article->creator->last_name ?? '' }}</p>
                     </div>
 
                     <div>
-                        <label class="text-sm font-medium text-gray-500">Category</label>
-                        <p class="text-gray-900">{{ $article->getCategoryDisplayName() }}</p>
+                        <label class="font-medium text-gray-500">Category</label>
+                        <p class="text-gray-900 break-words">{{ $article->getCategoryDisplayName() }}</p>
                     </div>
 
                     @if ($article->event_date)
                         <div>
-                            <label class="text-sm font-medium text-gray-500">Event Date</label>
+                            <label class="font-medium text-gray-500">Event Date</label>
                             <p class="text-gray-900">{{ $article->getEventDateDisplay() }}</p>
                         </div>
                     @endif
 
                     @if ($article->partnership_with)
                         <div>
-                            <label class="text-sm font-medium text-gray-500">Partnership With</label>
-                            <p class="text-gray-900">{{ $article->partnership_with }}</p>
+                            <label class="font-medium text-gray-500">Partnership With</label>
+                            <p class="text-gray-900 break-words">{{ $article->partnership_with }}</p>
                         </div>
                     @endif
 
                     <div>
-                        <label class="text-sm font-medium text-gray-500">Created On</label>
-                        <p class="text-gray-900">{{ $article->created_at->format('F j, Y - g:i A') }}</p>
+                        <label class="font-medium text-gray-500">Created On</label>
+                        <p class="text-gray-900 text-xs sm:text-sm">{{ $article->created_at->format('M j, Y - g:i A') }}</p>
                     </div>
 
                     @if ($article->published_at)
                         <div>
-                            <label class="text-sm font-medium text-gray-500">Published On</label>
-                            <p class="text-gray-900">{{ $article->published_at->format('F j, Y - g:i A') }}</p>
+                            <label class="font-medium text-gray-500">Published On</label>
+                            <p class="text-gray-900 text-xs sm:text-sm">{{ $article->published_at->format('M j, Y - g:i A') }}</p>
                         </div>
                     @endif
-
                 </div>
             </div>
 
             <!-- Submission Timeline Card -->
-            <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Submission Timeline</h3>
-                <div class="space-y-4">
+                <div class="space-y-4 text-sm">
                     <!-- Created -->
                     <div class="flex gap-3">
-                        <div class="flex flex-col items-center">
+                        <div class="flex flex-col items-center flex-shrink-0">
                             <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                                 <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd"
@@ -194,18 +193,18 @@
                                 <div class="w-0.5 h-full bg-gray-200"></div>
                             @endif
                         </div>
-                        <div class="flex-1 pb-6">
-                            <p class="text-sm font-medium text-gray-900">Article Created</p>
+                        <div class="flex-1 pb-6 min-w-0">
+                            <p class="font-medium text-gray-900">Article Created</p>
                             <p class="text-xs text-gray-500">{{ $article->created_at->format('M j, Y - g:i A') }}</p>
-                            <p class="text-sm text-gray-600 mt-1">By {{ $article->creator->first_name }}
-                                {{ $article->creator->last_name }}</p>
+                            <p class="text-gray-600 mt-1 break-words">By {{ $article->creator->first_name ?? '' }}
+                                {{ $article->creator->last_name ?? '' }}</p>
                         </div>
                     </div>
 
                     @if ($article->status === 'pending')
                         <!-- Pending Review -->
                         <div class="flex gap-3">
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full bg-yellow-100 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -214,17 +213,17 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">Pending Review</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900">Pending Review</p>
                                 <p class="text-xs text-gray-500">Awaiting admin approval</p>
-                                <p class="text-sm text-gray-600 mt-1">Current Status</p>
+                                <p class="text-gray-600 mt-1">Current Status</p>
                             </div>
                         </div>
 
                     @elseif($article->status === 'approved')
                         <!-- Approved -->
                         <div class="flex gap-3">
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -234,15 +233,15 @@
                                 </div>
                                 <div class="w-0.5 h-full bg-gray-200"></div>
                             </div>
-                            <div class="flex-1 pb-6">
-                                <p class="text-sm font-medium text-gray-900">Approved by Admin</p>
+                            <div class="flex-1 pb-6 min-w-0">
+                                <p class="font-medium text-gray-900">Approved by Admin</p>
                                 <p class="text-xs text-gray-500">Ready to publish</p>
                             </div>
                         </div>
 
                         <!-- Ready to Publish -->
                         <div class="flex gap-3">
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
@@ -250,17 +249,17 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">Ready to Publish</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900">Ready to Publish</p>
                                 <p class="text-xs text-gray-500">You can publish this article</p>
-                                <p class="text-sm text-gray-600 mt-1">Current Status</p>
+                                <p class="text-gray-600 mt-1">Current Status</p>
                             </div>
                         </div>
 
                     @elseif($article->status === 'published')
                         <!-- Approved -->
                         <div class="flex gap-3">
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -270,14 +269,14 @@
                                 </div>
                                 <div class="w-0.5 h-full bg-gray-200"></div>
                             </div>
-                            <div class="flex-1 pb-6">
-                                <p class="text-sm font-medium text-gray-900">Approved by Admin</p>
+                            <div class="flex-1 pb-6 min-w-0">
+                                <p class="font-medium text-gray-900">Approved by Admin</p>
                             </div>
                         </div>
 
                         <!-- Published -->
                         <div class="flex gap-3">
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
@@ -287,17 +286,17 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">Published</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900">Published</p>
                                 <p class="text-xs text-gray-500">{{ $article->published_at->format('M j, Y - g:i A') }}</p>
-                                <p class="text-sm text-gray-600 mt-1">Live and visible to public</p>
+                                <p class="text-gray-600 mt-1">Live and visible to public</p>
                             </div>
                         </div>
 
                     @elseif($article->status === 'rejected')
                         <!-- Rejected -->
                         <div class="flex gap-3">
-                            <div class="flex flex-col items-center">
+                            <div class="flex flex-col items-center flex-shrink-0">
                                 <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
                                     <svg class="w-4 h-4 text-red-600" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
@@ -306,10 +305,10 @@
                                     </svg>
                                 </div>
                             </div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">Rejected by Admin</p>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-medium text-gray-900">Rejected by Admin</p>
                                 <p class="text-xs text-gray-500">{{ $article->updated_at->format('M j, Y - g:i A') }}</p>
-                                <p class="text-sm text-gray-600 mt-1">Review feedback and resubmit</p>
+                                <p class="text-gray-600 mt-1">Review feedback and resubmit</p>
                             </div>
                         </div>
                     @endif
@@ -318,7 +317,7 @@
 
             <!-- All Tags -->
             @if ($article->tags && $article->tags->count() > 0)
-                <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                <div class="bg-white rounded-xl shadow-sm p-4 sm:p-6 border border-gray-200">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4">All Tags</h3>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($article->tags as $tag)
@@ -332,47 +331,47 @@
         </div>
     </div>
 
-    <!-- Action Buttons - Fixed at Bottom -->
-    <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
-        <div class="flex flex-col sm:flex-row gap-4 justify-between items-center">
+    <!-- Action Buttons - Responsive Bottom Section -->
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-gray-200">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-between items-stretch sm:items-center">
             <a href="{{ route('staff.news.index') }}"
-                class="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-center font-medium transition-colors duration-200">
+                class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-center font-medium transition-colors duration-200 order-2 sm:order-1">
                 Back to List
             </a>
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 order-1 sm:order-2">
                 @if (in_array($article->status, ['draft', 'rejected']))
                     <a href="{{ route('staff.news.edit', $article->id) }}"
-                        class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium text-center transition-colors duration-200">
+                        class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium text-center transition-colors duration-200">
                         Edit Article
                     </a>
                     @if ($article->status === 'draft')
                         <button onclick="openSubmitModal()"
-                            class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200">
+                            class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200">
                             Submit for Review
                         </button>
                     @endif
 
                 @elseif($article->status === 'pending')
                     <a href="{{ route('staff.news.edit', $article->id) }}"
-                        class="w-full sm:w-auto px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-center transition-colors duration-200">
+                        class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium text-center transition-colors duration-200">
                         Edit Article
                     </a>
                     <button onclick="openWithdrawModal()"
-                        class="w-full sm:w-auto px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium transition-colors duration-200">
+                        class="px-6 py-3 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-medium transition-colors duration-200">
                         Withdraw Submission
                     </button>
 
                 @elseif($article->status === 'approved')
                     <button onclick="openPublishModal()"
-                        class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200">
+                        class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors duration-200">
                         Publish Now
                     </button>
 
                 @elseif($article->status === 'published')
-                    <a href="{{ route('staff.news.edit', $article->id) }}"
-                        class="w-full sm:w-auto px-6 py-3 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium text-center transition-colors duration-200">
-                        Edit Article
-                    </a>
+                    <!-- No edit button for published articles -->
+                    <span class="px-6 py-3 bg-gray-100 text-gray-600 rounded-lg font-medium text-center cursor-not-allowed opacity-75">
+                        Published (Read-only)
+                    </span>
                 @endif
             </div>
         </div>

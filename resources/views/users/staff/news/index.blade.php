@@ -94,9 +94,25 @@
         </div>
     </div>
 
-    <!-- Filter Tabs -->
-    <div class="mb-8">
-        <div class="border-b border-gray-200">
+    <!-- Enhanced Search & Filter Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+        <!-- Main Search Bar -->
+        <div class="mb-6">
+            <div class="relative">
+                <input type="text" id="newsSearch"
+                    placeholder="🔍 Search by title, author, category..."
+                    class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                    oninput="applyFilters()" />
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="border-b border-gray-200 mb-6">
             <nav class="-mb-px flex space-x-8 overflow-x-auto" role="tablist">
                 <button onclick="filterNews('all')"
                     class="news-filter active border-b-2 border-primary text-primary py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
@@ -111,7 +127,7 @@
                 <button onclick="filterNews('pending')"
                     class="news-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
                     role="tab" aria-selected="false">
-                    Pending Review ({{ $pending_count ?? 0 }})
+                    Pending ({{ $pending_count ?? 0 }})
                 </button>
                 <button onclick="filterNews('rejected')"
                     class="news-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
@@ -125,21 +141,58 @@
                 </button>
             </nav>
         </div>
+
+        <!-- Advanced Filters Row -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <!-- Sort By -->
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-2">Sort By</label>
+                <select id="sortBy" onchange="applyFilters()"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="latest">Latest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="title-asc">Title (A-Z)</option>
+                    <option value="title-desc">Title (Z-A)</option>
+                </select>
+            </div>
+
+            <!-- Category Filter -->
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-2">Category</label>
+                <select id="categoryFilter" onchange="applyFilters()"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">All Categories</option>
+                    <option value="announcement">Announcement</option>
+                    <option value="event">Event</option>
+                    <option value="achievement">Achievement</option>
+                    <option value="update">Update</option>
+                </select>
+            </div>
+
+            <!-- Featured Toggle -->
+            <div>
+                <label class="block text-xs font-medium text-gray-700 mb-2">Featured</label>
+                <select id="featuredFilter" onchange="applyFilters()"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <option value="">All Articles</option>
+                    <option value="featured">⭐ Featured Only</option>
+                    <option value="not-featured">Not Featured</option>
+                </select>
+            </div>
+
+            <!-- Reset & Search Info -->
+            <div class="flex items-end gap-2">
+                <button onclick="resetFilters()"
+                    class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
+                    Reset Filters
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- Search Bar -->
-    <div class="mb-6">
-        <div class="relative">
-            <input type="text" id="newsSearch"
-                placeholder="Search news by title, author, category, or tags..."
-                class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                oninput="applyFilters()" />
-            <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
-                stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-        </div>
+    <!-- Search Results Info -->
+    <div id="searchInfo" class="mb-4 text-sm text-gray-600">
+        Showing <span id="resultCount">{{ count($articles) }}</span> articles
     </div>
 
     <!-- News Articles List - CLICKABLE CARDS -->
@@ -153,7 +206,10 @@
                 @elseif($article->status === 'rejected') border-red-500
                 @elseif($article->status === 'approved') border-green-500
                 @else border-gray-500 @endif"
-                data-status="{{ $article->status }}">
+                data-status="{{ $article->status }}"
+                data-title="{{ strtolower($article->title) }}"
+                data-category="{{ $article->category }}"
+                data-featured="{{ $article->is_featured ? 'yes' : 'no' }}">
 
                 <!-- Article Content -->
                 <div class="p-6">
@@ -227,8 +283,7 @@
                         <!-- Event Date -->
                         @if($article->event_date)
                             <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                     </path>
@@ -240,28 +295,12 @@
                         <!-- Partnership -->
                         @if($article->partnership_with)
                             <div class="flex items-center col-span-2 sm:col-span-1">
-                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
+                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
                                     </path>
                                 </svg>
                                 <span class="truncate">{{ $article->partnership_with }}</span>
-                            </div>
-                        @endif
-
-                        <!-- Views (Published Only) -->
-                        @if($article->status === 'published')
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                    </path>
-                                </svg>
-                                <span>{{ $article->getViewsDisplay() }} views</span>
                             </div>
                         @endif
                     </div>
@@ -287,7 +326,7 @@
                                         d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <p class="text-xs text-yellow-800">
-                                    <strong>Pending Review:</strong> Your article is waiting for admin approval. You'll receive a notification once reviewed.
+                                    <strong>Pending Review:</strong> Waiting for admin approval.
                                 </p>
                             </div>
                         </div>
@@ -299,14 +338,14 @@
                     @elseif($article->status === 'approved')
                         <div class="bg-green-50 p-3 rounded-lg border border-green-200">
                             <p class="text-xs text-green-800">
-                                <strong>✓ Approved!</strong> Your article has been approved and is ready for publication.
+                                <strong>✓ Approved!</strong> Ready for publication.
                             </p>
                         </div>
                     @endif
 
                     <!-- Click to View Notice -->
                     <div class="mt-4 text-center">
-                        <p class="text-xs text-gray-500 italic">Click card to view details and manage article</p>
+                        <p class="text-xs text-gray-500 italic">Click to view details →</p>
                     </div>
                 </div>
             </a>
@@ -317,8 +356,8 @@
                         d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
                     </path>
                 </svg>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">No News Articles Yet</h3>
-                <p class="text-gray-600 mb-6">You haven't created any news articles yet. Start creating your first article to get started!</p>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No News Articles Found</h3>
+                <p class="text-gray-600 mb-6">Try adjusting your search or filters</p>
                 <a href="{{ route('staff.news.create') }}"
                     class="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 transition-colors duration-200">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -339,4 +378,87 @@
     @endif
 
     <script src="{{ asset('js/staff/news.js') }}"></script>
+
+    <!-- Enhanced Filter Script -->
+    <script>
+        function filterNews(status) {
+            // Update active filter tab
+            document.querySelectorAll('.news-filter').forEach(btn => {
+                btn.classList.remove('border-primary', 'text-primary');
+                btn.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            event.target.classList.add('border-primary', 'text-primary');
+            event.target.classList.remove('border-transparent', 'text-gray-500');
+
+            // Store current filter
+            window.currentStatusFilter = status;
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('newsSearch')?.value?.toLowerCase() || '';
+            const sortBy = document.getElementById('sortBy')?.value || 'latest';
+            const category = document.getElementById('categoryFilter')?.value || '';
+            const featured = document.getElementById('featuredFilter')?.value || '';
+            const statusFilter = window.currentStatusFilter || 'all';
+
+            let articles = Array.from(document.querySelectorAll('#newsContainer > a'));
+            let filtered = articles;
+
+            // Filter by search term
+            if (searchTerm) {
+                filtered = filtered.filter(article => {
+                    const title = article.dataset.title || '';
+                    return title.includes(searchTerm);
+                });
+            }
+
+            // Filter by status
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(article => article.dataset.status === statusFilter);
+            }
+
+            // Filter by category
+            if (category) {
+                filtered = filtered.filter(article => article.dataset.category === category);
+            }
+
+            // Filter by featured
+            if (featured === 'featured') {
+                filtered = filtered.filter(article => article.dataset.featured === 'yes');
+            } else if (featured === 'not-featured') {
+                filtered = filtered.filter(article => article.dataset.featured === 'no');
+            }
+
+            // Show/hide articles
+            articles.forEach(article => {
+                article.style.display = filtered.includes(article) ? '' : 'none';
+            });
+
+            // Update result count
+            document.getElementById('resultCount').textContent = filtered.length;
+        }
+
+        function resetFilters() {
+            document.getElementById('newsSearch').value = '';
+            document.getElementById('sortBy').value = 'latest';
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('featuredFilter').value = '';
+            window.currentStatusFilter = 'all';
+
+            // Reset filter tabs
+            document.querySelectorAll('.news-filter').forEach((btn, idx) => {
+                if (idx === 0) {
+                    btn.classList.add('border-primary', 'text-primary');
+                    btn.classList.remove('border-transparent', 'text-gray-500');
+                } else {
+                    btn.classList.remove('border-primary', 'text-primary');
+                    btn.classList.add('border-transparent', 'text-gray-500');
+                }
+            });
+
+            applyFilters();
+        }
+    </script>
 @endsection
