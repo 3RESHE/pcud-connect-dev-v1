@@ -24,7 +24,7 @@
 
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm border-b">
+    <nav class="bg-white shadow-sm border-b sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
                 <!-- Logo and Desktop Navigation -->
@@ -255,8 +255,10 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
-    @yield('content')
+  <!-- Main Content -->
+    <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        @yield('content')
+    </main>
 
     <script>
         // Mobile menu toggle function
