@@ -229,26 +229,33 @@ class NewsController extends Controller
     /**
      * Publish an approved article
      */
-    public function publish(Article $newsArticle)
+    /**
+     * Publish an approved news article
+     */
+    public function publish(NewsArticle $newsArticle)
     {
-        // Check authorization
-        $this->authorize('publish', $newsArticle);
+        // Verify authorization (check if user owns the article)
+        if ($newsArticle->created_by !== auth()->id()) {
+            return redirect()->route('staff.news.index')
+                ->with('error', 'Unauthorized action.');
+        }
 
-        // Check if article is in approved status
+        // Check if article is approved
         if ($newsArticle->status !== 'approved') {
             return redirect()->route('staff.news.show', $newsArticle->id)
                 ->with('error', 'Only approved articles can be published.');
         }
 
-        // Update article status to published
+        // Update status to published
         $newsArticle->update([
             'status' => 'published',
             'published_at' => now(),
         ]);
 
         return redirect()->route('staff.news.show', $newsArticle->id)
-            ->with('success', 'Article published successfully!');
+            ->with('success', 'Article published successfully! 🎉');
     }
+
 
 
 

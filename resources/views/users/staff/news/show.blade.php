@@ -173,12 +173,6 @@
                         </div>
                     @endif
 
-                    @if ($article->status === 'published')
-                        <div>
-                            <label class="text-sm font-medium text-gray-500">Views</label>
-                            <p class="text-gray-900 font-semibold text-lg">{{ $article->getViewsDisplay() }}</p>
-                        </div>
-                    @endif
                 </div>
             </div>
 
