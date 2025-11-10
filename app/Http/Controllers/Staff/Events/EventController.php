@@ -216,8 +216,8 @@ class EventController extends Controller
                 'event_date' => 'required|date|after_or_equal:today',
                 'is_multiday' => 'nullable|boolean',
                 'end_date' => 'nullable|date|after_or_equal:event_date',
-                'start_time' => 'required|date_format:H:i',
-                'end_time' => 'required|date_format:H:i|after:start_time',
+                'start_time' => 'required', // CHANGED: Remove date_format validation
+                'end_time' => 'required|after:start_time', // CHANGED: Remove date_format validation
                 'venue_name' => 'required_if:event_format,inperson|nullable|string|max:255',
                 'venue_capacity' => 'required_if:event_format,inperson|nullable|integer|min:1',
                 'venue_address' => 'nullable|string',
@@ -236,12 +236,24 @@ class EventController extends Controller
                 'contact_phone' => 'nullable|string|max:20',
                 'special_instructions' => 'nullable|string',
                 'event_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
+            ], [
+                'venue_name.required_if' => 'Venue Name is required for in-person events.',
+                'venue_capacity.required_if' => 'Venue Capacity is required for in-person events.',
+                'platform.required_if' => 'Platform is required for virtual/hybrid events.',
+                'custom_platform.required_if' => 'Custom Platform name is required when selecting "Other".',
+                'end_time.after' => 'End time must be after start time.',
+                'end_date.after_or_equal' => 'End date must be on or after event date.',
+                'registration_deadline.before_or_equal' => 'Registration deadline cannot be after event date.',
             ]);
 
             // Convert checkboxes to boolean (0 or 1)
             $is_multiday = $request->has('is_multiday') ? 1 : 0;
             $registration_required = $request->has('registration_required') ? 1 : 0;
             $walkin_allowed = $request->has('walkin_allowed') ? 1 : 0;
+
+            // Format time fields properly
+            $start_time = is_string($validated['start_time']) ? $validated['start_time'] : $validated['start_time']->format('H:i');
+            $end_time = is_string($validated['end_time']) ? $validated['end_time'] : $validated['end_time']->format('H:i');
 
             $event->update([
                 'title' => $validated['title'],
@@ -250,8 +262,8 @@ class EventController extends Controller
                 'event_date' => $validated['event_date'],
                 'is_multiday' => $is_multiday,
                 'end_date' => $validated['end_date'] ?? null,
-                'start_time' => $validated['start_time'],
-                'end_time' => $validated['end_time'],
+                'start_time' => $start_time,
+                'end_time' => $end_time,
                 'venue_name' => $validated['venue_name'] ?? null,
                 'venue_capacity' => $validated['venue_capacity'] ?? null,
                 'venue_address' => $validated['venue_address'] ?? null,
@@ -278,13 +290,20 @@ class EventController extends Controller
 
             return redirect()->route('staff.events.show', $event->id)
                 ->with('success', 'Event updated successfully!');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()
+                ->withErrors($e->errors())
+                ->withInput();
         } catch (\Exception $e) {
             \Log::error('Event update error: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()
-                ->withErrors(['error' => 'Failed to update event.'])
+                ->withErrors(['error' => 'Failed to update event: ' . $e->getMessage()])
                 ->withInput();
         }
     }
+
+
 
     /**
      * Delete event
