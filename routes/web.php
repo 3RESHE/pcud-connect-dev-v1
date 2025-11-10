@@ -207,7 +207,10 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::get('/{newsArticle}', [NewsApprovalController::class, 'show'])->name('show');
             Route::post('/{newsArticle}/approve', [NewsApprovalController::class, 'approve'])->name('approve');
             Route::post('/{newsArticle}/reject', [NewsApprovalController::class, 'reject'])->name('reject');
+            Route::post('/{newsArticle}/feature', [NewsApprovalController::class, 'feature'])->name('feature');
+            Route::post('/{newsArticle}/unfeature', [NewsApprovalController::class, 'unfeature'])->name('unfeature');
         });
+
 
 
         // ===== PARTNERSHIPS APPROVALS =====

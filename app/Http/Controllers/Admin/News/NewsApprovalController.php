@@ -103,4 +103,55 @@ class NewsApprovalController extends Controller
             return redirect()->back()->with('error', '❌ Error rejecting article: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Feature a published news article
+     */
+    public function feature(NewsArticle $newsArticle)
+    {
+        // Only published articles can be featured
+        if ($newsArticle->status !== 'published') {
+            return redirect()->back()->with('error', '❌ Only published articles can be featured!');
+        }
+
+        try {
+            $newsArticle->update(['is_featured' => true]);
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'featured_news',
+                'subject' => 'NewsArticle',
+                'subject_id' => $newsArticle->id,
+                'details' => "Featured news article: {$newsArticle->title}",
+            ]);
+
+            return redirect()->back()->with('success', '⭐ Article featured successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', '❌ Error featuring article: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Unfeature a news article
+     */
+    public function unfeature(NewsArticle $newsArticle)
+    {
+        try {
+            $newsArticle->update(['is_featured' => false]);
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'unfeatured_news',
+                'subject' => 'NewsArticle',
+                'subject_id' => $newsArticle->id,
+                'details' => "Unfeatured news article: {$newsArticle->title}",
+            ]);
+
+            return redirect()->back()->with('success', '✅ Article unfeatured successfully!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', '❌ Error unfeaturing article: ' . $e->getMessage());
+        }
+    }
 }

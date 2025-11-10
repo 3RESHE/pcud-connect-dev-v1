@@ -27,7 +27,9 @@
         <div class="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div class="flex items-start">
                 <svg class="w-5 h-5 text-red-600 mr-3 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clip-rule="evenodd"></path>
                 </svg>
                 <div>
                     <h3 class="font-semibold text-red-900">Validation Errors</h3>
@@ -173,13 +175,15 @@
 
                     <div>
                         <label class="font-medium text-gray-500">Submitted On</label>
-                        <p class="text-gray-900 text-xs sm:text-sm">{{ $article->created_at->format('M j, Y - g:i A') }}</p>
+                        <p class="text-gray-900 text-xs sm:text-sm">{{ $article->created_at->format('M j, Y - g:i A') }}
+                        </p>
                     </div>
 
                     @if ($article->published_at)
                         <div>
                             <label class="font-medium text-gray-500">Published On</label>
-                            <p class="text-gray-900 text-xs sm:text-sm">{{ $article->published_at->format('M j, Y - g:i A') }}</p>
+                            <p class="text-gray-900 text-xs sm:text-sm">
+                                {{ $article->published_at->format('M j, Y - g:i A') }}</p>
                         </div>
                     @endif
                 </div>
@@ -187,7 +191,7 @@
                 <!-- Admin Notice -->
                 <div class="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                     <p class="text-xs text-blue-700">
-                        <strong>Note:</strong> As admin, you can only change the status. Article content cannot be edited.
+                        <strong>Note:</strong> As admin, you can manage status and feature articles.
                     </p>
                 </div>
             </div>
@@ -225,7 +229,6 @@
                             <strong>⏳ Status:</strong> Waiting for your approval or rejection
                         </p>
                     </div>
-
                 @elseif($article->status === 'approved')
                     <!-- Already Approved Info -->
                     <div class="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -244,7 +247,6 @@
                             Change to Rejected
                         </button>
                     </div>
-
                 @elseif($article->status === 'rejected')
                     <!-- Already Rejected Info -->
                     <div class="p-4 bg-red-50 border border-red-200 rounded-lg mb-4">
@@ -258,9 +260,11 @@
                         </div>
                         <p class="text-xs text-red-700 mb-3 font-medium">Current Rejection Reason:</p>
                         @if ($article->rejection_reason)
-                            <p class="text-xs text-red-600 mb-3 p-2 bg-red-100 rounded">{{ $article->rejection_reason }}</p>
+                            <p class="text-xs text-red-600 mb-3 p-2 bg-red-100 rounded">{{ $article->rejection_reason }}
+                            </p>
                         @else
-                            <p class="text-xs text-red-600 mb-3 p-2 bg-red-100 rounded italic">No rejection reason provided</p>
+                            <p class="text-xs text-red-600 mb-3 p-2 bg-red-100 rounded italic">No rejection reason provided
+                            </p>
                         @endif
                     </div>
 
@@ -275,10 +279,9 @@
                             Change to Approved
                         </button>
                     </div>
-
                 @elseif($article->status === 'published')
-                    <!-- Published - No Changes Allowed -->
-                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <!-- Published - Feature Management -->
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-4">
                         <div class="flex items-center mb-3">
                             <svg class="w-6 h-6 text-blue-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
@@ -288,8 +291,47 @@
                             </svg>
                             <p class="text-sm font-semibold text-blue-900">📰 Published</p>
                         </div>
-                        <p class="text-xs text-blue-700">This article is now live and visible to the public. No changes can
-                            be made.</p>
+                        <p class="text-xs text-blue-700 mb-4">This article is now live and visible to the public.</p>
+
+                        @if ($article->is_featured)
+                            <!-- Currently Featured - Show Unfeature Button -->
+                            <div class="p-3 bg-purple-50 border border-purple-200 rounded-lg mb-3">
+                                <div class="flex items-center mb-2">
+                                    <svg class="w-5 h-5 text-purple-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                        </path>
+                                    </svg>
+                                    <span class="text-sm font-semibold text-purple-900">⭐ Currently Featured</span>
+                                </div>
+                                <p class="text-xs text-purple-700">This article is highlighted on the news feed</p>
+                            </div>
+                            <form action="{{ route('admin.approvals.news.unfeature', $article->id) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 font-medium transition-colors flex items-center justify-center">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                    Remove from Featured
+                                </button>
+                            </form>
+                        @else
+                            <!-- Not Featured - Show Feature Button -->
+                            <form action="{{ route('admin.approvals.news.feature', $article->id) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 font-medium transition-colors flex items-center justify-center">
+                                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path
+                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                                        </path>
+                                    </svg>
+                                    Feature This Article
+                                </button>
+                            </form>
+                        @endif
                     </div>
                 @endif
             </div>
@@ -358,7 +400,8 @@
             <div class="p-6">
                 <div class="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
                     <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                        </path>
                     </svg>
                 </div>
                 <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center">Reject Article?</h3>
