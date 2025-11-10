@@ -17,11 +17,14 @@ class JobApplication extends Model
         'additional_documents',
         'status',
         'reviewed_at',
+        'last_contacted_at',
+        'rejection_reason',
     ];
 
     protected $casts = [
         'additional_documents' => 'json',
         'reviewed_at' => 'datetime',
+        'last_contacted_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -65,6 +68,11 @@ class JobApplication extends Model
     public function scopePending($query)
     {
         return $query->where('status', 'pending');
+    }
+
+    public function scopeContacted($query)
+    {
+        return $query->where('status', 'contacted');
     }
 
     public function scopeApproved($query)
@@ -114,18 +122,37 @@ class JobApplication extends Model
         return $this->status === 'pending';
     }
 
+    public function isContacted(): bool
+    {
+        return $this->status === 'contacted';
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
+    }
+
     public function isReviewed(): bool
     {
         return !is_null($this->reviewed_at);
     }
 
+    /**
+     * ✅ UPDATED: Get status display with "contacted" option
+     */
     public function getStatusDisplay(): array
     {
         return match ($this->status) {
             'pending' => ['text' => 'Pending Review', 'badge' => 'warning'],
+            'contacted' => ['text' => 'Company Contacted', 'badge' => 'purple'],
             'approved' => ['text' => 'Approved', 'badge' => 'success'],
             'rejected' => ['text' => 'Rejected', 'badge' => 'danger'],
-            default => ['text' => $this->status, 'badge' => 'secondary'],
+            default => ['text' => ucfirst($this->status), 'badge' => 'secondary'],
         };
     }
 
@@ -142,6 +169,17 @@ class JobApplication extends Model
         $this->update([
             'status' => 'rejected',
             'reviewed_at' => now(),
+        ]);
+    }
+
+    /**
+     * ✅ NEW: Mark application as contacted
+     */
+    public function markAsContacted()
+    {
+        $this->update([
+            'status' => 'contacted',
+            'last_contacted_at' => now(),
         ]);
     }
 
