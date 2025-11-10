@@ -217,11 +217,19 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::prefix('approvals/partnerships')->name('approvals.partnerships.')->group(function () {
             Route::get('/', [PartnershipApprovalController::class, 'index'])
                 ->name('index');
+            Route::get('/{id}', [PartnershipApprovalController::class, 'show'])
+                ->name('show');
+            Route::post('/{id}/move-to-discussion', [PartnershipApprovalController::class, 'moveToDiscussion'])
+                ->name('move-to-discussion');
             Route::post('/{id}/approve', [PartnershipApprovalController::class, 'approve'])
                 ->name('approve');
             Route::post('/{id}/reject', [PartnershipApprovalController::class, 'reject'])
                 ->name('reject');
+            Route::post('/{id}/mark-complete', [PartnershipApprovalController::class, 'markComplete'])
+                ->name('mark-complete');
         });
+
+
 
         // Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])
