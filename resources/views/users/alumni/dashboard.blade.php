@@ -159,13 +159,13 @@
                 <div class="px-6 py-4 border-b border-gray-200">
                     <div class="flex justify-between items-center">
                         <h3 class="text-lg font-semibold text-gray-900">Upcoming Events</h3>
-                        <a href="{{ route('alumni.events.index') }}" class="text-sm text-primary hover:underline">View all</a>
+                        <a href="{{ route('events.index') }}" class="text-sm text-primary hover:underline">View all</a>
                     </div>
                 </div>
                 <div class="p-6 space-y-4">
                     @forelse(($upcomingEvents ?? collect()) as $event)
                         <!-- Event -->
-                        <a href="{{ route('alumni.events.show', $event->id) }}" class="flex items-start cursor-pointer hover:bg-gray-50 -mx-3 px-3 py-2 rounded-lg transition-colors">
+                        <a href="{{ route('events.show', $event->id) }}" class="flex items-start cursor-pointer hover:bg-gray-50 -mx-3 px-3 py-2 rounded-lg transition-colors">
                             <div class="flex-shrink-0 w-12 h-12 bg-primary text-white rounded-lg flex flex-col items-center justify-center font-semibold">
                                 <span class="text-xs">{{ $event->event_date->format('M') }}</span>
                                 <span class="text-lg">{{ $event->event_date->format('d') }}</span>
@@ -214,7 +214,7 @@
                             <span class="font-medium text-gray-900">Browse Jobs</span>
                         </div>
                     </a>
-                    <a href="{{ route('alumni.events.index') }}" class="block w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
+                    <a href="{{ route('events.index') }}" class="block w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors">
                         <div class="flex items-center">
                             <svg class="w-5 h-5 text-gray-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>

@@ -42,8 +42,8 @@
                             class="@if (request()->routeIs('alumni.jobs.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Job Opportunities
                         </a>
-                        <a href="{{ route('alumni.events.index') }}"
-                            class="@if (request()->routeIs('alumni.events.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                        <a href="{{ route('events.index') }}"
+                            class="@if (request()->routeIs('events.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Events
                         </a>
                         <a href="{{ route('news.index') }}"
@@ -189,8 +189,8 @@
                     <a href="{{ route('alumni.jobs.index') }}"
                         class="@if (request()->routeIs('alumni.jobs.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Job
                         Opportunities</a>
-                    <a href="{{ route('alumni.events.index') }}"
-                        class="@if (request()->routeIs('alumni.events.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Events</a>
+                    <a href="{{ route('events.index') }}"
+                        class="@if (request()->routeIs('events.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Events</a>
                     <a href="{{ route('news.index') }}"
                         class="@if (request()->routeIs('alumni.news.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">News</a>
                     <a href="{{ route('alumni.profile.show') }}"

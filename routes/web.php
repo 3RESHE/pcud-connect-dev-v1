@@ -26,41 +26,34 @@ use App\Http\Controllers\Partner\PartnerDashboardController;
 use App\Http\Controllers\Partner\PartnershipController;
 use App\Http\Controllers\Partner\ProfileController as PartnerProfileController;
 use App\Http\Controllers\Partner\SettingsController as PartnerSettingsController;
+use App\Http\Controllers\Shared\EventController as SharedEventController;
 use App\Http\Controllers\Staff\Events\EventController;
 use App\Http\Controllers\Staff\News\NewsController as StaffNewsController;
 use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\ExperienceController;
 use App\Http\Controllers\Student\ProjectController;
-use App\Http\Controllers\Student\StudentEventController;
 use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
 use Illuminate\Support\Facades\Route;
 
-
-
-
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
 // =====================================================
 
-
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
-
 
 // =====================================================
 // AUTHENTICATION ROUTES (from Laravel Breeze)
 // =====================================================
 require __DIR__ . '/auth.php';
 
-
 // =====================================================
 // CUSTOM PASSWORD MANAGEMENT ROUTES (First Login & Account Settings)
 // =====================================================
-
 
 Route::middleware(['auth'])->group(function () {
     // First Login - Forced Password Change (for new users)
@@ -76,11 +69,9 @@ Route::middleware(['auth'])->group(function () {
         ->name('account.password.update');
 });
 
-
 // =====================================================
 // AUTHENTICATED ROUTES (Require Auth + Email Verified + Password Changed + Active)
 // =====================================================
-
 
 Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(function () {
 
@@ -88,11 +79,23 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // REDIRECT ROOT TO APPROPRIATE DASHBOARD BY ROLE
     // =====================================================
 
-
     Route::middleware('role:student,alumni,partner')->prefix('news')->name('news.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Shared\NewsController::class, 'index'])->name('index');
         Route::get('/{newsArticle}', [\App\Http\Controllers\Shared\NewsController::class, 'show'])->name('show');
     });
+
+    // =====================================================
+    // SHARED EVENTS ROUTES (Alumni & Student)
+    // =====================================================
+
+    Route::middleware('role:student,alumni')->prefix('events')->name('events.')->group(function () {
+        Route::get('/', [SharedEventController::class, 'index'])->name('index');
+        Route::get('/{event}', [SharedEventController::class, 'show'])->name('show');
+        Route::post('/{event}/register', [SharedEventController::class, 'register'])->name('register');
+        Route::delete('/{event}/unregister', [SharedEventController::class, 'unregister'])->name('unregister');
+        Route::get('/registrations', [SharedEventController::class, 'myRegistrations'])->name('registrations');
+    });
+
 
     Route::get('/dashboard', function () {
         $user = auth()->user();
@@ -211,8 +214,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::post('/{newsArticle}/unfeature', [NewsApprovalController::class, 'unfeature'])->name('unfeature');
         });
 
-
-
         // ===== PARTNERSHIPS APPROVALS =====
         Route::prefix('approvals/partnerships')->name('approvals.partnerships.')->group(function () {
             Route::get('/', [PartnershipApprovalController::class, 'index'])
@@ -228,8 +229,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::post('/{id}/mark-complete', [PartnershipApprovalController::class, 'markComplete'])
                 ->name('mark-complete');
         });
-
-
 
         // Activity Logs
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])
@@ -252,7 +251,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         // ===== DASHBOARD =====
         Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])
             ->name('dashboard');
-
 
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
         Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -331,7 +329,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('submit');
             Route::post('/{newsArticle}/withdraw', [StaffNewsController::class, 'withdraw'])
                 ->name('withdraw');
-            Route::post('/{newsArticle}/publish', [StaffNewsController::class, 'publish'])  // ✅ ADD THIS LINE
+            Route::post('/{newsArticle}/publish', [StaffNewsController::class, 'publish'])
                 ->name('publish');
             Route::delete('/{newsArticle}', [StaffNewsController::class, 'destroy'])
                 ->name('destroy');
@@ -397,7 +395,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             });
 
             // ===== JOB APPLICATIONS =====
-            // ✅ INTEGRATED WITH CAREFUL CONSIDERATION
             Route::prefix('applications')->name('applications.')->group(function () {
                 // Application detail view
                 Route::get('/{application}', [ApplicationController::class, 'show'])
@@ -483,22 +480,15 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::get('/{job}', [StudentJobController::class, 'show'])->name('show');
                 Route::post('/{job}/apply', [StudentJobController::class, 'apply'])->name('apply');
             });
-            //  APPLICATIONS ROUTES
+
+            // APPLICATIONS ROUTES
             Route::prefix('applications')->name('applications.')->group(function () {
                 Route::get('/', [StudentJobController::class, 'applications'])->name('index');
                 Route::get('/{application}', [StudentJobController::class, 'viewApplication'])->name('show');
                 Route::delete('/{application}', [StudentJobController::class, 'withdrawApplication'])->name('destroy');
             });
-
-            // ===== EVENTS =====
-            Route::prefix('events')->name('events.')->group(function () {
-                Route::get('/', [StudentEventController::class, 'index'])->name('index');
-                Route::get('/{event}', [StudentEventController::class, 'show'])->name('show');
-                Route::post('/{event}/register', [StudentEventController::class, 'register'])->name('register');
-            });
         });
     });
-
 
     // =====================================================
     // ALUMNI DASHBOARD ROUTES - WITH PROFILE COMPLETION CHECK
@@ -549,21 +539,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::get('/{job}', [AlumniJobController::class, 'show'])->name('show');
                 Route::post('/{job}/apply', [AlumniJobController::class, 'apply'])->name('apply');
             });
-            //  APPLICATIONS ROUTES
+
+            // APPLICATIONS ROUTES
             Route::prefix('applications')->name('applications.')->group(function () {
                 Route::get('/', [AlumniJobController::class, 'applications'])->name('index');
                 Route::get('/{application}', [AlumniJobController::class, 'viewApplication'])->name('show');
                 Route::delete('/{application}', [AlumniJobController::class, 'withdrawApplication'])->name('destroy');
-            });
-
-            // ===== EVENTS =====
-            Route::prefix('events')->name('events.')->group(function () {
-                Route::get('/', [AlumniEventController::class, 'index'])
-                    ->name('index');
-                Route::get('/{event}', [AlumniEventController::class, 'show'])
-                    ->name('show');
-                Route::post('/{event}/register', [AlumniEventController::class, 'register'])
-                    ->name('register');
             });
         });
     });
