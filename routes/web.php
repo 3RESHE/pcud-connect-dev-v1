@@ -16,7 +16,7 @@ use App\Http\Controllers\Alumni\AlumniNewsController;
 use App\Http\Controllers\Alumni\AlumniProfileController;
 use App\Http\Controllers\Alumni\AlumniProjectController;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboardController;
-use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\Partner\ApplicationController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
@@ -388,6 +388,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                     ->name('approve');
                 Route::post('/{application}/reject', [ApplicationController::class, 'reject'])
                     ->name('reject');
+                Route::post('/{application}/contact', [ApplicationController::class, 'contact'])
+                    ->name('contact');
+                Route::get('/{application}/download-resume', [ApplicationController::class, 'downloadResume'])
+                    ->name('download-resume');
+                Route::patch('/{application}/update-status', [ApplicationController::class, 'updateStatus'])
+                    ->name('update-status');
             });
 
 
