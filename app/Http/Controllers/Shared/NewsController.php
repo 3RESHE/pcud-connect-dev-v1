@@ -57,12 +57,14 @@ class NewsController extends Controller
         // Get stats for sidebar/filters
         $stats = [
             'total_count' => NewsArticle::published()->count(),
-            'featured_count' => NewsArticle::featured()->count(),
+            'featured_count' => NewsArticle::published()->where('is_featured', true)->count(),
             'categories' => NewsArticle::published()
                 ->select('category', \DB::raw('count(*) as count'))
                 ->groupBy('category')
                 ->get(),
-            'recent_tags' => \App\Models\NewsTag::withCount('articles')
+            'recent_tags' => \App\Models\NewsTag::withCount(['articles' => function ($query) {
+                $query->where('status', 'published');
+            }])
                 ->having('articles_count', '>', 0)
                 ->orderBy('articles_count', 'desc')
                 ->take(10)
@@ -88,13 +90,23 @@ class NewsController extends Controller
         // Increment view count
         $newsArticle->incrementViews();
 
-        // Get related articles
+        // Get related articles (same category)
         $relatedArticles = NewsArticle::published()
             ->where('id', '!=', $newsArticle->id)
             ->where('category', $newsArticle->category)
             ->latest('published_at')
             ->take(3)
             ->get();
+
+        // Get recent articles (if not enough related)
+        if ($relatedArticles->count() < 3) {
+            $recentArticles = NewsArticle::published()
+                ->where('id', '!=', $newsArticle->id)
+                ->latest('published_at')
+                ->take(3 - $relatedArticles->count())
+                ->get();
+            $relatedArticles = $relatedArticles->merge($recentArticles);
+        }
 
         return view('shared.news.show', compact('newsArticle', 'relatedArticles'));
     }
