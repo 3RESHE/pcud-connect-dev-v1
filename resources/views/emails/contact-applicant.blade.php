@@ -54,11 +54,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Message from {{ $partner->name }}</h1>
+            <h1>Message from {{  $jobPosting->partnerProfile->company_name }}</h1>
         </div>
 
         <div class="content">
-            <p>Dear {{ $applicant->name }},</p>
+            <p>Dear Applicant,</p>
 
             <p>We're reaching out regarding your application for the <strong>{{ $jobPosting->title }}</strong> position.</p>
 
@@ -71,7 +71,7 @@
             <h3 style="color: #003B73; margin-top: 20px;">Position Details</h3>
             <div class="job-details">
                 <p><strong>Position:</strong> {{ $jobPosting->title }}</p>
-                <p><strong>Company:</strong> {{ $partner->name }}</p>
+                <p><strong>Company:</strong> {{  $jobPosting->partnerProfile->company_name }}</p>
                 <p><strong>Type:</strong> {{ ucfirst(str_replace('_', ' ', $jobPosting->job_type ?? 'N/A')) }}</p>
                 <p><strong>Location:</strong> {{ $jobPosting->location ?? 'Remote' }}</p>
             </div>

@@ -23,7 +23,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500">Company</p>
-                            <p class="text-lg text-gray-900">{{ $jobPosting->partner->name }}</p>
+                            <p class="text-lg text-gray-900">{{ $jobPosting->partnerProfile->company_name }}</p>
                         </div>
                         <div class="pt-3 border-t">
                             <a href="{{ route('partner.job-postings.applications', $jobPosting) }}"
