@@ -3,665 +3,578 @@
 @section('title', 'Event Details - PCU-DASMA Connect')
 
 @section('content')
-<!-- Header with Back Button -->
+<!-- Back Button -->
 <div class="mb-8">
-    <div class="flex items-center mb-4">
-        <a href="{{ route('staff.events.index') }}" class="text-gray-400 hover:text-gray-600 mr-4">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-        </a>
-        <div class="flex-1">
-            <h1 class="text-3xl font-bold text-gray-900">{{ $event->title }}</h1>
-            <p class="text-gray-600 mt-1">Event ID: {{ $event->id }}</p>
-        </div>
-    </div>
+    <a href="{{ route('staff.events.index') }}" class="inline-flex items-center text-base text-gray-600 hover:text-primary">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back to My Events
+    </a>
 </div>
 
-<!-- Status Banner - Color Coded by Status -->
-<div class="mb-8">
-    @if($event->status === 'draft')
-        <div class="bg-gray-100 border-l-4 border-gray-500 p-4 rounded">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 3.062v6.927a3 3 0 01-.856 2.122L7.793 17.586a1 1 0 01-1.414-1.414L10.31 11.35a1 1 0 00.293-.707V6.517a1.066 1.066 0 00-.937-1.021 2 2 0 00-1.164.484 3.066 3.066 0 01-3.976 0 2 2 0 00-1.164-.484 1.066 1.066 0 00-.937 1.021v4.043a1 1 0 00.293.707l3.071 3.071a1 1 0 01-1.414 1.414L2.293 10.82A3 3 0 011.87 8.584V6.517A3.066 3.066 0 016.267 3.455z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-gray-800">Draft - Not Yet Submitted</h3>
-                    <p class="text-sm text-gray-700 mt-1">This event is in draft mode. You can edit or submit it for admin review.</p>
-                </div>
-            </div>
-        </div>
-    @elseif($event->status === 'pending')
-        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-yellow-600 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-yellow-800">Under Review</h3>
-                    <p class="text-sm text-yellow-700 mt-1">Your event is waiting for admin approval. You can withdraw the submission if needed.</p>
-                </div>
-            </div>
-        </div>
-    @elseif($event->status === 'approved')
-        <div class="bg-green-50 border-l-4 border-green-400 p-4 rounded">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-green-800">Approved - Ready to Publish</h3>
-                    <p class="text-sm text-green-700 mt-1">Your event has been approved by the admin. Click the Publish button to make it live.</p>
-                </div>
-            </div>
-        </div>
-    @elseif($event->status === 'published')
-        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-blue-800">Published - Live Event</h3>
-                    <p class="text-sm text-blue-700 mt-1">Your event is now live! Registrations are open. You can manage registrations and view statistics.</p>
-                </div>
-            </div>
-        </div>
-    @elseif($event->status === 'ongoing')
-        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <div class="w-5 h-5 rounded-full bg-orange-600 animate-pulse"></div>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-orange-800">🔴 Live Now - Event in Progress</h3>
-                    <p class="text-sm text-orange-700 mt-1">Your event is currently happening! You can manage check-ins and track live attendance.</p>
-                </div>
-            </div>
-        </div>
-    @elseif($event->status === 'completed')
-        <div class="bg-gray-50 border-l-4 border-gray-400 p-4 rounded">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M6.707 6.707a1 1 0 010 1.414L5.414 9l1.293 1.293a1 1 0 01-1.414 1.414l-2-2a1 1 0 010-1.414l2-2a1 1 0 011.414 0zm7.586 0a1 1 0 011.414 0l2 2a1 1 0 010 1.414l-2 2a1 1 0 11-1.414-1.414L14.586 9l-1.293-1.293a1 1 0 010-1.414zM9 11a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-gray-800">Completed</h3>
-                    <p class="text-sm text-gray-700 mt-1">Your event has ended. View the final attendance report and send feedback surveys.</p>
-                </div>
-            </div>
-        </div>
-    @elseif($event->status === 'cancelled')
-        <div class="bg-red-50 border-l-4 border-red-400 p-4 rounded">
-            <div class="flex items-start">
-                <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-                <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800">Cancelled</h3>
-                    <p class="text-sm text-red-700 mt-1">This event has been cancelled. Registrants will be notified.</p>
-                </div>
-            </div>
-        </div>
-    @endif
-</div>
-
-<!-- Event Stats Cards (Status-Specific) -->
-<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-    <!-- Event Date Card -->
-    <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-600">Event Date</p>
-                <p class="text-lg font-semibold text-gray-900">{{ $event->event_date->format('M d, Y') }}</p>
-            </div>
-            <svg class="w-10 h-10 text-blue-100" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6 2a1 1 0 000 2h8a1 1 0 100-2H6zM4 5a2 2 0 012-2h8a2 2 0 012 2v10a2 2 0 01-2 2H6a2 2 0 01-2-2V5z"></path>
-            </svg>
-        </div>
-    </div>
-
-    <!-- Status Card -->
-    <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-        <div class="flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-600">Current Status</p>
-                <p class="text-lg font-semibold text-gray-900">{{ ucfirst(str_replace('_', ' ', $event->status)) }}</p>
-            </div>
-            <svg class="w-10 h-10 text-purple-100" fill="currentColor" viewBox="0 0 20 20">
-                <path fill-rule="evenodd" d="M17.778 8.222c-4.296-4.296-11.26-4.296-15.556 0A1 1 0 01.808 6.808c4.768-4.768 12.616-4.768 17.384 0a1 1 0 01-1.414 1.414zM14.95 11.05a7 7 0 00-9.9 0 1 1 0 01-1.414-1.414 9 9 0 0112.728 0 1 1 0 01-1.414 1.414zM12.12 13.88a3 3 0 00-4.242 0 1 1 0 01-1.415-1.415 5 5 0 017.072 0 1 1 0 01-1.415 1.415zM9 16a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-            </svg>
-        </div>
-    </div>
-
-    <!-- Registrations Card (if published/ongoing) -->
-    @if(in_array($event->status, ['published', 'ongoing', 'completed']))
-        <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600">Registrations</p>
-                    <p class="text-lg font-semibold text-gray-900">
-                        {{ $event->registrations->count() }}/{{ $event->max_attendees ?? '∞' }}
-                    </p>
-                </div>
-                <svg class="w-10 h-10 text-green-100" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM9 16c0-2.09-1.179-3.903-2.927-4.872A6.967 6.967 0 0110 16c0 .888.146 1.741.428 2.526a7.006 7.006 0 01-1.428-2.526zM13 13a1 1 0 100-2 1 1 0 000 2zM18 9a1 1 0 100-2 1 1 0 000 2zM14 12a1 1 0 100-2 1 1 0 000 2z"></path>
+<!-- PENDING STATUS -->
+@if($event->status === 'pending')
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <svg class="h-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
-        </div>
-    @endif
-
-    <!-- Attendance Card (if ongoing/completed) -->
-    @if(in_array($event->status, ['ongoing', 'completed']))
-        <div class="bg-white rounded-lg shadow-sm p-4 border border-gray-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm text-gray-600">Checked In</p>
-                    <p class="text-lg font-semibold text-gray-900">
-                        {{ $event->attendance->where('checked_in_at', '!=', null)->count() }}/{{ $event->registrations->count() }}
-                    </p>
-                </div>
-                <svg class="w-10 h-10 text-orange-100" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                </svg>
-            </div>
-        </div>
-    @endif
-</div>
-
-<!-- Main Content - Two Column Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <!-- Left Column - Event Details (Spans 2 columns) -->
-    <div class="lg:col-span-2 space-y-6">
-        <!-- Featured Image -->
-        @if($event->featured_image)
-            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Event Banner</h3>
-                <img src="{{ asset('storage/' . $event->featured_image) }}" alt="{{ $event->title }}" class="w-full h-64 object-cover rounded-lg">
-            </div>
-        @endif
-
-        <!-- Event Description -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Description</h3>
-            <p class="text-gray-700 leading-relaxed">{{ $event->description }}</p>
-        </div>
-
-        <!-- Event Details -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Event Details</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Format</label>
-                    <p class="text-gray-900 mt-1">
-                        @if($event->event_format === 'in_person')
-                            In-Person
-                        @elseif($event->event_format === 'virtual')
-                            Virtual/Online
-                        @elseif($event->event_format === 'hybrid')
-                            Hybrid
-                        @endif
-                    </p>
-                </div>
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Target Audience</label>
-                    <p class="text-gray-900 mt-1">
-                        @if($event->target_audience === 'all_students')
-                            All Students
-                        @elseif($event->target_audience === 'alumni')
-                            Alumni
-                        @elseif($event->target_audience === 'open_for_all')
-                            Open for All
-                        @endif
-                    </p>
-                </div>
-
-                <!-- In-Person Details -->
-                @if(in_array($event->event_format, ['in_person', 'hybrid']))
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Venue Name</label>
-                        <p class="text-gray-900 mt-1">{{ $event->venue_name }}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Capacity</label>
-                        <p class="text-gray-900 mt-1">{{ $event->venue_capacity }} attendees</p>
-                    </div>
-                    @if($event->venue_address)
-                        <div class="col-span-2">
-                            <label class="text-sm font-medium text-gray-600">Address</label>
-                            <p class="text-gray-900 mt-1">{{ $event->venue_address }}</p>
-                        </div>
-                    @endif
-                @endif
-
-                <!-- Virtual Details -->
-                @if(in_array($event->event_format, ['virtual', 'hybrid']))
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Platform</label>
-                        <p class="text-gray-900 mt-1">
-                            @if($event->platform === 'zoom') Zoom
-                            @elseif($event->platform === 'teams') Microsoft Teams
-                            @elseif($event->platform === 'meet') Google Meet
-                            @elseif($event->platform === 'webex') Webex
-                            @elseif($event->platform === 'facebook_live') Facebook Live
-                            @elseif($event->platform === 'youtube_live') YouTube Live
-                            @elseif($event->platform === 'other') {{ $event->custom_platform }}
-                            @endif
-                        </p>
-                    </div>
-                    @if($event->meeting_link)
-                        <div class="col-span-2">
-                            <label class="text-sm font-medium text-gray-600">Meeting Link</label>
-                            <p class="text-gray-900 mt-1">
-                                <a href="{{ $event->meeting_link }}" target="_blank" class="text-primary hover:text-blue-700 break-all">
-                                    {{ $event->meeting_link }}
-                                </a>
-                            </p>
-                        </div>
-                    @endif
-                @endif
-
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Registration Required</label>
-                    <p class="text-gray-900 mt-1">{{ $event->registration_required ? 'Yes' : 'No' }}</p>
-                </div>
-
-                @if($event->registration_required && $event->registration_deadline)
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Registration Deadline</label>
-                        <p class="text-gray-900 mt-1">{{ $event->registration_deadline->format('M d, Y') }}</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <!-- Contact Information -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Contact Information</h3>
-            <div class="space-y-3">
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Contact Person</label>
-                    <p class="text-gray-900">{{ $event->contact_person }}</p>
-                </div>
-                <div>
-                    <label class="text-sm font-medium text-gray-600">Email</label>
-                    <p class="text-gray-900">
-                        <a href="mailto:{{ $event->contact_email }}" class="text-primary hover:text-blue-700">
-                            {{ $event->contact_email }}
-                        </a>
-                    </p>
-                </div>
-                @if($event->contact_phone)
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Phone</label>
-                        <p class="text-gray-900">{{ $event->contact_phone }}</p>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <!-- Special Instructions -->
-        @if($event->special_instructions)
-            <div class="bg-blue-50 rounded-lg shadow-sm p-6 border border-blue-200">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">📋 Registration Instructions</h3>
-                <p class="text-gray-700 leading-relaxed">{{ $event->special_instructions }}</p>
-            </div>
-        @endif
-    </div>
-
-    <!-- Right Column - Sidebar -->
-    <div class="lg:col-span-1 space-y-6">
-        <!-- Timeline Card -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Timeline</h3>
-            <div class="space-y-4">
-                <!-- Created -->
-                <div class="flex gap-3">
-                    <div class="flex flex-col items-center">
-                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                        </div>
-                        <div class="w-0.5 h-12 bg-gray-300"></div>
-                    </div>
-                    <div class="flex-1 pb-4">
-                        <p class="text-sm font-medium text-gray-900">Created</p>
-                        <p class="text-xs text-gray-500">{{ $event->created_at->format('M d, Y - g:i A') }}</p>
-                    </div>
-                </div>
-
-                <!-- Status Update -->
-                @if($event->status !== 'draft')
-                    <div class="flex gap-3">
-                        <div class="flex flex-col items-center">
-                            <div class="w-8 h-8 rounded-full
-                                @if($event->status === 'pending') bg-yellow-100
-                                @elseif(in_array($event->status, ['approved', 'published', 'ongoing', 'completed'])) bg-green-100
-                                @elseif($event->status === 'cancelled') bg-red-100
-                                @else bg-gray-100
-                                @endif
-                                flex items-center justify-center">
-                                <svg class="w-4 h-4
-                                    @if($event->status === 'pending') text-yellow-600
-                                    @elseif(in_array($event->status, ['approved', 'published', 'ongoing', 'completed'])) text-green-600
-                                    @elseif($event->status === 'cancelled') text-red-600
-                                    @else text-gray-600
-                                    @endif" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                            </div>
-                            @if($event->status !== 'completed' && $event->status !== 'cancelled')
-                                <div class="w-0.5 h-12 bg-gray-300"></div>
-                            @endif
-                        </div>
-                        <div class="flex-1 pb-4">
-                            <p class="text-sm font-medium text-gray-900">{{ ucfirst(str_replace('_', ' ', $event->status)) }}</p>
-                            <p class="text-xs text-gray-500">
-                                @if($event->status === 'pending')
-                                    Submitted for review
-                                @elseif($event->status === 'approved')
-                                    Approved by admin
-                                @elseif($event->status === 'published')
-                                    Now live
-                                @elseif($event->status === 'ongoing')
-                                    Event is happening
-                                @elseif($event->status === 'completed')
-                                    Event finished
-                                @elseif($event->status === 'cancelled')
-                                    Event cancelled
-                                @endif
-                            </p>
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </div>
-
-        <!-- Action Buttons Section -->
-        <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
-            <div class="space-y-2">
-                @if($event->status === 'draft')
-                    <!-- Draft Actions -->
-                    <a href="{{ route('staff.events.edit', $event->id) }}" class="block w-full px-4 py-2 border border-primary text-primary rounded-lg hover:bg-blue-50 text-center font-medium transition-colors duration-200">
-                        ✏️ Edit Event
-                    </a>
-                    <button onclick="submitForReview()" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium transition-colors duration-200">
-                        ➡️ Submit for Review
-                    </button>
-                    <button onclick="deleteEvent()" class="w-full px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 font-medium transition-colors duration-200">
-                        🗑️ Delete Event
-                    </button>
-
-                @elseif($event->status === 'pending')
-                    <!-- Pending Actions -->
-                    <a href="{{ route('staff.events.edit', $event->id) }}" class="block w-full px-4 py-2 border border-primary text-primary rounded-lg hover:bg-blue-50 text-center font-medium transition-colors duration-200">
-                        ✏️ Edit Event
-                    </a>
-                    <button onclick="withdrawSubmission()" class="w-full px-4 py-2 border border-yellow-300 text-yellow-600 rounded-lg hover:bg-yellow-50 font-medium transition-colors duration-200">
-                        ↩️ Withdraw Submission
-                    </button>
-
-                @elseif($event->status === 'approved')
-                    <!-- Approved Actions -->
-                    <button onclick="publishEvent()" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 font-medium transition-colors duration-200">
-                        🚀 Publish Event
-                    </button>
-                    <button onclick="cancelEvent()" class="w-full px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 font-medium transition-colors duration-200">
-                        ❌ Cancel Event
-                    </button>
-
-                @elseif($event->status === 'published')
-                    <!-- Published Actions -->
-                    <a href="{{ route('staff.events.registrations', $event->id) }}" class="block w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center font-medium transition-colors duration-200">
-                        👥 Manage Registrations
-                    </a>
-                    <button onclick="cancelEvent()" class="w-full px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 font-medium transition-colors duration-200">
-                        ❌ Cancel Event
-                    </button>
-
-                @elseif($event->status === 'ongoing')
-                    <!-- Ongoing Actions -->
-                    <a href="{{ route('staff.events.registrations', $event->id) }}" class="block w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center font-medium transition-colors duration-200">
-                        👥 Manage Registrations
-                    </a>
-                    <a href="{{ route('staff.events.attendance', $event->id) }}" class="block w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 text-center font-medium transition-colors duration-200">
-                        ✅ Check-In Attendees
-                    </a>
-                    <button onclick="endEvent()" class="w-full px-4 py-2 border border-orange-300 text-orange-600 rounded-lg hover:bg-orange-50 font-medium transition-colors duration-200">
-                        🏁 End Event
-                    </button>
-
-                @elseif($event->status === 'completed')
-                    <!-- Completed Actions -->
-                    <a href="{{ route('staff.events.attendance', $event->id) }}" class="block w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 text-center font-medium transition-colors duration-200">
-                        📊 View Attendance Report
-                    </a>
-                    <button onclick="exportAttendance()" class="w-full px-4 py-2 border border-blue-300 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors duration-200">
-                        📥 Export Attendee List
-                    </button>
-
-                @elseif($event->status === 'cancelled')
-                    <!-- Cancelled - No Actions -->
-                    <div class="text-center py-4">
-                        <p class="text-gray-600">Event has been cancelled. No further actions available.</p>
-                    </div>
-                @endif
+            <div class="ml-4 flex-1">
+                <h3 class="text-base font-medium text-yellow-800">Event Submitted for Review</h3>
+                <p class="mt-2 text-base text-yellow-700">
+                    This event was submitted on {{ $event->created_at->format('F j, Y') }} and is currently under administrator review.
+                </p>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Registrations Section (Published/Ongoing/Completed) -->
-@if(in_array($event->status, ['published', 'ongoing', 'completed']))
-    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-200 mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">📊 Quick Statistics</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <p class="text-sm text-gray-600">Total Registrations</p>
-                <p class="text-2xl font-bold text-blue-600">{{ $event->registrations->count() }}</p>
+<!-- APPROVED STATUS -->
+@elseif($event->status === 'approved')
+    <div class="bg-green-50 border-l-4 border-green-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex items-start">
+            <svg class="h-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="ml-4 flex-1">
+                <h3 class="text-base font-medium text-green-800">Event Approved - Ready to Publish</h3>
+                <p class="mt-2 text-base text-green-700">This event was approved by the administrator. You can now publish this event to make it visible to students and start accepting registrations.</p>
             </div>
-            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
-                <p class="text-sm text-gray-600">Confirmed</p>
-                <p class="text-2xl font-bold text-green-600">{{ $event->registrations->where('status', 'confirmed')->count() }}</p>
+        </div>
+    </div>
+
+<!-- REJECTED STATUS -->
+@elseif($event->status === 'rejected')
+    <div class="bg-red-50 border-l-4 border-red-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex items-start">
+            <svg class="h-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            <div class="ml-4 flex-1">
+                <h3 class="text-base font-medium text-red-800">Event Rejected</h3>
+                <p class="mt-2 text-base text-red-700">
+                    @if($event->rejection_reason)
+                        <strong>Reason:</strong> {{ $event->rejection_reason }}
+                    @else
+                        This event has been rejected. Please review the feedback and make necessary changes.
+                    @endif
+                </p>
             </div>
-            <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
-                <p class="text-sm text-gray-600">Pending</p>
-                <p class="text-2xl font-bold text-orange-600">{{ $event->registrations->where('status', 'pending')->count() }}</p>
+        </div>
+    </div>
+
+<!-- PUBLISHED STATUS -->
+@elseif($event->status === 'published')
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex items-start">
+            <svg class="h-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+            <div class="ml-4 flex-1">
+                <h3 class="text-base font-medium text-blue-800">Event Published - Now Live</h3>
+                <p class="mt-2 text-base text-blue-700">
+                    This event is now visible to all students and alumni. Registrations are {{ $event->registration_required ? 'being accepted' : 'not required for this event' }}.
+                </p>
+            </div>
+        </div>
+    </div>
+
+<!-- ONGOING STATUS -->
+@elseif($event->status === 'ongoing')
+    <div class="bg-purple-50 border-l-4 border-purple-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex items-start">
+            <svg class="h-6 h-6 text-purple-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2 1m2-1l-2-1m2 1v2.5"></path>
+            </svg>
+            <div class="ml-4 flex-1">
+                <h3 class="text-base font-medium text-purple-800">Event in Progress</h3>
+                <p class="mt-2 text-base text-purple-700">
+                    This event is currently happening. You can manage attendance and view real-time participant information.
+                </p>
+            </div>
+        </div>
+    </div>
+
+<!-- COMPLETED STATUS -->
+@elseif($event->status === 'completed')
+    <div class="bg-gray-50 border-l-4 border-gray-400 p-6 mb-8 rounded-r-lg">
+        <div class="flex items-start">
+            <svg class="h-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div class="ml-4 flex-1">
+                <h3 class="text-base font-medium text-gray-800">Event Completed</h3>
+                <p class="mt-2 text-base text-gray-700">
+                    This event has finished. You can view the final attendance records and event statistics.
+                </p>
             </div>
         </div>
     </div>
 @endif
 
-<!-- Confirmation Modals -->
-
-<!-- Submit for Review Modal -->
-<div id="submitModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Submit Event for Review?</h3>
-            <p class="text-gray-700 mb-6">Once submitted, this event will be reviewed by the admin. You can still edit it while it's under review.</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('submitModal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                    Cancel
-                </button>
-                <form action="{{ route('staff.events.submit', $event->id) }}" method="POST" class="flex-1">
-                    @csrf
-                    <button type="submit" class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                        Submit
-                    </button>
-                </form>
-            </div>
+<!-- Event Banner -->
+<div class="relative bg-gradient-to-r @if($event->status === 'pending') from-yellow-600 to-amber-600 @elseif($event->status === 'approved') from-green-600 to-teal-600 @elseif($event->status === 'rejected') from-red-600 to-pink-600 @elseif($event->status === 'published') from-blue-600 to-purple-600 @elseif($event->status === 'ongoing') from-purple-600 to-indigo-600 @else from-gray-600 to-slate-600 @endif rounded-xl overflow-hidden mb-8 shadow-lg">
+    @if($event->event_image)
+        <img src="{{ asset($event->event_image) }}" alt="{{ $event->title }}" class="w-full h-80 object-cover absolute inset-0">
+    @endif
+    <div class="absolute inset-0 bg-black opacity-40"></div>
+    <div class="relative px-8 py-16 text-center">
+        <div class="flex justify-center mb-4 space-x-3 flex-wrap">
+            <span class="@if($event->status === 'pending') bg-yellow-100 text-yellow-800 @elseif($event->status === 'approved') bg-green-100 text-green-800 @elseif($event->status === 'rejected') bg-red-100 text-red-800 @elseif($event->status === 'published') bg-blue-100 text-blue-800 @elseif($event->status === 'ongoing') bg-purple-100 text-purple-800 @else bg-gray-100 text-gray-800 @endif px-4 py-1 rounded-full text-base font-medium">
+                @switch($event->status)
+                    @case('pending')
+                        Under Review
+                        @break
+                    @case('approved')
+                        Approved
+                        @break
+                    @case('published')
+                        Published
+                        @break
+                    @case('rejected')
+                        Rejected
+                        @break
+                    @case('ongoing')
+                        Ongoing
+                        @break
+                    @case('completed')
+                        Completed
+                        @break
+                    @default
+                        Draft
+                @endswitch
+            </span>
+            <span class="bg-green-100 text-green-800 px-4 py-1 rounded-full text-base font-medium">
+                {{ ucfirst(str_replace('_', ' ', $event->event_format)) }}
+            </span>
+            @if($event->registration_required)
+                <span class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-base font-medium">Registration Required</span>
+            @endif
+            <span class="bg-orange-100 text-orange-800 px-4 py-1 rounded-full text-base font-medium">University Event</span>
         </div>
+        <h1 class="text-4xl font-bold text-white mb-4">{{ $event->title }}</h1>
+        <p class="text-blue-100 text-lg max-w-3xl mx-auto">{{ $event->description }}</p>
     </div>
 </div>
 
-<!-- Publish Event Modal -->
-<div id="publishModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Publish Event?</h3>
-            <p class="text-gray-700 mb-6">This will make the event live and registrations will open immediately. Are you sure?</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('publishModal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                    Cancel
-                </button>
-                <form action="{{ route('staff.events.publish', $event->id) }}" method="POST" class="flex-1">
-                    @csrf
-                    <button type="submit" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
-                        Publish
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
+<!-- Action Buttons - Dynamic based on Status -->
+<div class="mb-8 flex justify-end gap-4">
+    @if($event->status === 'pending')
+        <!-- PENDING: Edit, Delete -->
+        <form action="{{ route('staff.events.destroy', $event->id) }}" method="POST" style="display:inline;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" onclick="return confirm('Are you sure you want to delete this event?')" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Delete
+            </button>
+        </form>
+        <a href="{{ route('staff.events.edit', $event->id) }}" class="px-8 py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 flex items-center text-base">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Edit Event
+        </a>
+
+    @elseif($event->status === 'approved')
+        <!-- APPROVED: Publish -->
+        <form action="{{ route('staff.events.publish', $event->id) }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Decline
+            </button>
+        </form>
+        <form action="{{ route('staff.events.publish', $event->id) }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit" class="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center text-base">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Publish Event
+            </button>
+        </form>
+
+    @elseif($event->status === 'rejected')
+        <!-- REJECTED: Edit & Resubmit, Delete -->
+        <form action="{{ route('staff.events.destroy', $event->id) }}" method="POST" style="display:inline;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" onclick="return confirm('Are you sure you want to delete this event?')" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Delete
+            </button>
+        </form>
+        <a href="{{ route('staff.events.edit', $event->id) }}" class="px-8 py-3 bg-amber-600 text-white rounded-lg font-medium hover:bg-amber-700 flex items-center text-base">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            Edit & Resubmit
+        </a>
+
+    @elseif($event->status === 'published')
+        <!-- PUBLISHED: Manage Registrations, View Attendees, Mark Ongoing -->
+        <a href="{{ route('staff.events.manage-registrations', $event->id) }}" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a6 6 0 11-12 0 6 6 0 0112 0z"></path>
+            </svg>
+            Manage Registrations
+        </a>
+        <form action="{{ route('staff.events.mark-ongoing', $event->id) }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit" class="px-8 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 flex items-center text-base">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Mark Ongoing
+            </button>
+        </form>
+
+    @elseif($event->status === 'ongoing')
+        <!-- ONGOING: Manage Attendance, Mark Completed -->
+        <a href="{{ route('staff.events.manage-attendance', $event->id) }}" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Mark Attendance
+        </a>
+        <form action="{{ route('staff.events.mark-completed', $event->id) }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit" class="px-8 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 flex items-center text-base">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                </svg>
+                Mark Completed
+            </button>
+        </form>
+
+    @elseif($event->status === 'completed')
+        <!-- COMPLETED: View Statistics, Download Report -->
+        <a href="{{ route('staff.events.statistics', $event->id) }}" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            View Statistics
+        </a>
+        <a href="{{ route('staff.events.download-report', $event->id) }}" class="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center text-base">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Download Report
+        </a>
+    @endif
 </div>
 
-<!-- Cancel Event Modal -->
-<div id="cancelModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Cancel Event?</h3>
-            <p class="text-gray-700 mb-2">This action cannot be undone. All registrations will be cancelled and registrants will be notified.</p>
-            <p class="text-gray-700 mb-6">Please provide a reason:</p>
-            <form action="{{ route('staff.events.cancel', $event->id) }}" method="POST">
-                @csrf
-                <textarea name="cancellation_reason" rows="3" placeholder="Reason for cancellation..." class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-primary focus:border-primary" required></textarea>
-                <div class="flex gap-3">
-                    <button type="button" onclick="closeModal('cancelModal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                        Don't Cancel
-                    </button>
-                    <button type="submit" class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
-                        Cancel Event
-                    </button>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Main Content Column -->
+    <div class="lg:col-span-2 space-y-8">
+        <!-- Event Information -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg class="w-7 h-7 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Event Information
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <p class="text-base text-gray-500">Event Title</p>
+                    <p class="font-medium text-gray-900 text-lg">{{ $event->title }}</p>
                 </div>
-            </form>
+                <div>
+                    <p class="text-base text-gray-500">Event Format</p>
+                    <p class="font-medium text-gray-900 text-lg">{{ ucfirst(str_replace('_', ' ', $event->event_format)) }}</p>
+                </div>
+                <div>
+                    <p class="text-base text-gray-500">Submitted Date</p>
+                    <p class="font-medium text-gray-900 text-lg">{{ $event->created_at->format('F j, Y') }}</p>
+                </div>
+                <div>
+                    <p class="text-base text-gray-500">Contact Person</p>
+                    <p class="font-medium text-gray-900 text-lg">{{ $event->contact_person }}</p>
+                </div>
+            </div>
+            <div class="border-t pt-6">
+                <h3 class="font-semibold text-gray-900 text-lg mb-3">Description</h3>
+                <p class="text-gray-700 text-base leading-relaxed whitespace-pre-wrap">{{ $event->description }}</p>
+            </div>
+            @if($event->event_tags)
+                <div class="mt-6 flex flex-wrap gap-3">
+                    @foreach(explode(',', $event->event_tags) as $tag)
+                        <span class="px-4 py-1 bg-blue-100 text-blue-800 text-base rounded-full">#{{ trim($tag) }}</span>
+                    @endforeach
+                </div>
+            @endif
+        </div>
+
+        <!-- Date & Time -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg class="w-7 h-7 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                Date & Time
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="text-base font-medium text-gray-700">Event Date</span>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-900">{{ $event->event_date->format('F j, Y') }}</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <span class="text-base font-medium text-gray-700">Time</span>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-900">
+                        {{ $event->formatted_start_time }} - {{ $event->formatted_end_time }}
+                    </p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        <span class="text-base font-medium text-gray-700">Multi-Day Event</span>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-900">{{ $event->is_multiday ? 'Yes' : 'No' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location & Venue -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg class="w-7 h-7 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Location & Venue
+            </h2>
+            @if($event->event_format === 'inperson' || $event->event_format === 'hybrid')
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <p class="text-base text-gray-500 mb-1">Venue Name</p>
+                        <p class="font-semibold text-gray-900 text-lg">{{ $event->venue_name ?? 'N/A' }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base text-gray-500 mb-1">Venue Capacity</p>
+                        <p class="font-semibold text-gray-900 text-lg">{{ $event->venue_capacity ?? 'N/A' }}</p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <p class="text-base text-gray-500 mb-1">Venue Address</p>
+                        <p class="text-gray-700 font-medium text-lg">{{ $event->venue_address ?? 'N/A' }}</p>
+                    </div>
+                </div>
+            @endif
+
+            @if($event->event_format === 'virtual' || $event->event_format === 'hybrid')
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <p class="text-base text-gray-500 mb-1">Platform</p>
+                        <p class="font-semibold text-gray-900 text-lg">{{ $event->platform ? ucfirst($event->platform) : ($event->custom_platform ?? 'N/A') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-base text-gray-500 mb-1">Virtual Capacity</p>
+                        <p class="font-semibold text-gray-900 text-lg">{{ $event->virtual_capacity ?? 'Unlimited' }}</p>
+                    </div>
+                    @if($event->meeting_link)
+                        <div class="md:col-span-2">
+                            <p class="text-base text-gray-500 mb-1">Meeting Link</p>
+                            <a href="{{ $event->meeting_link }}" target="_blank" class="text-blue-600 font-medium text-lg break-all hover:underline">{{ $event->meeting_link }}</a>
+                            <p class="text-sm text-gray-500 mt-1">This will be shared with registered participants</p>
+                        </div>
+                    @endif
+                </div>
+            @endif
+        </div>
+
+        <!-- Registration Settings -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg class="w-7 h-7 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01m-.01 4h.01"></path>
+                </svg>
+                Registration Settings
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <span class="text-base font-medium text-gray-700">Registration Required</span>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-900">{{ $event->registration_required ? 'Yes' : 'No' }}</p>
+                </div>
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-center mb-2">
+                        <span class="text-base font-medium text-gray-700">Walk-In Registration</span>
+                    </div>
+                    <p class="text-lg font-semibold text-gray-900">{{ $event->walkin_allowed ? 'Allowed' : 'Not Allowed' }}</p>
+                </div>
+                @if($event->registration_deadline)
+                    <div class="p-4 bg-yellow-50 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <span class="text-base font-medium text-gray-700">Registration Deadline</span>
+                        </div>
+                        <p class="text-lg font-semibold text-gray-900">{{ $event->registration_deadline->format('F j, Y') }}</p>
+                    </div>
+                @endif
+                @if($event->max_attendees)
+                    <div class="p-4 bg-green-50 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <span class="text-base font-medium text-gray-700">Maximum Attendees</span>
+                        </div>
+                        <p class="text-lg font-semibold text-gray-900">{{ $event->max_attendees }}</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Target Audience -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center">
+                <svg class="w-7 h-7 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+                Target Audience
+            </h2>
+            <div class="space-y-6">
+                <div class="p-4 bg-blue-50 rounded-lg">
+                    <p class="font-semibold text-gray-900 text-lg">Audience Type</p>
+                    <p class="text-gray-700 text-base">
+                        @switch($event->target_audience)
+                            @case('allstudents')
+                                All Students
+                                @break
+                            @case('alumni')
+                                Alumni
+                                @break
+                            @case('openforall')
+                                Open for All (Students, Alumni & Public)
+                                @break
+                            @default
+                                All Students
+                        @endswitch
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- End Event Modal -->
-<div id="endModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">End Event?</h3>
-            <p class="text-gray-700 mb-6">Mark this event as completed. You will then be able to view attendance reports.</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('endModal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                    Keep Going
-                </button>
-                <form action="{{ route('staff.events.end', $event->id) }}" method="POST" class="flex-1">
-                    @csrf
-                    <button type="submit" class="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors duration-200">
-                        End Event
-                    </button>
-                </form>
+    <!-- Sidebar Column -->
+    <div class="space-y-8">
+        <!-- Event Status -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h3 class="font-bold text-gray-900 text-xl mb-6">Event Status</h3>
+            <div class="space-y-6">
+                <div class="p-4 @if($event->status === 'pending') bg-yellow-50 border border-yellow-200 @elseif($event->status === 'approved') bg-green-50 border border-green-200 @elseif($event->status === 'rejected') bg-red-50 border border-red-200 @elseif($event->status === 'published') bg-blue-50 border border-blue-200 @elseif($event->status === 'ongoing') bg-purple-50 border border-purple-200 @else bg-gray-50 @endif rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-base font-medium text-gray-700">Review Status</span>
+                        @if($event->status === 'pending')
+                            <svg class="w-6 h-6 text-yellow-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        @elseif($event->status === 'ongoing')
+                            <svg class="w-6 h-6 text-purple-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2 1m2-1l-2-1m2 1v2.5"></path>
+                            </svg>
+                        @endif
+                    </div>
+                    <p class="text-lg font-bold @if($event->status === 'pending') text-yellow-800 @elseif($event->status === 'approved') text-green-800 @elseif($event->status === 'rejected') text-red-800 @elseif($event->status === 'published') text-blue-800 @elseif($event->status === 'ongoing') text-purple-800 @else text-gray-800 @endif">
+                        @switch($event->status)
+                            @case('pending')
+                                Under Review
+                                @break
+                            @case('approved')
+                                Approved
+                                @break
+                            @case('published')
+                                Published
+                                @break
+                            @case('rejected')
+                                Rejected
+                                @break
+                            @case('ongoing')
+                                Ongoing
+                                @break
+                            @case('completed')
+                                Completed
+                                @break
+                            @default
+                                Draft
+                        @endswitch
+                    </p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-base text-gray-500 mb-1">Registration</p>
+                    <p class="font-semibold text-gray-900 text-lg">{{ $event->status === 'published' || $event->status === 'ongoing' ? 'Open' : 'Not Yet Open' }}</p>
+                </div>
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <p class="text-base text-gray-500 mb-1">Current Registrations</p>
+                    <p class="font-semibold text-gray-900 text-lg">{{ $event->getTotalRegistrations() }} participants</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h3 class="font-bold text-gray-900 text-xl mb-6 flex items-center">
+                <svg class="w-6 h-6 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                Contact Information
+            </h3>
+            <div class="space-y-6">
+                <div>
+                    <p class="text-base text-gray-500">Contact Person</p>
+                    <p class="font-medium text-gray-900 text-lg">{{ $event->contact_person }}</p>
+                </div>
+                <div>
+                    <p class="text-base text-gray-500">Contact Email</p>
+                    <a href="mailto:{{ $event->contact_email }}" class="text-blue-600 hover:underline text-lg">{{ $event->contact_email }}</a>
+                </div>
+                @if($event->contact_phone)
+                    <div>
+                        <p class="text-base text-gray-500">Contact Phone</p>
+                        <a href="tel:{{ $event->contact_phone }}" class="text-blue-600 hover:underline text-lg">{{ $event->contact_phone }}</a>
+                    </div>
+                @endif
+            </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h3 class="font-bold text-gray-900 text-xl mb-6">Additional Information</h3>
+            <div class="space-y-6 text-base">
+                @if($event->special_instructions)
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <p class="font-medium text-gray-900 text-lg">Registration Instructions</p>
+                        <p class="text-gray-700 text-base mt-2 whitespace-pre-wrap">{{ $event->special_instructions }}</p>
+                    </div>
+                @endif
+                <div class="p-4 bg-green-50 rounded-lg">
+                    <p class="font-medium text-gray-900 text-lg">Event Image</p>
+                    @if($event->event_image)
+                        <img src="{{ asset($event->event_image) }}" alt="{{ $event->title }}" class="mt-2 h-32 w-full object-cover rounded">
+                    @else
+                        <p class="text-gray-700 text-base mt-2">No image uploaded</p>
+                    @endif
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Delete Event Modal -->
-<div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Delete Event?</h3>
-            <p class="text-red-600 font-semibold mb-4">⚠️ This action cannot be undone!</p>
-            <p class="text-gray-700 mb-6">All event data will be permanently deleted.</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('deleteModal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                    Keep It
-                </button>
-                <form action="{{ route('staff.events.destroy', $event->id) }}" method="POST" class="flex-1">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200">
-                        Delete
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Withdraw Submission Modal -->
-<div id="withdrawModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-lg shadow-lg max-w-sm w-full">
-        <div class="p-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Withdraw Submission?</h3>
-            <p class="text-gray-700 mb-6">The event will return to draft status and can be edited again.</p>
-            <div class="flex gap-3">
-                <button onclick="closeModal('withdrawModal')" class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                    Cancel
-                </button>
-                <form action="{{ route('staff.events.withdraw', $event->id) }}" method="POST" class="flex-1">
-                    @csrf
-                    <button type="submit" class="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200">
-                        Withdraw
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- JavaScript Functions -->
-<script>
-function submitForReview() {
-    document.getElementById('submitModal').classList.remove('hidden');
-}
-
-function publishEvent() {
-    document.getElementById('publishModal').classList.remove('hidden');
-}
-
-function cancelEvent() {
-    document.getElementById('cancelModal').classList.remove('hidden');
-}
-
-function endEvent() {
-    document.getElementById('endModal').classList.remove('hidden');
-}
-
-function deleteEvent() {
-    document.getElementById('deleteModal').classList.remove('hidden');
-}
-
-function withdrawSubmission() {
-    document.getElementById('withdrawModal').classList.remove('hidden');
-}
-
-function exportAttendance() {
-    // Trigger attendance export (will be handled by controller)
-    window.location.href = "{{ route('staff.events.export-attendance', $event->id) }}";
-}
-
-function closeModal(modalId) {
-    document.getElementById(modalId).classList.add('hidden');
-}
-
-// Close modal when clicking outside
-document.querySelectorAll('[id$="Modal"]').forEach(modal => {
-    modal.addEventListener('click', function(e) {
-        if (e.target === this) {
-            this.classList.add('hidden');
-        }
-    });
-});
-</script>
-
 @endsection

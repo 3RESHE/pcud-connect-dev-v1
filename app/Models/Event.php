@@ -46,8 +46,8 @@ class Event extends Model
     protected $casts = [
         'event_date' => 'date',
         'end_date' => 'date',
-        'start_time' => 'datetime',
-        'end_time' => 'datetime',
+        'start_time' => 'string',
+        'end_time' => 'string',
         'is_multiday' => 'boolean',
         'registration_required' => 'boolean',
         'walkin_allowed' => 'boolean',
@@ -85,6 +85,68 @@ class Event extends Model
     public function registrations(): HasMany
     {
         return $this->hasMany(EventRegistration::class);
+    }
+
+    // ===== ACCESSORS FOR TIME FORMATTING =====
+
+    /**
+     * Get formatted start time (e.g., 9:00 AM)
+     */
+    public function getFormattedStartTimeAttribute(): string
+    {
+        try {
+            if ($this->start_time) {
+                return \Carbon\Carbon::createFromFormat('H:i', $this->start_time)->format('g:i A');
+            }
+            return 'TBA';
+        } catch (\Exception $e) {
+            return $this->start_time ?? 'TBA';
+        }
+    }
+
+    /**
+     * Get formatted end time (e.g., 5:00 PM)
+     */
+    public function getFormattedEndTimeAttribute(): string
+    {
+        try {
+            if ($this->end_time) {
+                return \Carbon\Carbon::createFromFormat('H:i', $this->end_time)->format('g:i A');
+            }
+            return 'TBA';
+        } catch (\Exception $e) {
+            return $this->end_time ?? 'TBA';
+        }
+    }
+
+    /**
+     * Get formatted start time (24-hour format, e.g., 09:00)
+     */
+    public function getFormattedStartTime24Attribute(): string
+    {
+        try {
+            if ($this->start_time) {
+                return \Carbon\Carbon::createFromFormat('H:i', $this->start_time)->format('H:i');
+            }
+            return 'TBA';
+        } catch (\Exception $e) {
+            return $this->start_time ?? 'TBA';
+        }
+    }
+
+    /**
+     * Get formatted end time (24-hour format, e.g., 17:00)
+     */
+    public function getFormattedEndTime24Attribute(): string
+    {
+        try {
+            if ($this->end_time) {
+                return \Carbon\Carbon::createFromFormat('H:i', $this->end_time)->format('H:i');
+            }
+            return 'TBA';
+        } catch (\Exception $e) {
+            return $this->end_time ?? 'TBA';
+        }
     }
 
     // ===== SCOPES =====
@@ -196,7 +258,7 @@ class Event extends Model
     public function getEventDatetimeDisplay(): string
     {
         $date = $this->event_date->format('M d, Y');
-        $time = $this->start_time ? $this->start_time->format('h:i A') : 'TBA';
+        $time = $this->formatted_start_time;
 
         if ($this->is_multiday && $this->end_date) {
             $endDate = $this->end_date->format('M d, Y');

@@ -247,94 +247,64 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // =====================================================
 
     Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
-
-        // ===== DASHBOARD =====
-        Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])
-            ->name('dashboard');
-
+        // DASHBOARD
+        Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
         Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
-        // ===== EVENT MANAGEMENT =====
+        // EVENT MANAGEMENT
         Route::prefix('events')->name('events.')->group(function () {
             // Basic CRUD
-            Route::get('/', [EventController::class, 'index'])
-                ->name('index');
-            Route::get('/create', [EventController::class, 'create'])
-                ->name('create');
-            Route::post('/', [EventController::class, 'store'])
-                ->name('store');
-            Route::get('/{event}', [EventController::class, 'show'])
-                ->name('show');
-            Route::get('/{event}/edit', [EventController::class, 'edit'])
-                ->name('edit');
-            Route::put('/{event}', [EventController::class, 'update'])
-                ->name('update');
-            Route::delete('/{event}', [EventController::class, 'destroy'])
-                ->name('destroy');
+            Route::get('/', [EventController::class, 'index'])->name('index');
+            Route::get('/create', [EventController::class, 'create'])->name('create');
+            Route::post('/', [EventController::class, 'store'])->name('store');
+            Route::get('/{event}', [EventController::class, 'show'])->name('show');
+            Route::get('/{event}/edit', [EventController::class, 'edit'])->name('edit');
+            Route::put('/{event}', [EventController::class, 'update'])->name('update');
+            Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
 
-            // Event Status Actions
-            Route::post('/{event}/submit', [EventController::class, 'submit'])
-                ->name('submit');
-            Route::post('/{event}/withdraw', [EventController::class, 'withdraw'])
-                ->name('withdraw');
-            Route::post('/{event}/publish', [EventController::class, 'publish'])
-                ->name('publish');
-            Route::post('/{event}/cancel', [EventController::class, 'cancel'])
-                ->name('cancel');
-            Route::post('/{event}/end', [EventController::class, 'end'])
-                ->name('end');
+            // Status Actions (add these for show.blade.php template integration)
+            Route::post('/{event}/publish', [EventController::class, 'publish'])->name('publish'); // For approved->published
+            Route::post('/{event}/mark-ongoing', [EventController::class, 'markOngoing'])->name('mark-ongoing'); // For published->ongoing
+            Route::post('/{event}/mark-completed', [EventController::class, 'markCompleted'])->name('mark-completed'); // For ongoing->completed
+            Route::post('/{event}/decline', [EventController::class, 'decline'])->name('decline'); // For approved->rejected (optional)
 
-            // Registrations & Attendance
-            Route::get('/{event}/registrations', [EventController::class, 'registrations'])
-                ->name('registrations');
-            Route::post('/{event}/registrations/{registration}/confirm', [EventController::class, 'confirmRegistration'])
-                ->name('registrations.confirm');
-            Route::post('/{event}/registrations/{registration}/cancel', [EventController::class, 'cancelRegistration'])
-                ->name('registrations.cancel');
-            Route::get('/{event}/registrations/{registration}', [EventController::class, 'registrationDetails'])
-                ->name('registrations.details');
+            // Registration/Attendance Pages & Actions
+            Route::get('/{event}/manage-registrations', [EventController::class, 'manageRegistrations'])->name('manage-registrations');
+            Route::get('/{event}/manage-attendance', [EventController::class, 'manageAttendance'])->name('manage-attendance');
 
-            // Attendance Management
-            Route::get('/{event}/attendance', [EventController::class, 'attendance'])
-                ->name('attendance');
-            Route::post('/{event}/attendance/{registration}/check-in', [EventController::class, 'checkIn'])
-                ->name('attendance.check-in');
-            Route::post('/{event}/attendance/{registration}/check-out', [EventController::class, 'checkOut'])
-                ->name('attendance.check-out');
-            Route::get('/{event}/attendance/export', [EventController::class, 'exportAttendance'])
-                ->name('attendance.export');
+            // Statistics & Reports (for completed)
+            Route::get('/{event}/statistics', [EventController::class, 'statistics'])->name('statistics');
+            Route::get('/{event}/download-report', [EventController::class, 'downloadReport'])->name('download-report');
 
-            // Registrations Export
-            Route::get('/{event}/registrations/export', [EventController::class, 'exportRegistrations'])
-                ->name('registrations.export');
+            // The rest of your already existing registration/attendance/exports routes...
+            Route::get('/{event}/registrations', [EventController::class, 'registrations'])->name('registrations');
+            Route::post('/{event}/registrations/{registration}/confirm', [EventController::class, 'confirmRegistration'])->name('registrations.confirm');
+            Route::post('/{event}/registrations/{registration}/cancel', [EventController::class, 'cancelRegistration'])->name('registrations.cancel');
+            Route::get('/{event}/registrations/{registration}', [EventController::class, 'registrationDetails'])->name('registrations.details');
+            Route::get('/{event}/attendance', [EventController::class, 'attendance'])->name('attendance');
+            Route::post('/{event}/attendance/{registration}/check-in', [EventController::class, 'checkIn'])->name('attendance.check-in');
+            Route::post('/{event}/attendance/{registration}/check-out', [EventController::class, 'checkOut'])->name('attendance.check-out');
+            Route::get('/{event}/attendance/export', [EventController::class, 'exportAttendance'])->name('attendance.export');
+            Route::get('/{event}/registrations/export', [EventController::class, 'exportRegistrations'])->name('registrations.export');
         });
 
-        // ===== NEWS MANAGEMENT =====
+        // NEWS MANAGEMENT (keep unchanged)
         Route::prefix('news')->name('news.')->group(function () {
-            Route::get('/', [StaffNewsController::class, 'index'])
-                ->name('index');
-            Route::get('/create', [StaffNewsController::class, 'create'])
-                ->name('create');
-            Route::post('/', [StaffNewsController::class, 'store'])
-                ->name('store');
-            Route::get('/{newsArticle}', [StaffNewsController::class, 'show'])
-                ->name('show');
-            Route::get('/{newsArticle}/edit', [StaffNewsController::class, 'edit'])
-                ->name('edit');
-            Route::put('/{newsArticle}', [StaffNewsController::class, 'update'])
-                ->name('update');
-            Route::post('/{newsArticle}/submit', [StaffNewsController::class, 'submit'])
-                ->name('submit');
-            Route::post('/{newsArticle}/withdraw', [StaffNewsController::class, 'withdraw'])
-                ->name('withdraw');
-            Route::post('/{newsArticle}/publish', [StaffNewsController::class, 'publish'])
-                ->name('publish');
-            Route::delete('/{newsArticle}', [StaffNewsController::class, 'destroy'])
-                ->name('destroy');
+            Route::get('/', [StaffNewsController::class, 'index'])->name('index');
+            Route::get('/create', [StaffNewsController::class, 'create'])->name('create');
+            Route::post('/', [StaffNewsController::class, 'store'])->name('store');
+            Route::get('/{newsArticle}', [StaffNewsController::class, 'show'])->name('show');
+            Route::get('/{newsArticle}/edit', [StaffNewsController::class, 'edit'])->name('edit');
+            Route::put('/{newsArticle}', [StaffNewsController::class, 'update'])->name('update');
+            Route::post('/{newsArticle}/submit', [StaffNewsController::class, 'submit'])->name('submit');
+            Route::post('/{newsArticle}/withdraw', [StaffNewsController::class, 'withdraw'])->name('withdraw');
+            Route::post('/{newsArticle}/publish', [StaffNewsController::class, 'publish'])->name('publish');
+            Route::delete('/{newsArticle}', [StaffNewsController::class, 'destroy'])->name('destroy');
         });
     });
+
 
     // =====================================================
     // PARTNER DASHBOARD ROUTES
