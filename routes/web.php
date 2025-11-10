@@ -88,6 +88,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
     // REDIRECT ROOT TO APPROPRIATE DASHBOARD BY ROLE
     // =====================================================
 
+
+    Route::middleware('role:student,alumni,partner')->prefix('news')->name('news.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Shared\NewsController::class, 'index'])->name('index');
+        Route::get('/{newsArticle}', [\App\Http\Controllers\Shared\NewsController::class, 'show'])->name('show');
+    });
+
     Route::get('/dashboard', function () {
         $user = auth()->user();
 
@@ -422,26 +428,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::delete('/{partnership}', [PartnershipController::class, 'destroy'])
                     ->name('destroy');
             });
-
-            // ===== NEWS =====
-            Route::prefix('news')->name('news.')->group(function () {
-                Route::get('/', [PartnerNewsController::class, 'index'])
-                    ->name('index');
-                Route::get('/create', [PartnerNewsController::class, 'create'])
-                    ->name('create');
-                Route::post('/', [PartnerNewsController::class, 'store'])
-                    ->name('store');
-                Route::get('/{news}', [PartnerNewsController::class, 'show'])
-                    ->name('show');
-                Route::get('/{news}/edit', [PartnerNewsController::class, 'edit'])
-                    ->name('edit');
-                Route::put('/{news}', [PartnerNewsController::class, 'update'])
-                    ->name('update');
-                Route::post('/{news}/publish', [PartnerNewsController::class, 'publish'])
-                    ->name('publish');
-                Route::delete('/{news}', [PartnerNewsController::class, 'destroy'])
-                    ->name('destroy');
-            });
         });
     });
 
@@ -493,19 +479,11 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::delete('/{application}', [StudentJobController::class, 'withdrawApplication'])->name('destroy');
             });
 
-
-
             // ===== EVENTS =====
             Route::prefix('events')->name('events.')->group(function () {
                 Route::get('/', [StudentEventController::class, 'index'])->name('index');
                 Route::get('/{event}', [StudentEventController::class, 'show'])->name('show');
                 Route::post('/{event}/register', [StudentEventController::class, 'register'])->name('register');
-            });
-
-            // ===== NEWS =====
-            Route::prefix('news')->name('news.')->group(function () {
-                Route::get('/', [StudentNewsController::class, 'index'])->name('index');
-                Route::get('/{article}', [StudentNewsController::class, 'show'])->name('show');
             });
         });
     });
@@ -575,14 +553,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                     ->name('show');
                 Route::post('/{event}/register', [AlumniEventController::class, 'register'])
                     ->name('register');
-            });
-
-            // ===== NEWS =====
-            Route::prefix('news')->name('news.')->group(function () {
-                Route::get('/', [AlumniNewsController::class, 'index'])
-                    ->name('index');
-                Route::get('/{news}', [AlumniNewsController::class, 'show'])
-                    ->name('show');
             });
         });
     });

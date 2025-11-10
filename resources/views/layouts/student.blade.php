@@ -46,7 +46,7 @@
                             class="@if (request()->routeIs('student.events.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Events
                         </a>
-                        <a href="{{ route('student.news.index') }}"
+                        <a href="{{ route('news.index') }}"
                             class="@if (request()->routeIs('student.news.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             News
                         </a>
@@ -185,7 +185,7 @@
                         Opportunities</a>
                     <a href="{{ route('student.events.index') }}"
                         class="@if (request()->routeIs('student.events.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Events</a>
-                    <a href="{{ route('student.news.index') }}"
+                    <a href="{{ route('news.index') }}"
                         class="@if (request()->routeIs('student.news.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">News</a>
                     <a href="{{ route('student.profile.show') }}"
                         class="@if (request()->routeIs('student.profile.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Profile</a>

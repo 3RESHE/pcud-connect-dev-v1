@@ -20,8 +20,8 @@
                         class="@if (Route::currentRouteName() === 'partner.partnerships.index') text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary border-b-2 border-transparent @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                         Partnerships
                     </a>
-                    <a href="{{ route('partner.news.index') }}"
-                        class="@if (Route::currentRouteName() === 'partner.news.index') text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary border-b-2 border-transparent @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
+                    <a href="{{ route('news.index') }}"
+                        class="@if (Route::currentRouteName() === 'news.index') text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary border-b-2 border-transparent @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                         News
                     </a>
                 </div>
@@ -124,8 +124,8 @@
                     class="@if (Route::currentRouteName() === 'partner.partnerships.index') text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">
                     Partnerships
                 </a>
-                <a href="{{ route('partner.news.index') }}"
-                    class="@if (Route::currentRouteName() === 'partner.news.index') text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">
+                <a href="{{ route('news.index') }}"
+                    class="@if (Route::currentRouteName() === 'news.index') text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">
                     News
                 </a>
             </div>
