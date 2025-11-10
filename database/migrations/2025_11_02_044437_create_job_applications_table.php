@@ -27,8 +27,10 @@ return new class extends Migration
             $table->json('additional_documents')->nullable(); // Array of file paths
 
             // Application status
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
-            $table->timestamp('reviewed_at')->nullable(); // When did partner review it?
+            $table->enum('status', ['pending', 'contacted', 'reviewed', 'approved', 'rejected'])->default('pending');
+            $table->timestamp('reviewed_at')->nullable();
+            $table->timestamp('last_contacted_at')->nullable();
+            $table->text('rejection_reason')->nullable();
 
             $table->timestamps();
 

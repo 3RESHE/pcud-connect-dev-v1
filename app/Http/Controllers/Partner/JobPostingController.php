@@ -73,7 +73,7 @@ class JobPostingController extends Controller
                 'salary_min' => 'nullable|numeric|min:0|decimal:0,2',
                 'salary_max' => 'nullable|numeric|min:0|decimal:0,2',
                 'salary_period' => 'nullable|in:monthly,hourly,daily,project',
-                'is_unpaid' => 'sometimes|in:0,1,on,true',  // ✅ FIX
+                'is_unpaid' => 'sometimes|in:0,1,on,true',
                 'duration_months' => 'nullable|integer|min:1|max:60',
                 'preferred_start_date' => 'nullable|date|after_or_equal:today',
                 'application_deadline' => 'required|date|after:today',
@@ -96,7 +96,7 @@ class JobPostingController extends Controller
                 ], 422);
             }
 
-            // ✅ FIX: Convert is_unpaid to boolean properly
+            // Convert is_unpaid to boolean properly
             $isUnpaid = (bool) ($request->input('is_unpaid') === '1' || $request->input('is_unpaid') === 'on');
 
             if (!$isUnpaid) {
@@ -143,7 +143,7 @@ class JobPostingController extends Controller
                 $validated['technical_skills'] = json_encode([]);
             }
 
-            // ✅ Set is_unpaid correctly
+            // Set is_unpaid correctly
             $validated['is_unpaid'] = $isUnpaid;
 
             // Create job posting
@@ -192,6 +192,45 @@ class JobPostingController extends Controller
     }
 
     /**
+     * Show job posting
+     */
+    public function show(JobPosting $jobPosting)
+    {
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        return view('users.partner.job-postings.show', compact('jobPosting'));
+    }
+
+    /**
+     * Show edit form
+     */
+    public function edit(JobPosting $jobPosting)
+    {
+        if ($jobPosting->partner_id !== auth()->id()) {
+            abort(403, 'Unauthorized');
+        }
+
+        if (!$jobPosting->canBeEdited()) {
+            return redirect()->route('partner.job-postings.show', $jobPosting->id)
+                ->with('error', 'This job posting cannot be edited');
+        }
+
+        // Decode technical_skills for the form
+        $technicalSkills = is_string($jobPosting->technical_skills)
+            ? json_decode($jobPosting->technical_skills, true)
+            : ($jobPosting->technical_skills ?? []);
+        $technicalSkills = is_array($technicalSkills) ? implode(', ', $technicalSkills) : '';
+
+        return view('users.partner.job-postings.edit', [
+            'jobPosting' => $jobPosting,
+            'technicalSkills' => $technicalSkills,
+            'isEditing' => true,
+        ]);
+    }
+
+    /**
      * Update job posting
      */
     public function update(Request $request, JobPosting $jobPosting)
@@ -221,7 +260,7 @@ class JobPostingController extends Controller
                 'salary_min' => 'nullable|numeric|min:0',
                 'salary_max' => 'nullable|numeric|min:0',
                 'salary_period' => 'nullable|in:monthly,hourly,daily,project',
-                'is_unpaid' => 'sometimes|in:0,1,on,true',  // ✅ FIX
+                'is_unpaid' => 'sometimes|in:0,1,on,true',
                 'duration_months' => 'nullable|integer|min:1|max:60',
                 'preferred_start_date' => 'nullable|date|after_or_equal:today',
                 'application_deadline' => 'required|date|after:today',
@@ -233,7 +272,7 @@ class JobPostingController extends Controller
                 'benefits' => 'nullable|string|max:2000',
             ]);
 
-            // ✅ FIX: Convert is_unpaid to boolean properly
+            // Convert is_unpaid to boolean properly
             $isUnpaid = (bool) ($request->input('is_unpaid') === '1' || $request->input('is_unpaid') === 'on');
 
             // Salary validation
@@ -279,7 +318,7 @@ class JobPostingController extends Controller
                 $validated['rejection_reason'] = null;
             }
 
-            // ✅ Set is_unpaid correctly
+            // Set is_unpaid correctly
             $validated['is_unpaid'] = $isUnpaid;
 
             $jobPosting->update($validated);
@@ -315,50 +354,6 @@ class JobPostingController extends Controller
             ], 500);
         }
     }
-
-
-    /**
-     * Show job posting
-     */
-    public function show(JobPosting $jobPosting)
-    {
-        if ($jobPosting->partner_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        return view('users.partner.job-postings.show', compact('jobPosting'));
-    }
-    /**
-     * Show edit form
-     */
-    public function edit(JobPosting $jobPosting)
-    {
-        if ($jobPosting->partner_id !== auth()->id()) {
-            abort(403, 'Unauthorized');
-        }
-
-        if (!$jobPosting->canBeEdited()) {
-            return redirect()->route('partner.job-postings.show', $jobPosting->id)
-                ->with('error', 'This job posting cannot be edited');
-        }
-
-        // Decode technical_skills for the form
-        $technicalSkills = is_string($jobPosting->technical_skills)
-            ? json_decode($jobPosting->technical_skills, true)
-            : ($jobPosting->technical_skills ?? []);
-        $technicalSkills = is_array($technicalSkills) ? implode(', ', $technicalSkills) : '';
-
-        return view('users.partner.job-postings.edit', [
-            'jobPosting' => $jobPosting,
-            'technicalSkills' => $technicalSkills,
-            'isEditing' => true,
-        ]);
-    }
-
-
-    /**
-     * Update job posting
-     */
 
     /**
      * Delete/Withdraw job posting
@@ -497,7 +492,10 @@ class JobPostingController extends Controller
             ->with('success', 'Job posting closed successfully');
     }
 
-
+    /**
+     * Display applications for a specific job posting
+     * ✅ FIXED: Added 'contacted' to stats array
+     */
     public function applications(JobPosting $jobPosting)
     {
         if ($jobPosting->partner_id !== auth()->id()) {
@@ -506,7 +504,7 @@ class JobPostingController extends Controller
 
         // Get applications with pagination
         $applications = $jobPosting->applications()
-            ->with('alumni')
+            ->with('applicant')
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
@@ -514,6 +512,7 @@ class JobPostingController extends Controller
         $stats = [
             'total' => $jobPosting->applications()->count(),
             'pending' => $jobPosting->applications()->where('status', 'pending')->count(),
+            'contacted' => $jobPosting->applications()->where('status', 'contacted')->count(),  // ✅ ADDED THIS LINE
             'reviewed' => $jobPosting->applications()->where('status', 'reviewed')->count(),
             'approved' => $jobPosting->applications()->where('status', 'approved')->count(),
             'rejected' => $jobPosting->applications()->where('status', 'rejected')->count(),

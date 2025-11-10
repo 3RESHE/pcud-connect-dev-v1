@@ -376,27 +376,35 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                     ->name('resume');
                 Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])
                     ->name('close');
+
+                // ✅ APPLICATION ROUTES (Nested under job-postings for organization)
                 Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])
                     ->name('applications');
             });
 
             // ===== JOB APPLICATIONS =====
+            // ✅ INTEGRATED WITH CAREFUL CONSIDERATION
             Route::prefix('applications')->name('applications.')->group(function () {
+                // Application detail view
                 Route::get('/{application}', [ApplicationController::class, 'show'])
                     ->name('show');
+
+                // Application actions
                 Route::post('/{application}/approve', [ApplicationController::class, 'approve'])
                     ->name('approve');
                 Route::post('/{application}/reject', [ApplicationController::class, 'reject'])
                     ->name('reject');
                 Route::post('/{application}/contact', [ApplicationController::class, 'contact'])
                     ->name('contact');
+
+                // Resume download
                 Route::get('/{application}/download-resume', [ApplicationController::class, 'downloadResume'])
                     ->name('download-resume');
+
+                // Status update (optional - for AJAX updates)
                 Route::patch('/{application}/update-status', [ApplicationController::class, 'updateStatus'])
                     ->name('update-status');
             });
-
-
 
             // ===== PARTNERSHIPS =====
             Route::prefix('partnerships')->name('partnerships.')->group(function () {
@@ -439,6 +447,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             });
         });
     });
+
 
     // =====================================================
     // STUDENT DASHBOARD ROUTES
