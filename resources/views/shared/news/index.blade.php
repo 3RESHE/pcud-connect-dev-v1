@@ -12,194 +12,291 @@
 @section('title', 'News & Updates - PCU-DASMA Connect')
 
 @section('content')
-    <!-- Header -->
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">News & Updates</h1>
-        <p class="text-gray-600">Stay informed with the latest news and announcements from PCU-D</p>
-    </div>
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">News & Updates</h1>
+            <p class="text-gray-600">Stay connected with the latest news from PCU-DASMA</p>
+        </div>
 
-    <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Total Articles</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ $stats['total_count'] }}</p>
+        <!-- Search and Filter Section -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8 border border-gray-200">
+            <form method="GET" action="{{ route('news.index') }}" class="space-y-4">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <!-- Search Input -->
+                    <div class="flex-1 max-w-md">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" name="search" value="{{ request('search') }}"
+                                placeholder="Search news articles..."
+                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary text-sm" />
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="flex gap-3">
+                        <select name="category"
+                            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-primary focus:border-primary">
+                            <option value="">All Categories</option>
+                            <option value="university_updates" {{ request('category') === 'university_updates' ? 'selected' : '' }}>
+                                University Updates</option>
+                            <option value="alumni_success" {{ request('category') === 'alumni_success' ? 'selected' : '' }}>
+                                Alumni Success</option>
+                            <option value="partnership_highlights"
+                                {{ request('category') === 'partnership_highlights' ? 'selected' : '' }}>Partnership
+                                Highlights</option>
+                            <option value="campus_events" {{ request('category') === 'campus_events' ? 'selected' : '' }}>
+                                Campus Events</option>
+                            <option value="general" {{ request('category') === 'general' ? 'selected' : '' }}>General</option>
+                        </select>
+
+                        <button type="submit"
+                            class="bg-primary text-white px-6 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors">
+                            Apply
+                        </button>
+
+                        <a href="{{ route('news.index') }}"
+                            class="bg-gray-100 text-gray-700 px-6 py-2 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors">
+                            Reset
+                        </a>
+                    </div>
                 </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            </form>
+        </div>
+
+        <!-- Featured News Section -->
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">Featured News</h2>
+
+            @if ($articles->count() > 0)
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Main Featured Article -->
+                    @php
+                        $featuredArticles = $articles->filter(fn($a) => $a->is_featured)->take(1);
+                        $featured = $featuredArticles->first() ?? $articles->first();
+                    @endphp
+
+                    <a href="{{ route('news.show', $featured->id) }}" class="group cursor-pointer block">
+                        <div
+                            class="relative overflow-hidden rounded-lg bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 h-full">
+                            @if ($featured->featured_image)
+                                <img class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                                    src="{{ Storage::url($featured->featured_image) }}" alt="{{ $featured->title }}" />
+                            @else
+                                <div class="w-full h-64 bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            @endif
+
+                            @if ($featured->is_featured)
+                                <div class="absolute top-4 left-4">
+                                    <span class="bg-primary text-white px-3 py-1 rounded-full text-sm font-medium">
+                                        Featured
+                                    </span>
+                                </div>
+                            @endif
+
+                            <div class="p-6">
+                                <div class="flex items-center text-sm text-gray-500 mb-2">
+                                    <span
+                                        class="@if ($featured->category === 'university_updates') bg-blue-100 text-blue-800
+                                        @elseif($featured->category === 'alumni_success') bg-yellow-100 text-yellow-800
+                                        @elseif($featured->category === 'partnership_highlights') bg-green-100 text-green-800
+                                        @elseif($featured->category === 'campus_events') bg-purple-100 text-purple-800
+                                        @else bg-gray-100 text-gray-800 @endif px-2 py-1 rounded-full text-xs mr-3">
+                                        {{ $featured->getCategoryDisplayName() }}
+                                    </span>
+                                    <span>{{ $featured->published_at->format('M d, Y') }}</span>
+                                </div>
+
+                                <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                                    {{ $featured->title }}
+                                </h3>
+
+                                <p class="text-gray-600 mb-4 line-clamp-3">
+                                    {{ $featured->summary ?? $featured->getExcerpt(150) }}
+                                </p>
+
+                                <span class="text-primary font-medium group-hover:underline">Read More →</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Secondary Featured Articles -->
+                    <div class="space-y-6">
+                        @foreach ($articles->skip(1)->take(3) as $secondary)
+                            <a href="{{ route('news.show', $secondary->id) }}" class="group cursor-pointer block">
+                                <div
+                                    class="bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-200">
+                                    <div class="flex">
+                                        @if ($secondary->featured_image)
+                                            <img class="w-32 h-24 object-cover group-hover:scale-105 transition-transform duration-300"
+                                                src="{{ Storage::url($secondary->featured_image) }}"
+                                                alt="{{ $secondary->title }}" />
+                                        @else
+                                            <div
+                                                class="w-32 h-24 bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                                                <svg class="w-8 h-8 text-gray-500" fill="none" stroke="currentColor"
+                                                    viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                                    </path>
+                                                </svg>
+                                            </div>
+                                        @endif
+
+                                        <div class="flex-1 p-4">
+                                            <div class="flex items-center text-xs text-gray-500 mb-1">
+                                                <span
+                                                    class="@if ($secondary->category === 'university_updates') bg-blue-100 text-blue-800
+                                                    @elseif($secondary->category === 'alumni_success') bg-yellow-100 text-yellow-800
+                                                    @elseif($secondary->category === 'partnership_highlights') bg-green-100 text-green-800
+                                                    @elseif($secondary->category === 'campus_events') bg-purple-100 text-purple-800
+                                                    @else bg-gray-100 text-gray-800 @endif px-2 py-1 rounded-full text-xs mr-2">
+                                                    {{ $secondary->getCategoryDisplayName() }}
+                                                </span>
+                                                <span>{{ $secondary->published_at->format('M d, Y') }}</span>
+                                            </div>
+
+                                            <h4
+                                                class="text-sm font-semibold text-gray-900 mb-1 group-hover:text-primary transition-colors line-clamp-2">
+                                                {{ $secondary->title }}
+                                            </h4>
+
+                                            <p class="text-xs text-gray-600 line-clamp-2">
+                                                {{ $secondary->summary ?? $secondary->getExcerpt(80) }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </a>
+                        @endforeach
+                    </div>
+                </div>
+            @else
+                <div class="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-200">
+                    <p class="text-gray-600">No featured articles available.</p>
+                </div>
+            @endif
+        </div>
+
+        <!-- Recent News Section -->
+        <div class="mb-12">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Latest News</h2>
+                <a href="{{ route('news.index') }}"
+                    class="text-primary hover:text-blue-700 font-medium text-sm">View All →</a>
+            </div>
+
+            @if ($articles->count() > 0)
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    @foreach ($articles as $article)
+                        <a href="{{ route('news.show', $article->id) }}"
+                            class="group cursor-pointer bg-white rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200 block">
+
+                            @if ($article->featured_image)
+                                <img class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                                    src="{{ Storage::url($article->featured_image) }}" alt="{{ $article->title }}" />
+                            @else
+                                <div class="w-full h-48 bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                </div>
+                            @endif
+
+                            <div class="p-6">
+                                <div class="flex items-center text-sm text-gray-500 mb-2">
+                                    <span
+                                        class="@if ($article->category === 'university_updates') bg-blue-100 text-blue-800
+                                        @elseif($article->category === 'alumni_success') bg-yellow-100 text-yellow-800
+                                        @elseif($article->category === 'partnership_highlights') bg-green-100 text-green-800
+                                        @elseif($article->category === 'campus_events') bg-purple-100 text-purple-800
+                                        @else bg-gray-100 text-gray-800 @endif px-2 py-1 rounded-full text-xs mr-3">
+                                        {{ $article->getCategoryDisplayName() }}
+                                    </span>
+                                    <span>{{ $article->published_at->format('M d, Y') }}</span>
+                                </div>
+
+                                <h3
+                                    class="text-lg font-semibold text-gray-900 mb-2 group-hover:text-primary transition-colors line-clamp-2">
+                                    {{ $article->title }}
+                                </h3>
+
+                                <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                                    {{ $article->summary ?? $article->getExcerpt(100) }}
+                                </p>
+
+                                <span class="text-primary font-medium group-hover:underline text-sm">Read More</span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+
+                <!-- Pagination -->
+                @if ($articles->hasPages())
+                    <div class="mt-8 flex justify-center">
+                        <div class="flex gap-2">
+                            @if ($articles->onFirstPage())
+                                <span
+                                    class="px-4 py-2 text-gray-400 border border-gray-300 rounded-lg cursor-not-allowed">Previous</span>
+                            @else
+                                <a href="{{ $articles->previousPageUrl() }}"
+                                    class="px-4 py-2 text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">
+                                    Previous
+                                </a>
+                            @endif
+
+                            @foreach ($articles->getUrlRange(1, $articles->lastPage()) as $page => $url)
+                                @if ($page == $articles->currentPage())
+                                    <span class="px-4 py-2 bg-primary text-white border border-primary rounded-lg">
+                                        {{ $page }}
+                                    </span>
+                                @else
+                                    <a href="{{ $url }}"
+                                        class="px-4 py-2 text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">
+                                        {{ $page }}
+                                    </a>
+                                @endif
+                            @endforeach
+
+                            @if ($articles->hasMorePages())
+                                <a href="{{ $articles->nextPageUrl() }}"
+                                    class="px-4 py-2 text-primary border border-primary rounded-lg hover:bg-primary hover:text-white transition-colors">
+                                    Next
+                                </a>
+                            @else
+                                <span
+                                    class="px-4 py-2 text-gray-400 border border-gray-300 rounded-lg cursor-not-allowed">Next</span>
+                            @endif
+                        </div>
+                    </div>
+                @endif
+            @else
+                <div class="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-200">
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
                         </path>
                     </svg>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">No News Articles Found</h3>
+                    <p class="text-gray-600">Try adjusting your search or filters</p>
                 </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Featured</p>
-                    <p class="text-3xl font-bold text-purple-600">{{ $stats['featured_count'] }}</p>
-                </div>
-                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path
-                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
-                        </path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Categories</p>
-                    <p class="text-3xl font-bold text-green-600">{{ $stats['categories']->count() }}</p>
-                </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z">
-                        </path>
-                    </svg>
-                </div>
-            </div>
+            @endif
         </div>
     </div>
-
-    <!-- Search & Filters -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <form method="GET" action="{{ route('news.index') }}" class="space-y-4">
-            <!-- Search Bar -->
-            <div class="relative">
-                <input type="text" name="search" value="{{ request('search') }}"
-                    placeholder="🔍 Search news by title, content..."
-                    class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm" />
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-            </div>
-
-            <!-- Filters Row -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Category Filter -->
-                <select name="category"
-                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="">All Categories</option>
-                    <option value="university_updates" {{ request('category') === 'university_updates' ? 'selected' : '' }}>
-                        University Updates</option>
-                    <option value="alumni_success" {{ request('category') === 'alumni_success' ? 'selected' : '' }}>Alumni
-                        Success</option>
-                    <option value="partnership_highlights"
-                        {{ request('category') === 'partnership_highlights' ? 'selected' : '' }}>Partnership Highlights
-                    </option>
-                    <option value="campus_events" {{ request('category') === 'campus_events' ? 'selected' : '' }}>Campus
-                        Events</option>
-                    <option value="general" {{ request('category') === 'general' ? 'selected' : '' }}>General</option>
-                </select>
-
-                <!-- Featured Filter -->
-                <select name="featured"
-                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="">All Articles</option>
-                    <option value="1" {{ request('featured') === '1' ? 'selected' : '' }}>Featured Only</option>
-                </select>
-
-                <!-- Filter Button -->
-                <button type="submit"
-                    class="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark font-medium transition-colors text-sm">
-                    Apply Filters
-                </button>
-
-                <!-- Reset Button -->
-                <a href="{{ route('news.index') }}"
-                    class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-colors text-sm text-center">
-                    Reset
-                </a>
-            </div>
-        </form>
-    </div>
-
-    <!-- News Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        @forelse($articles as $article)
-            <a href="{{ route('news.show', $article->id) }}"
-                class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02] cursor-pointer">
-
-                <!-- Featured Image -->
-                @if ($article->featured_image)
-                    <div class="h-48 overflow-hidden bg-gray-100">
-                        <img src="{{ Storage::url($article->featured_image) }}" alt="{{ $article->title }}"
-                            class="w-full h-full object-cover" />
-                    </div>
-                @endif
-
-                <div class="p-6">
-                    <!-- Badges -->
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <span
-                            class="px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                            {{ $article->getCategoryDisplayName() }}
-                        </span>
-                        @if ($article->is_featured)
-                            <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium">
-                                ⭐ Featured
-                            </span>
-                        @endif
-                    </div>
-
-                    <!-- Title -->
-                    <h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{{ $article->title }}</h3>
-
-                    <!-- Summary -->
-                    <p class="text-sm text-gray-600 mb-4 line-clamp-3">
-                        {{ $article->summary ?? $article->getExcerpt(120) }}
-                    </p>
-
-                    <!-- Meta Info -->
-                    <div class="flex items-center justify-between text-xs text-gray-500 pt-4 border-t border-gray-100">
-                        <div class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                </path>
-                            </svg>
-                            <span>{{ $article->published_at->format('M j, Y') }}</span>
-                        </div>
-                        <div class="flex items-center">
-                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z">
-                                </path>
-                            </svg>
-                            <span>{{ $article->getViewsDisplay() }} views</span>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        @empty
-            <div class="col-span-full bg-white rounded-lg shadow-sm p-12 text-center border border-gray-200">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                    </path>
-                </svg>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">No News Articles Found</h3>
-                <p class="text-gray-600">Try adjusting your search or filters</p>
-            </div>
-        @endforelse
-    </div>
-
-    <!-- Pagination -->
-    @if ($articles->hasPages())
-        <div class="mt-8 flex justify-center">
-            {{ $articles->appends(request()->query())->links() }}
-        </div>
-    @endif
 @endsection

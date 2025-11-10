@@ -13,6 +13,14 @@ class NewsController extends Controller
      */
     public function index(Request $request)
     {
+        // Get featured articles (for featured section)
+        $featuredArticles = NewsArticle::published()
+            ->where('is_featured', true)
+            ->with(['creator', 'tags'])
+            ->latest('published_at')
+            ->get();
+
+        // Get all published articles (for latest news grid)
         $query = NewsArticle::published()
             ->with(['creator', 'tags'])
             ->latest('published_at');
@@ -61,7 +69,7 @@ class NewsController extends Controller
                 ->get(),
         ];
 
-        return view('shared.news.index', compact('articles', 'stats'));
+        return view('shared.news.index', compact('featuredArticles', 'articles', 'stats'));
     }
 
     /**
