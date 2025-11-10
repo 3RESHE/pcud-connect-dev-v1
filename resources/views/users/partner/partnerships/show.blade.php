@@ -25,7 +25,7 @@
                             @if($partnership->status === 'submitted')
                                 Manage your pending partnership proposal
                             @elseif($partnership->status === 'under_review')
-                                Partnership proposal under discussion
+                                Partnership proposal under discussion with admins
                             @elseif($partnership->status === 'approved')
                                 Approved partnership proposal
                             @elseif($partnership->status === 'rejected')
@@ -69,7 +69,7 @@
                 <div>
                     <h4 class="font-semibold text-yellow-800">Partnership Proposal Pending</h4>
                     <p class="text-sm text-yellow-700">
-                        This partnership proposal was submitted on {{ $partnership->created_at->format('F j, Y, g:i A') }} and is currently under review by the PCU-DASMA Connect team. You can edit or withdraw the proposal while it is pending.
+                        This partnership proposal was submitted on {{ $partnership->created_at->format('F j, Y, g:i A') }} and is currently under review by the PCU-DASMA Connect team. You can edit or delete the proposal while it is pending.
                     </p>
                 </div>
             </div>
@@ -78,12 +78,12 @@
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
             <div class="flex items-start">
                 <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                 </svg>
                 <div>
-                    <h4 class="font-semibold text-blue-800">Under Discussion</h4>
+                    <h4 class="font-semibold text-blue-800">Under Discussion - Check Your Email</h4>
                     <p class="text-sm text-blue-700">
-                        PCU-DASMA administrators are currently reviewing your partnership proposal and may have questions or clarifications before approval.
+                        PCU-DASMA administrators are reviewing your proposal and may have questions or need clarifications. <strong>Check your email</strong> for important communication about this partnership. You cannot edit the proposal at this stage, but you can resubmit after receiving feedback.
                     </p>
                 </div>
             </div>
@@ -97,7 +97,7 @@
                 <div>
                     <h4 class="font-semibold text-green-800">Partnership Approved!</h4>
                     <p class="text-sm text-green-700">
-                        Your partnership proposal has been approved by PCU-DASMA administrators. Please check your email for coordination details and next steps.
+                        Your partnership proposal has been approved by PCU-DASMA administrators. Please check your email for coordination details and next steps. Once the activity is completed, our admin team will mark it as complete.
                     </p>
                 </div>
             </div>
@@ -111,7 +111,7 @@
                 <div>
                     <h4 class="font-semibold text-red-800">Partnership Not Approved</h4>
                     <p class="text-sm text-red-700">
-                        Your partnership proposal was reviewed but not approved. Please review the feedback below for suggestions on resubmission.
+                        Your partnership proposal was reviewed but not approved. Please review the feedback below. You can delete this proposal and submit a new one with improvements, or contact us for more information.
                     </p>
                     @if($partnership->admin_notes)
                         <div class="mt-3 p-3 bg-white rounded border border-red-200">
@@ -126,12 +126,12 @@
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
             <div class="flex items-start">
                 <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
                 <div>
-                    <h4 class="font-semibold text-blue-800">Partnership Completed</h4>
+                    <h4 class="font-semibold text-blue-800">Partnership Successfully Completed!</h4>
                     <p class="text-sm text-blue-700">
-                        This community activity was successfully completed on {{ $partnership->completed_at?->format('F j, Y') ?? 'N/A' }}. Thank you for partnering with PCU-DASMA!
+                        This community activity was successfully completed on {{ $partnership->completed_at?->format('F j, Y') ?? 'N/A' }} by our admin team. Thank you for partnering with PCU-DASMA to serve our community!
                     </p>
                 </div>
             </div>
@@ -257,12 +257,12 @@
                             <div class="flex-shrink-0 w-3 h-3 bg-blue-400 rounded-full mt-1.5"></div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-900">Under Review</p>
-                                <p class="text-xs text-gray-500">Currently being reviewed by admins</p>
+                                <p class="text-xs text-gray-500">Currently being reviewed by admins - check your email for updates</p>
                             </div>
                         </div>
                     @endif
 
-                    @if($partnership->status === 'approved')
+                    @if(in_array($partnership->status, ['approved', 'completed']))
                         <div class="flex items-start">
                             <div class="flex-shrink-0 w-3 h-3 bg-green-400 rounded-full mt-1.5"></div>
                             <div class="ml-4">
@@ -287,7 +287,7 @@
                             <div class="flex-shrink-0 w-3 h-3 bg-blue-400 rounded-full mt-1.5"></div>
                             <div class="ml-4">
                                 <p class="text-sm font-medium text-gray-900">Activity Completed</p>
-                                <p class="text-xs text-gray-500">{{ $partnership->completed_at?->format('F j, Y') ?? 'N/A' }}</p>
+                                <p class="text-xs text-gray-500">{{ $partnership->completed_at?->format('F j, Y') ?? 'N/A' }} - marked complete by admin team</p>
                             </div>
                         </div>
                     @endif
@@ -301,29 +301,43 @@
             <div class="bg-white shadow rounded-lg p-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Actions</h2>
                 <div class="space-y-3">
-                    @if(in_array($partnership->status, ['submitted', 'under_review', 'rejected']))
+                    @if($partnership->status === 'submitted')
                         <a href="{{ route('partner.partnerships.edit', $partnership->id) }}"
                             class="block w-full px-4 py-2 bg-primary text-white text-center text-sm rounded-md hover:bg-blue-700 transition-colors duration-200 font-medium">
                             Edit Proposal
                         </a>
-                    @endif
-
-                    @if($partnership->status === 'approved')
-                        <form method="POST" action="{{ route('partner.partnerships.complete', $partnership->id) }}" class="w-full">
-                            @csrf
-                            <button type="submit"
-                                onclick="return confirm('Are you sure you want to mark this partnership as complete?')"
-                                class="w-full px-4 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors duration-200 font-medium">
-                                Mark as Complete
-                            </button>
-                        </form>
-                    @endif
-
-                    @if(in_array($partnership->status, ['submitted', 'rejected']))
                         <button onclick="openDeleteModal()"
                             class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
                             Delete Proposal
                         </button>
+                    @elseif($partnership->status === 'rejected')
+                        <button onclick="openDeleteModal()"
+                            class="w-full px-4 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors duration-200 font-medium">
+                            Delete Proposal
+                        </button>
+                        <div class="p-3 bg-gray-50 border border-gray-200 rounded-md">
+                            <p class="text-xs text-gray-600 font-medium">
+                                📋 This proposal is view-only. You can delete it and submit a new proposal.
+                            </p>
+                        </div>
+                    @elseif($partnership->status === 'under_review')
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <p class="text-xs text-blue-700 font-medium">
+                                📧 You cannot edit while under review. Check your email for admin feedback.
+                            </p>
+                        </div>
+                    @elseif($partnership->status === 'approved')
+                        <div class="p-3 bg-green-50 border border-green-200 rounded-md">
+                            <p class="text-xs text-green-700 font-medium">
+                                ✅ Awaiting completion. Admins will mark as complete after the activity.
+                            </p>
+                        </div>
+                    @elseif($partnership->status === 'completed')
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                            <p class="text-xs text-blue-700 font-medium">
+                                🎉 Partnership successfully completed!
+                            </p>
+                        </div>
                     @endif
 
                     <a href="{{ route('partner.partnerships.index') }}"
