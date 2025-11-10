@@ -32,12 +32,14 @@ class Partnership extends Model
         'status',
         'admin_notes',
         'reviewed_at',
+        'completed_at',
     ];
 
     protected $casts = [
         'activity_date' => 'date',
         'activity_time' => 'datetime',
         'reviewed_at' => 'datetime',
+        'completed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -92,6 +94,14 @@ class Partnership extends Model
     public function scopeRejected($query)
     {
         return $query->where('status', 'rejected');
+    }
+
+    /**
+     * Scope: Get completed partnerships.
+     */
+    public function scopeCompleted($query)
+    {
+        return $query->where('status', 'completed');
     }
 
     /**
@@ -189,6 +199,7 @@ class Partnership extends Model
             'under_review' => ['text' => 'Under Review', 'badge' => 'warning'],
             'approved' => ['text' => 'Approved', 'badge' => 'success'],
             'rejected' => ['text' => 'Rejected', 'badge' => 'danger'],
+            'completed' => ['text' => 'Completed', 'badge' => 'info'],
             default => ['text' => $this->status, 'badge' => 'secondary'],
         };
     }
@@ -207,6 +218,30 @@ class Partnership extends Model
     public function isReviewed(): bool
     {
         return !is_null($this->reviewed_at);
+    }
+
+    /**
+     * Check if partnership is completed.
+     */
+    public function isCompleted(): bool
+    {
+        return $this->status === 'completed' && !is_null($this->completed_at);
+    }
+
+    /**
+     * Check if partnership can be edited.
+     */
+    public function canBeEdited(): bool
+    {
+        return in_array($this->status, ['submitted', 'under_review', 'rejected']);
+    }
+
+    /**
+     * Check if partnership can be deleted.
+     */
+    public function canBeDeleted(): bool
+    {
+        return in_array($this->status, ['submitted', 'rejected']);
     }
 
     /**
@@ -255,6 +290,17 @@ class Partnership extends Model
     }
 
     /**
+     * Mark partnership as completed.
+     */
+    public function markAsCompleted()
+    {
+        $this->update([
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+    }
+
+    /**
      * Get days since submission.
      */
     public function getDaysSinceSubmission(): int
@@ -296,5 +342,41 @@ class Partnership extends Model
         }
 
         return $this->reviewed_at->diffForHumans();
+    }
+
+    /**
+     * Get completed at display.
+     */
+    public function getCompletedAtDisplay(): string
+    {
+        if (!$this->completed_at) {
+            return 'Not completed';
+        }
+
+        return $this->completed_at->format('M d, Y h:i A');
+    }
+
+    /**
+     * Get completed at relative time.
+     */
+    public function getCompletedAtDiffForHumans(): string
+    {
+        if (!$this->completed_at) {
+            return 'Not completed';
+        }
+
+        return $this->completed_at->diffForHumans();
+    }
+
+    /**
+     * Get days to complete from approval.
+     */
+    public function getDaysToComplete(): ?int
+    {
+        if (!$this->isCompleted() || !$this->reviewed_at) {
+            return null;
+        }
+
+        return $this->reviewed_at->diffInDays($this->completed_at);
     }
 }

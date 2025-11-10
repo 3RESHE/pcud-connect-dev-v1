@@ -55,9 +55,10 @@ return new class extends Migration
             $table->text('additional_notes')->nullable(); // Any other notes
 
             // Approval workflow (different from others - via email)
-            $table->enum('status', ['submitted', 'under_review', 'approved', 'rejected'])->default('submitted');
+            $table->enum('status', ['submitted', 'under_review', 'approved', 'rejected', 'completed'])->default('submitted');
             $table->text('admin_notes')->nullable(); // Admin feedback/notes
             $table->timestamp('reviewed_at')->nullable(); // When was it reviewed?
+            $table->timestamp('completed_at')->nullable(); // When was it completed?
 
             $table->timestamps();
         });
