@@ -198,11 +198,17 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::prefix('approvals/events')->name('approvals.events.')->group(function () {
             Route::get('/', [EventApprovalController::class, 'index'])
                 ->name('index');
+
+            // ✅ ADD THIS LINE - Show event details
+            Route::get('/{id}', [EventApprovalController::class, 'show'])
+                ->name('show');
+
             Route::post('/{id}/approve', [EventApprovalController::class, 'approve'])
                 ->name('approve');
             Route::post('/{id}/reject', [EventApprovalController::class, 'reject'])
                 ->name('reject');
         });
+
 
         // News Approval Routes
         Route::prefix('approvals/news')->name('approvals.news.')->group(function () {

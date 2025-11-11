@@ -3,457 +3,295 @@
 @section('title', 'News Article Management - PCU-DASMA Connect')
 
 @section('content')
-    <!-- Header Section -->
-    <div class="mb-8">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900">News Article Management</h1>
-                <p class="text-gray-600">Review, approve, and manage all news articles from staff</p>
-            </div>
+<!-- Header Section -->
+<div class="mb-10">
+    <div class="flex justify-between items-start mb-8">
+        <div>
+            <h1 class="text-4xl font-bold text-gray-900">News Article Management</h1>
+            <p class="text-gray-600 mt-2">Review, approve, and manage all news articles from staff</p>
         </div>
     </div>
 
-    <!-- Stats Cards Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-        <!-- Total Articles -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Total</p>
-                    <p class="text-3xl font-bold text-gray-900">{{ $total_count ?? 0 }}</p>
-                </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
-                        </path>
-                    </svg>
-                </div>
-            </div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-gray-400 hover:shadow-md transition-shadow">
+            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Total</p>
+            <p class="text-3xl font-bold text-gray-900 mt-2">{{ $total_count ?? 0 }}</p>
+        </div>
+        <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-yellow-500 hover:shadow-md transition-shadow">
+            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Pending</p>
+            <p class="text-3xl font-bold text-yellow-600 mt-2">{{ $pending_count ?? 0 }}</p>
+        </div>
+        <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-green-500 hover:shadow-md transition-shadow">
+            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Approved</p>
+            <p class="text-3xl font-bold text-green-600 mt-2">{{ $approved_count ?? 0 }}</p>
+        </div>
+        <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow">
+            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Published</p>
+            <p class="text-3xl font-bold text-blue-600 mt-2">{{ $published_count ?? 0 }}</p>
+        </div>
+        <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-red-500 hover:shadow-md transition-shadow">
+            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Rejected</p>
+            <p class="text-3xl font-bold text-red-600 mt-2">{{ $rejected_count ?? 0 }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter Section -->
+<div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        <!-- Search Input -->
+        <div class="relative md:col-span-2">
+            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+            <input type="text" id="newsSearch" placeholder="Search by title, author..."
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                oninput="applyFilters()">
         </div>
 
-        <!-- Pending -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Pending</p>
-                    <p class="text-3xl font-bold text-yellow-600">{{ $pending_count ?? 0 }}</p>
-                </div>
-                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Approved -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Approved</p>
-                    <p class="text-3xl font-bold text-green-600">{{ $approved_count ?? 0 }}</p>
-                </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Published -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Published</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ $published_count ?? 0 }}</p>
-                </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
-                        <path fill-rule="evenodd"
-                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rejected -->
-        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600 mb-1">Rejected</p>
-                    <p class="text-3xl font-bold text-red-600">{{ $rejected_count ?? 0 }}</p>
-                </div>
-                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                            clip-rule="evenodd"></path>
-                    </svg>
-                </div>
-            </div>
+        <!-- Category Filter -->
+        <div>
+            <select id="categoryFilter" onchange="applyFilters()"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none cursor-pointer bg-white">
+                <option value="">All Categories</option>
+                <option value="announcement">Announcement</option>
+                <option value="event">Event</option>
+                <option value="achievement">Achievement</option>
+                <option value="update">Update</option>
+            </select>
         </div>
     </div>
 
-
-    <!-- Enhanced Search & Filter Section -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-        <!-- Main Search Bar -->
-        <div class="mb-6">
-            <div class="relative">
-                <input type="text" id="newsSearch" placeholder="🔍 Search by title, author, category..."
-                    class="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                    oninput="applyFilters()" />
-                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none"
-                    stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                </svg>
-            </div>
-        </div>
-
-        <!-- Filter Tabs -->
-        <div class="border-b border-gray-200 mb-6">
-            <nav class="-mb-px flex space-x-8 overflow-x-auto" role="tablist">
-                <button onclick="filterNews('all')"
-                    class="news-filter active border-b-2 border-primary text-primary py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                    role="tab" aria-selected="true">
-                    All Articles ({{ $total_count ?? 0 }})
-                </button>
-                <button onclick="filterNews('pending')"
-                    class="news-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                    role="tab" aria-selected="false">
-                    Pending ({{ $pending_count ?? 0 }})
-                </button>
-                <button onclick="filterNews('approved')"
-                    class="news-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                    role="tab" aria-selected="false">
-                    Approved ({{ $approved_count ?? 0 }})
-                </button>
-                <button onclick="filterNews('published')"
-                    class="news-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                    role="tab" aria-selected="false">
-                    Published ({{ $published_count ?? 0 }})
-                </button>
-                <button onclick="filterNews('rejected')"
-                    class="news-filter border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 py-2 px-1 text-sm font-medium whitespace-nowrap transition-colors duration-200"
-                    role="tab" aria-selected="false">
-                    Rejected ({{ $rejected_count ?? 0 }})
-                </button>
-                <!-- Removed Draft tab -->
-            </nav>
-        </div>
-
-
-        <!-- Advanced Filters Row -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <!-- Sort By -->
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-2">Sort By</label>
-                <select id="sortBy" onchange="applyFilters()"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="latest">Latest First</option>
-                    <option value="oldest">Oldest First</option>
-                    <option value="title-asc">Title (A-Z)</option>
-                    <option value="title-desc">Title (Z-A)</option>
-                </select>
-            </div>
-
-            <!-- Category Filter -->
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-2">Category</label>
-                <select id="categoryFilter" onchange="applyFilters()"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="">All Categories</option>
-                    <option value="announcement">Announcement</option>
-                    <option value="event">Event</option>
-                    <option value="achievement">Achievement</option>
-                    <option value="update">Update</option>
-                </select>
-            </div>
-
-            <!-- Author Filter -->
-            <div>
-                <label class="block text-xs font-medium text-gray-700 mb-2">Author</label>
-                <select id="authorFilter" onchange="applyFilters()"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary">
-                    <option value="">All Authors</option>
-                    @foreach ($articles->groupBy('creator.id') as $creatorArticles)
-                        @if ($creatorArticles->first()->creator)
-                            <option value="{{ $creatorArticles->first()->creator->id }}">
-                                {{ $creatorArticles->first()->creator->first_name }}
-                                {{ $creatorArticles->first()->creator->last_name }}
-                            </option>
-                        @endif
-                    @endforeach
-                </select>
-            </div>
-
-            <!-- Reset Button -->
-            <div class="flex items-end gap-2">
-                <button onclick="resetFilters()"
-                    class="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-                    Reset Filters
-                </button>
-            </div>
-        </div>
+    <!-- Filter Tabs -->
+    <div class="border-t border-gray-200 pt-4">
+        <nav class="flex space-x-6 overflow-x-auto" role="tablist">
+            <button onclick="filterNews('all')"
+                class="news-filter active pb-2 px-1 text-sm font-medium text-blue-600 border-b-2 border-blue-600 whitespace-nowrap transition-colors"
+                role="tab">
+                All ({{ $total_count ?? 0 }})
+            </button>
+            <button onclick="filterNews('pending')"
+                class="news-filter pb-2 px-1 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap transition-colors"
+                role="tab">
+                Pending ({{ $pending_count ?? 0 }})
+            </button>
+            <button onclick="filterNews('approved')"
+                class="news-filter pb-2 px-1 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap transition-colors"
+                role="tab">
+                Approved ({{ $approved_count ?? 0 }})
+            </button>
+            <button onclick="filterNews('published')"
+                class="news-filter pb-2 px-1 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap transition-colors"
+                role="tab">
+                Published ({{ $published_count ?? 0 }})
+            </button>
+            <button onclick="filterNews('rejected')"
+                class="news-filter pb-2 px-1 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:border-gray-300 whitespace-nowrap transition-colors"
+                role="tab">
+                Rejected ({{ $rejected_count ?? 0 }})
+            </button>
+        </nav>
     </div>
+</div>
 
-    <!-- Search Results Info -->
-    <div id="searchInfo" class="mb-4 text-sm text-gray-600">
-        Showing <span id="resultCount">{{ count($articles) }}</span> articles
-    </div>
+<!-- News Articles Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="newsContainer">
+    @forelse($articles as $article)
+        <!-- Clickable Article Card -->
+        <a href="{{ route('admin.approvals.news.show', $article->id) }}"
+           class="group news-card block"
+           data-status="{{ $article->status }}"
+           data-title="{{ strtolower($article->title) }}"
+           data-category="{{ $article->category }}">
 
-    <!-- News Articles List - CLICKABLE CARDS -->
-    <div id="newsContainer" class="space-y-6">
-        @forelse($articles as $article)
-            <!-- Entire Card is Clickable -->
-            <a href="{{ route('admin.approvals.news.show', $article->id) }}"
-                class="block bg-white rounded-lg shadow-sm border-l-4 overflow-hidden hover:shadow-lg transition-all duration-200 transform hover:scale-[1.01] cursor-pointer
-                @if ($article->status === 'published') border-blue-500
-                @elseif($article->status === 'pending') border-yellow-500
-                @elseif($article->status === 'rejected') border-red-500
-                @elseif($article->status === 'approved') border-green-500
-                @else border-gray-500 @endif"
-                data-status="{{ $article->status }}" data-title="{{ strtolower($article->title) }}"
-                data-category="{{ $article->category }}" data-author="{{ $article->creator->id ?? '' }}">
+            <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col border-b-4 cursor-pointer
+                @if($article->status === 'published') border-b-blue-500
+                @elseif($article->status === 'pending') border-b-yellow-500
+                @elseif($article->status === 'rejected') border-b-red-500
+                @elseif($article->status === 'approved') border-b-green-500
+                @else border-b-gray-400 @endif">
 
-                <!-- Article Content -->
-                <div class="p-4 sm:p-6">
-                    <!-- Status Badges -->
-                    <div class="flex flex-wrap items-center gap-2 mb-4">
-                        <!-- Status Badge -->
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
-                            @if ($article->status === 'published') bg-blue-100 text-blue-800
+                <!-- Featured Image -->
+                <div class="relative w-full h-44 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                    @if($article->featured_image)
+                        <img src="{{ Storage::url($article->featured_image) }}"
+                            alt="{{ $article->title }}"
+                            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    @else
+                        <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+                            <div class="text-center">
+                                <svg class="w-12 h-12 text-blue-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="text-blue-600 font-medium text-sm">No Image</p>
+                            </div>
+                        </div>
+                    @endif
+
+                    <!-- Status Badge -->
+                    <div class="absolute top-3 right-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold backdrop-blur-sm bg-opacity-95
+                            @if($article->status === 'published') bg-blue-100 text-blue-800
                             @elseif($article->status === 'pending') bg-yellow-100 text-yellow-800
                             @elseif($article->status === 'rejected') bg-red-100 text-red-800
                             @elseif($article->status === 'approved') bg-green-100 text-green-800
                             @else bg-gray-100 text-gray-800 @endif">
-                            {{ $article->getStatusDisplay() }}
-                        </span>
-
-                        <!-- Category Badge -->
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                            {{ $article->getCategoryDisplayName() }}
-                        </span>
-
-                        <!-- Featured Badge -->
-                        @if ($article->is_featured)
-                            <span
-                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                ⭐ Featured
-                            </span>
-                        @endif
-
-                        <!-- Time Info -->
-                        <span class="text-xs text-gray-500 ml-auto">
-                            @if ($article->status === 'published' && $article->published_at)
-                                Published {{ $article->published_at->diffForHumans() }}
-                            @elseif($article->status === 'pending')
-                                Submitted {{ $article->created_at->diffForHumans() }}
-                            @elseif($article->status === 'rejected')
-                                Rejected {{ $article->updated_at->diffForHumans() }}
-                            @else
-                                Created {{ $article->created_at->diffForHumans() }}
-                            @endif
+                            {{ ucfirst($article->status) }}
                         </span>
                     </div>
 
-                    <!-- Featured Image -->
-                    @if ($article->featured_image)
-                        <div class="mb-4 rounded-lg overflow-hidden">
-                            <img src="{{ Storage::url($article->featured_image) }}" alt="{{ $article->title }}"
-                                class="w-full h-40 object-cover">
+                    <!-- Featured Badge -->
+                    @if($article->is_featured)
+                        <div class="absolute top-3 left-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-800 backdrop-blur-sm bg-opacity-95">
+                                ⭐ Featured
+                            </span>
                         </div>
                     @endif
+                </div>
+
+                <!-- Content Container -->
+                <div class="p-5 flex flex-col flex-grow">
+                    <!-- Badges -->
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                            {{ $article->getCategoryDisplayName() ?? 'News' }}
+                        </span>
+                    </div>
 
                     <!-- Title -->
-                    <h3 class="text-xl font-semibold text-gray-900 mb-2 line-clamp-2">{{ $article->title }}</h3>
+                    <h3 class="text-lg font-bold text-gray-900 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+                        {{ $article->title }}
+                    </h3>
 
                     <!-- Summary -->
-                    @if ($article->summary)
-                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $article->summary }}</p>
+                    @if($article->summary)
+                        <p class="text-sm text-gray-600 line-clamp-2 mb-3">{{ $article->summary }}</p>
                     @else
-                        <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ $article->getExcerpt(150) }}</p>
+                        <p class="text-sm text-gray-600 line-clamp-2 mb-3">{{ \Illuminate\Support\Str::limit(strip_tags($article->content), 150) }}</p>
                     @endif
 
                     <!-- Meta Info -->
-                    <div
-                        class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs text-gray-600 mb-4 pb-4 border-b border-gray-100">
+                    <div class="space-y-2 mb-4 pb-4 border-t border-gray-100 flex-grow">
                         <!-- Author -->
-                        <div class="flex items-center">
-                            <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        <div class="flex items-center space-x-2 pt-3">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            <span class="truncate">{{ $article->creator->first_name ?? 'Unknown' }}
-                                {{ $article->creator->last_name ?? '' }}</span>
+                            <p class="text-xs text-gray-600">
+                                <span class="font-medium">{{ $article->creator->first_name ?? 'Unknown' }} {{ $article->creator->last_name ?? '' }}</span>
+                            </p>
                         </div>
 
-                        <!-- Event Date -->
-                        @if ($article->event_date)
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                    </path>
-                                </svg>
-                                <span>{{ $article->getEventDateDisplay() }}</span>
-                            </div>
-                        @endif
-
-                        <!-- Partnership -->
-                        @if ($article->partnership_with)
-                            <div class="flex items-center col-span-2 sm:col-span-1">
-                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4">
-                                    </path>
-                                </svg>
-                                <span class="truncate">{{ $article->partnership_with }}</span>
-                            </div>
-                        @endif
+                        <!-- Published Date -->
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-xs text-gray-600">
+                                @if($article->status === 'published' && $article->published_at)
+                                    Published {{ $article->published_at->format('M d, Y') }}
+                                @else
+                                    Created {{ $article->created_at->format('M d, Y') }}
+                                @endif
+                            </p>
+                        </div>
                     </div>
 
-                    <!-- Status-Specific Actions -->
-                    @if ($article->status === 'pending')
-                        <div
-                            class="bg-yellow-50 p-3 rounded-lg border border-yellow-200 flex items-center justify-between">
-                            <div class="flex items-center">
-                                <svg class="w-4 h-4 text-yellow-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd"
-                                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                                        clip-rule="evenodd"></path>
-                                </svg>
-                                <p class="text-xs text-yellow-800"><strong>Pending Review:</strong> Awaiting approval</p>
-                            </div>
-                            <span class="text-xs font-semibold text-yellow-700">ACTION NEEDED</span>
+                    <!-- Status Info -->
+                    @if($article->status === 'pending')
+                        <div class="bg-yellow-50 p-2 rounded text-xs text-yellow-700 border border-yellow-200 text-center font-medium">
+                            ⏳ Awaiting Approval
                         </div>
                     @elseif($article->status === 'rejected')
-                        <div class="bg-red-50 p-3 rounded-lg border border-red-200">
-                            <p class="text-xs font-medium text-red-900 mb-1">💬 Rejection Reason:</p>
-                            <p class="text-xs text-red-700 line-clamp-2">
-                                {{ $article->rejection_reason ?? 'No reason provided' }}</p>
+                        <div class="bg-red-50 p-2 rounded text-xs text-red-700 border border-red-200 text-center font-medium">
+                            ❌ Rejected
                         </div>
                     @elseif($article->status === 'approved')
-                        <div class="bg-green-50 p-3 rounded-lg border border-green-200">
-                            <p class="text-xs text-green-800"><strong>✓ Approved:</strong> Ready for staff to publish</p>
+                        <div class="bg-green-50 p-2 rounded text-xs text-green-700 border border-green-200 text-center font-medium">
+                            ✓ Approved
+                        </div>
+                    @elseif($article->status === 'published')
+                        <div class="bg-blue-50 p-2 rounded text-xs text-blue-700 border border-blue-200 text-center font-medium">
+                            👁️ Published
                         </div>
                     @endif
 
                     <!-- Click to View Notice -->
-                    <div class="mt-4 text-center">
-                        <p class="text-xs text-gray-500 italic">Click card to view details and manage →</p>
+                    <div class="mt-3 text-center">
+                        <p class="text-xs text-gray-500 italic">Click card to view & manage →</p>
                     </div>
                 </div>
-            </a>
-        @empty
-            <div class="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-200">
-                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor"
-                    viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z">
-                    </path>
-                </svg>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">No News Articles Found</h3>
-                <p class="text-gray-600">Try adjusting your search or filters</p>
             </div>
-        @endforelse
-    </div>
-
-    <!-- Pagination -->
-    @if ($articles->hasPages())
-        <div class="mt-8 flex justify-center">
-            {{ $articles->links() }}
+        </a>
+    @empty
+        <div class="col-span-full bg-white rounded-lg shadow-md p-16 text-center border border-gray-200">
+            <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">No News Articles Found</h3>
+            <p class="text-gray-600">Try adjusting your search or filters</p>
         </div>
-    @endif
+    @endforelse
+</div>
 
-    <script>
-        function filterNews(status) {
-            document.querySelectorAll('.news-filter').forEach(btn => {
-                btn.classList.remove('border-primary', 'text-primary');
-                btn.classList.add('border-transparent', 'text-gray-500');
+<!-- Pagination -->
+@if($articles->hasPages())
+    <div class="mt-12 flex justify-center">
+        {{ $articles->links() }}
+    </div>
+@endif
+
+<!-- JavaScript -->
+<script>
+    function filterNews(status) {
+        // Update tab styling
+        document.querySelectorAll('.news-filter').forEach(btn => {
+            btn.classList.remove('text-blue-600', 'border-b-blue-600');
+            btn.classList.add('text-gray-600', 'border-b-transparent');
+        });
+
+        event.target.classList.add('text-blue-600', 'border-b-blue-600');
+        event.target.classList.remove('text-gray-600', 'border-b-transparent');
+
+        window.currentStatusFilter = status;
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const searchTerm = document.getElementById('newsSearch')?.value?.toLowerCase() || '';
+        const category = document.getElementById('categoryFilter')?.value || '';
+        const statusFilter = window.currentStatusFilter || 'all';
+
+        let cards = Array.from(document.querySelectorAll('#newsContainer > a'));
+        let filtered = cards;
+
+        // Filter by search term
+        if (searchTerm) {
+            filtered = filtered.filter(card => {
+                const title = card.dataset.title || '';
+                return title.includes(searchTerm);
             });
-
-            event.target.classList.add('border-primary', 'text-primary');
-            event.target.classList.remove('border-transparent', 'text-gray-500');
-
-            window.currentStatusFilter = status;
-            applyFilters();
         }
 
-        function applyFilters() {
-            const searchTerm = document.getElementById('newsSearch')?.value?.toLowerCase() || '';
-            const sortBy = document.getElementById('sortBy')?.value || 'latest';
-            const category = document.getElementById('categoryFilter')?.value || '';
-            const author = document.getElementById('authorFilter')?.value || '';
-            const statusFilter = window.currentStatusFilter || 'all';
-
-            let articles = Array.from(document.querySelectorAll('#newsContainer > a'));
-            let filtered = articles;
-
-            // Filter by search term
-            if (searchTerm) {
-                filtered = filtered.filter(article => {
-                    const title = article.dataset.title || '';
-                    return title.includes(searchTerm);
-                });
-            }
-
-            // Filter by status
-            if (statusFilter !== 'all') {
-                filtered = filtered.filter(article => article.dataset.status === statusFilter);
-            }
-
-            // Filter by category
-            if (category) {
-                filtered = filtered.filter(article => article.dataset.category === category);
-            }
-
-            // Filter by author
-            if (author) {
-                filtered = filtered.filter(article => article.dataset.author === author);
-            }
-
-            // Show/hide articles
-            articles.forEach(article => {
-                article.style.display = filtered.includes(article) ? '' : 'none';
-            });
-
-            // Update result count
-            document.getElementById('resultCount').textContent = filtered.length;
+        // Filter by status
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(card => card.dataset.status === statusFilter);
         }
 
-        function resetFilters() {
-            document.getElementById('newsSearch').value = '';
-            document.getElementById('sortBy').value = 'latest';
-            document.getElementById('categoryFilter').value = '';
-            document.getElementById('authorFilter').value = '';
-            window.currentStatusFilter = 'all';
-
-            document.querySelectorAll('.news-filter').forEach((btn, idx) => {
-                if (idx === 0) {
-                    btn.classList.add('border-primary', 'text-primary');
-                    btn.classList.remove('border-transparent', 'text-gray-500');
-                } else {
-                    btn.classList.remove('border-primary', 'text-primary');
-                    btn.classList.add('border-transparent', 'text-gray-500');
-                }
-            });
-
-            applyFilters();
+        // Filter by category
+        if (category) {
+            filtered = filtered.filter(card => card.dataset.category === category);
         }
-    </script>
+
+        // Show/hide articles
+        cards.forEach(card => {
+            card.style.display = filtered.includes(card) ? '' : 'none';
+        });
+    }
+
+    // Initialize
+    window.currentStatusFilter = 'all';
+</script>
 @endsection
