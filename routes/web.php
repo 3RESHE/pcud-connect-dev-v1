@@ -278,6 +278,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::post('/{event}/mark-completed', [EventController::class, 'markCompleted'])->name('mark-completed'); // For ongoing->completed
             Route::post('/{event}/decline', [EventController::class, 'decline'])->name('decline'); // For approved->rejected (optional)
 
+
             // Registration/Attendance Pages & Actions
             Route::get('/{event}/manage-registrations', [EventController::class, 'manageRegistrations'])->name('manage-registrations');
             Route::get('/{event}/manage-attendance', [EventController::class, 'manageAttendance'])->name('manage-attendance');
