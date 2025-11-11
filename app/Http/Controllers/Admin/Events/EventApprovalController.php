@@ -96,7 +96,6 @@ class EventApprovalController extends Controller
             // Update event status
             $event->update([
                 'status' => 'approved',
-                'approved_at' => now(),
                 'approved_by' => auth()->id(),
             ]);
 
@@ -156,8 +155,7 @@ class EventApprovalController extends Controller
             $event->update([
                 'status' => 'rejected',
                 'rejection_reason' => $request->rejection_reason,
-                'rejected_at' => now(),
-                'rejected_by' => auth()->id(),
+                'approved_by' => auth()->id(),
             ]);
 
             // Log activity
@@ -212,8 +210,10 @@ class EventApprovalController extends Controller
                 'ongoing' => ['completed'],
             ];
 
-            if (!isset($validTransitions[$event->status]) ||
-                !in_array($newStatus, $validTransitions[$event->status])) {
+            if (
+                !isset($validTransitions[$event->status]) ||
+                !in_array($newStatus, $validTransitions[$event->status])
+            ) {
                 return response()->json([
                     'success' => false,
                     'message' => "Cannot transition from '{$event->status}' to '{$newStatus}'"
@@ -262,7 +262,7 @@ class EventApprovalController extends Controller
     }
 
     /**
-     * Unpublish a published event
+     * Unpublish a published event and reject it
      * Admin can unpublish events if needed
      */
     public function unpublish(Request $request, $id)
@@ -284,16 +284,18 @@ class EventApprovalController extends Controller
                 ], 400);
             }
 
-            // Update event status back to approved
+            // Update event status to REJECTED
             $event->update([
-                'status' => 'approved',
+                'status' => 'rejected',
+                'rejection_reason' => $request->unpublish_reason,
+                'approved_by' => auth()->id(),
             ]);
 
             // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'unpublished',
-                'description' => 'Unpublished event: ' . $event->title . ' - Reason: ' . $request->unpublish_reason,
+                'description' => 'Unpublished and rejected event: ' . $event->title . ' - Reason: ' . $request->unpublish_reason,
                 'model_type' => Event::class,
                 'model_id' => $event->id,
                 'ip_address' => $request->ip(),
@@ -304,7 +306,7 @@ class EventApprovalController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Event unpublished successfully.',
+                'message' => 'Event unpublished and rejected successfully.',
                 'event' => $event
             ]);
         } catch (\Exception $e) {
@@ -314,6 +316,115 @@ class EventApprovalController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to unpublish event: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Feature an event
+     * Only published events can be featured
+     */
+    public function feature(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $event = Event::findOrFail($id);
+
+            // Only published events can be featured
+            if ($event->status !== 'published') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Only published events can be featured.'
+                ], 400);
+            }
+
+            // Check if already featured
+            if ($event->is_featured) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This event is already featured.'
+                ], 400);
+            }
+
+            // Feature the event
+            $event->feature(auth()->id());
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'featured',
+                'description' => 'Featured event: ' . $event->title,
+                'model_type' => Event::class,
+                'model_id' => $event->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event featured successfully!',
+                'event' => $event
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Event feature failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to feature event: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Unfeature an event
+     */
+    public function unfeature(Request $request, $id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $event = Event::findOrFail($id);
+
+            // Check if event is featured
+            if (!$event->is_featured) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'This event is not featured.'
+                ], 400);
+            }
+
+            // Unfeature the event
+            $event->unfeature();
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'unfeatured',
+                'description' => 'Unfeatured event: ' . $event->title,
+                'model_type' => Event::class,
+                'model_id' => $event->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event unfeatured successfully!',
+                'event' => $event
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Event unfeature failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to unfeature event: ' . $e->getMessage()
             ], 500);
         }
     }

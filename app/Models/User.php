@@ -150,6 +150,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get events approved by this admin.
+     */
+    public function eventsApproved(): HasMany
+    {
+        return $this->hasMany(Event::class, 'approved_by');
+    }
+
+    /**
+     * Get events featured by this admin.
+     */
+    public function eventsFeatured(): HasMany
+    {
+        return $this->hasMany(Event::class, 'featured_by');
+    }
+
+    /**
      * Get event registrations for this user.
      */
     public function eventRegistrations(): HasMany
@@ -231,6 +247,46 @@ class User extends Authenticatable
         return $query->whereNull('password_changed_at');
     }
 
+    /**
+     * Scope: Get admins only.
+     */
+    public function scopeAdmins($query)
+    {
+        return $query->where('role', 'admin');
+    }
+
+    /**
+     * Scope: Get staff members only.
+     */
+    public function scopeStaff($query)
+    {
+        return $query->where('role', 'staff');
+    }
+
+    /**
+     * Scope: Get partners only.
+     */
+    public function scopePartners($query)
+    {
+        return $query->where('role', 'partner');
+    }
+
+    /**
+     * Scope: Get students only.
+     */
+    public function scopeStudents($query)
+    {
+        return $query->where('role', 'student');
+    }
+
+    /**
+     * Scope: Get alumni only.
+     */
+    public function scopeAlumni($query)
+    {
+        return $query->where('role', 'alumni');
+    }
+
     // ===== HELPER METHODS =====
 
     /**
@@ -246,6 +302,14 @@ class User extends Authenticatable
             $name .= " {$this->name_suffix}";
         }
         return $name;
+    }
+
+    /**
+     * Get user's short display name.
+     */
+    public function getShortNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
     }
 
     /**
@@ -297,6 +361,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->is_active === true;
+    }
+
+    /**
+     * Check if user is inactive.
+     */
+    public function isInactive(): bool
+    {
+        return $this->is_active === false;
+    }
+
+    /**
      * Get user's profile based on role.
      */
     public function getProfile()
@@ -308,6 +388,36 @@ class User extends Authenticatable
             'student' => $this->studentProfile,
             'alumni' => $this->alumniProfile,
             default => null,
+        };
+    }
+
+    /**
+     * Get user's role display name.
+     */
+    public function getRoleDisplayAttribute(): string
+    {
+        return match($this->role) {
+            'admin' => 'Administrator',
+            'staff' => 'Staff Member',
+            'partner' => 'Partner',
+            'student' => 'Student',
+            'alumni' => 'Alumni',
+            default => 'User',
+        };
+    }
+
+    /**
+     * Get user's role badge color.
+     */
+    public function getRoleBadgeColorAttribute(): string
+    {
+        return match($this->role) {
+            'admin' => 'danger',
+            'staff' => 'warning',
+            'partner' => 'info',
+            'student' => 'primary',
+            'alumni' => 'success',
+            default => 'secondary',
         };
     }
 

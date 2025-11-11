@@ -41,6 +41,11 @@ class Event extends Model
         'status',
         'rejection_reason',
         'published_at',
+
+        // Feature fields
+        'is_featured',
+        'featured_by',
+        'featured_at',
     ];
 
     protected $casts = [
@@ -57,6 +62,11 @@ class Event extends Model
         'max_attendees' => 'integer',
         'selected_departments' => 'json',
         'published_at' => 'datetime',
+
+        // Feature fields
+        'is_featured' => 'boolean',
+        'featured_at' => 'datetime',
+
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -77,6 +87,14 @@ class Event extends Model
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Get the admin who featured this event.
+     */
+    public function featuredBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'featured_by');
     }
 
     /**
@@ -160,12 +178,32 @@ class Event extends Model
     }
 
     /**
+     * Scope: Get featured events.
+     */
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    /**
      * Scope: Get upcoming events.
      */
     public function scopeUpcoming($query)
     {
         return $query->where('status', 'published')
             ->where('event_date', '>=', now()->toDateString())
+            ->orderBy('event_date', 'asc');
+    }
+
+    /**
+     * Scope: Get upcoming featured events.
+     */
+    public function scopeUpcomingFeatured($query)
+    {
+        return $query->where('status', 'published')
+            ->where('is_featured', true)
+            ->where('event_date', '>=', now()->toDateString())
+            ->orderBy('featured_at', 'desc')
             ->orderBy('event_date', 'asc');
     }
 
@@ -370,6 +408,8 @@ class Event extends Model
         };
     }
 
+    // ===== STATUS MANAGEMENT METHODS =====
+
     /**
      * Approve this event.
      */
@@ -418,5 +458,51 @@ class Event extends Model
     public function markAsCompleted()
     {
         $this->update(['status' => 'completed']);
+    }
+
+    // ===== FEATURE/UNFEATURE METHODS =====
+
+    /**
+     * Feature this event.
+     */
+    public function feature($adminId)
+    {
+        $this->update([
+            'is_featured' => true,
+            'featured_by' => $adminId,
+            'featured_at' => now(),
+        ]);
+    }
+
+    /**
+     * Unfeature this event.
+     */
+    public function unfeature()
+    {
+        $this->update([
+            'is_featured' => false,
+            'featured_by' => null,
+            'featured_at' => null,
+        ]);
+    }
+
+    /**
+     * Check if event is featured.
+     */
+    public function isFeatured(): bool
+    {
+        return $this->is_featured === true;
+    }
+
+    /**
+     * Toggle feature status.
+     */
+    public function toggleFeature($adminId)
+    {
+        if ($this->isFeatured()) {
+            $this->unfeature();
+        } else {
+            $this->feature($adminId);
+        }
     }
 }

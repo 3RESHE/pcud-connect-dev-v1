@@ -66,6 +66,11 @@ return new class extends Migration
             $table->text('rejection_reason')->nullable(); // Why was it rejected?
             $table->timestamp('published_at')->nullable(); // When was it published?
 
+            // ✨ NEW: Feature/Unfeature
+            $table->boolean('is_featured')->default(false); // Is this event featured?
+            $table->foreignId('featured_by')->nullable()->constrained('users')->nullOnDelete(); // Admin who featured it
+            $table->timestamp('featured_at')->nullable(); // When was it featured?
+
             $table->timestamps();
         });
 
@@ -74,7 +79,9 @@ return new class extends Migration
             $table->index('created_by', 'idx_events_creator');
             $table->index('status', 'idx_events_status');
             $table->index('event_date', 'idx_events_date');
+            $table->index('is_featured', 'idx_events_featured'); // NEW INDEX
             $table->index(['status', 'event_date'], 'idx_events_status_date');
+            $table->index(['is_featured', 'status', 'event_date'], 'idx_events_featured_status_date'); // NEW COMPOSITE INDEX
         });
     }
 

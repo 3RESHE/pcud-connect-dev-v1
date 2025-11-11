@@ -203,6 +203,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::post('/{id}/unpublish', [EventApprovalController::class, 'unpublish'])->name('unpublish');
         });
 
+        // ===== EVENT MANAGEMENT (Feature, Unfeature) =====
+        Route::prefix('events')->name('events.')->middleware('role:admin')->group(function () {
+            Route::post('/{id}/feature', [EventApprovalController::class, 'feature'])
+                ->name('feature');
+            Route::post('/{id}/unfeature', [EventApprovalController::class, 'unfeature'])
+                ->name('unfeature');
+        });
+
         // News Approval Routes
         Route::prefix('approvals/news')->name('approvals.news.')->group(function () {
             Route::get('/', [NewsApprovalController::class, 'index'])->name('index');
