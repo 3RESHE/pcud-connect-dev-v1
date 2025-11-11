@@ -194,21 +194,14 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('unpublish');
         });
 
-        // ===== EVENTS APPROVALS =====
         Route::prefix('approvals/events')->name('approvals.events.')->group(function () {
-            Route::get('/', [EventApprovalController::class, 'index'])
-                ->name('index');
-
-            // ✅ ADD THIS LINE - Show event details
-            Route::get('/{id}', [EventApprovalController::class, 'show'])
-                ->name('show');
-
-            Route::post('/{id}/approve', [EventApprovalController::class, 'approve'])
-                ->name('approve');
-            Route::post('/{id}/reject', [EventApprovalController::class, 'reject'])
-                ->name('reject');
+            Route::get('/', [EventApprovalController::class, 'index'])->name('index');
+            Route::get('/{id}', [EventApprovalController::class, 'show'])->name('show');
+            Route::post('/{id}/approve', [EventApprovalController::class, 'approve'])->name('approve');
+            Route::post('/{id}/reject', [EventApprovalController::class, 'reject'])->name('reject');
+            Route::post('/{id}/change-status', [EventApprovalController::class, 'changeStatus'])->name('change-status');
+            Route::post('/{id}/unpublish', [EventApprovalController::class, 'unpublish'])->name('unpublish');
         });
-
 
         // News Approval Routes
         Route::prefix('approvals/news')->name('approvals.news.')->group(function () {

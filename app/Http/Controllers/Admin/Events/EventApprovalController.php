@@ -20,7 +20,6 @@ class EventApprovalController extends Controller
         $search = $request->get('search');
 
         // Base query - get ALL events (not just pending)
-        // ✅ FIX: Don't specify columns in with() - let it load all columns
         $query = Event::with('creator');
 
         // Filter by status
@@ -65,24 +64,14 @@ class EventApprovalController extends Controller
         return view('users.admin.approvals.events.index', $data);
     }
 
-
     /**
-     * Show detailed view of a specific event
-     * For admin to review before approval/rejection
+     * Show event details
      */
     public function show($id)
     {
-        $event = Event::with(['creator', 'registrations.user'])->findOrFail($id);
+        $event = Event::findOrFail($id);
 
-        $data = [
-            'event' => $event,
-            'total_registrations' => $event->registrations()->count(),
-            'confirmed_registrations' => $event->registrations()->where('status', 'confirmed')->count(),
-            'pending_registrations' => $event->registrations()->where('status', 'pending')->count(),
-            'cancelled_registrations' => $event->registrations()->where('status', 'cancelled')->count(),
-        ];
-
-        return view('users.admin.approvals.events.show', $data);
+        return view('users.admin.approvals.events.show', compact('event'));
     }
 
     /**
@@ -201,6 +190,78 @@ class EventApprovalController extends Controller
     }
 
     /**
+     * Change event status (publish, ongoing, completed)
+     * Handles status transitions after approval
+     */
+    public function changeStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:published,ongoing,completed'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $event = Event::findOrFail($id);
+            $newStatus = $request->input('status');
+
+            // Validate status transitions
+            $validTransitions = [
+                'approved' => ['published'],
+                'published' => ['ongoing'],
+                'ongoing' => ['completed'],
+            ];
+
+            if (!isset($validTransitions[$event->status]) ||
+                !in_array($newStatus, $validTransitions[$event->status])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Cannot transition from '{$event->status}' to '{$newStatus}'"
+                ], 400);
+            }
+
+            // Update event status
+            $update = [
+                'status' => $newStatus,
+            ];
+
+            // Add published_at timestamp when publishing
+            if ($newStatus === 'published') {
+                $update['published_at'] = now();
+            }
+
+            $event->update($update);
+
+            // Log activity
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => $newStatus === 'published' ? 'published' : $newStatus,
+                'description' => ucfirst($newStatus) . ' event: ' . $event->title,
+                'model_type' => Event::class,
+                'model_id' => $event->id,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Event status updated to ' . ucfirst($newStatus) . ' successfully!',
+                'event' => $event
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Event status change failed: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to change event status: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Unpublish a published event
      * Admin can unpublish events if needed
      */
@@ -226,7 +287,6 @@ class EventApprovalController extends Controller
             // Update event status back to approved
             $event->update([
                 'status' => 'approved',
-                'unpublish_reason' => $request->unpublish_reason,
             ]);
 
             // Log activity
