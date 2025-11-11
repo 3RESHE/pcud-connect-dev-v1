@@ -11,7 +11,6 @@ class EventController extends Controller
 {
     /**
      * Display a listing of published events
-     * Filters by target_audience based on user role
      */
     public function index(Request $request)
     {
@@ -24,34 +23,25 @@ class EventController extends Controller
 
         // Filter by target audience based on user role
         if ($user->role === 'student') {
-            // Students see: allstudents + openforall
             $query->whereIn('target_audience', ['allstudents', 'openforall']);
         } elseif ($user->role === 'alumni') {
-            // Alumni see: alumni + openforall
             $query->whereIn('target_audience', ['alumni', 'openforall']);
         }
-        // Other roles (staff, admin, partner) can see all published events
 
         // Filter by event type if provided
         if ($request->has('type') && $request->type !== '') {
             $query->where('event_format', $request->type);
         }
 
-        // Filter by date range if provided
-        if ($request->has('from_date') && $request->from_date) {
-            $query->whereDate('event_date', '>=', $request->from_date);
-        }
-
-        if ($request->has('to_date') && $request->to_date) {
-            $query->whereDate('event_date', '<=', $request->to_date);
-        }
-
-        // Search by title or description
+        // Server-side search
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhereHas('creator', function ($creatorQuery) use ($search) {
+                        $creatorQuery->where('full_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -63,7 +53,7 @@ class EventController extends Controller
             ->pluck('event_id')
             ->toArray();
 
-        // Get event statistics (respecting target audience filter)
+        // Get event statistics
         $stats = [
             'total' => Event::where('status', 'published')
                 ->when($user->role === 'student', fn($q) => $q->whereIn('target_audience', ['allstudents', 'openforall']))
@@ -92,10 +82,8 @@ class EventController extends Controller
         ]);
     }
 
-
     /**
      * Display a specific published event
-     * Only allows viewing published events
      */
     public function show(Event $event)
     {
@@ -119,7 +107,7 @@ class EventController extends Controller
                 ->first();
         }
 
-        // Get similar published events (same format, upcoming)
+        // Get similar published events
         $similarEvents = Event::where('status', 'published')
             ->where('event_format', $event->event_format)
             ->where('id', '!=', $event->id)
@@ -148,7 +136,6 @@ class EventController extends Controller
 
     /**
      * Register user for an event
-     * Handles new event registrations with validation
      */
     public function register(Request $request, Event $event)
     {
@@ -174,8 +161,6 @@ class EventController extends Controller
 
         // Validate registration form
         $validated = $request->validate([
-            'dietary_restriction' => 'nullable|string|max:100',
-            'special_requirements' => 'nullable|string|max:500',
             'agree_terms' => 'required|accepted',
         ]);
 
@@ -184,10 +169,9 @@ class EventController extends Controller
             EventRegistration::create([
                 'event_id' => $event->id,
                 'user_id' => $user->id,
-                'registration_date' => now(),
-                'status' => 'confirmed',
-                'dietary_restriction' => $validated['dietary_restriction'] ?? null,
-                'special_requirements' => $validated['special_requirements'] ?? null,
+                'user_type' => $user->role,
+                'registration_type' => 'online',
+                'attendance_status' => 'registered',
             ]);
 
             return redirect()->route('events.show', $event->id)
@@ -200,7 +184,6 @@ class EventController extends Controller
 
     /**
      * Unregister user from an event
-     * Allows users to cancel their registration
      */
     public function unregister(Request $request, Event $event)
     {
@@ -234,7 +217,6 @@ class EventController extends Controller
 
     /**
      * Show user's event registrations
-     * Displays all events the user has registered for
      */
     public function myRegistrations(Request $request)
     {
@@ -253,7 +235,7 @@ class EventController extends Controller
                     $eq->where('event_date', '<', now()->toDateString());
                 });
             })
-            ->orderByDesc('registration_date')
+            ->orderByDesc('created_at')
             ->paginate(10);
 
         // Calculate registration statistics

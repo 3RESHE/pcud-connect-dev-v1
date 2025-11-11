@@ -90,11 +90,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
 
     Route::middleware('role:student,alumni')->prefix('events')->name('events.')->group(function () {
         Route::get('/', [SharedEventController::class, 'index'])->name('index');
+        Route::get('/registrations', [SharedEventController::class, 'myRegistrations'])->name('myRegistrations');
         Route::get('/{event}', [SharedEventController::class, 'show'])->name('show');
         Route::post('/{event}/register', [SharedEventController::class, 'register'])->name('register');
         Route::delete('/{event}/unregister', [SharedEventController::class, 'unregister'])->name('unregister');
-        Route::get('/registrations', [SharedEventController::class, 'myRegistrations'])->name('registrations');
     });
+
 
 
     Route::get('/dashboard', function () {
