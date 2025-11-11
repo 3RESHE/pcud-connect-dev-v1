@@ -186,7 +186,7 @@
                 <div class="p-6 space-y-4">
                     @forelse($upcomingEvents as $event)
                         <!-- Event Item -->
-                        <a href="{{ route('student.events.show', $event->id) }}" class="flex items-start cursor-pointer hover:bg-gray-50 -mx-3 px-3 py-2 rounded-lg transition-colors">
+                        <a href="{{ route('events.show', $event->id) }}" class="flex items-start cursor-pointer hover:bg-gray-50 -mx-3 px-3 py-2 rounded-lg transition-colors">
                             <div class="flex-shrink-0 w-12 h-12 bg-primary text-white rounded-lg flex flex-col items-center justify-center font-semibold">
                                 <span class="text-xs">{{ $event->event_date->format('M') }}</span>
                                 <span class="text-lg">{{ $event->event_date->format('d') }}</span>
