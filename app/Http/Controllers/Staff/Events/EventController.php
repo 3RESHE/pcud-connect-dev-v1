@@ -182,7 +182,6 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $this->authorizeEventOwner($event);
-
         return view('users.staff.events.show', compact('event'));
     }
 
@@ -216,8 +215,8 @@ class EventController extends Controller
                 'event_date' => 'required|date|after_or_equal:today',
                 'is_multiday' => 'nullable|boolean',
                 'end_date' => 'nullable|date|after_or_equal:event_date',
-                'start_time' => 'required', // CHANGED: Remove date_format validation
-                'end_time' => 'required|after:start_time', // CHANGED: Remove date_format validation
+                'start_time' => 'required',
+                'end_time' => 'required|after:start_time',
                 'venue_name' => 'required_if:event_format,inperson|nullable|string|max:255',
                 'venue_capacity' => 'required_if:event_format,inperson|nullable|integer|min:1',
                 'venue_address' => 'nullable|string',
@@ -302,8 +301,6 @@ class EventController extends Controller
                 ->withInput();
         }
     }
-
-
 
     /**
      * Delete event
@@ -390,21 +387,11 @@ class EventController extends Controller
         $this->authorizeEventOwner($event);
 
         $registrations = $event->registrations()
-            ->with('user')
+            ->with('user:id,first_name,last_name,email')
             ->latest('created_at')
-            ->get();
+            ->paginate(20);
 
-        $totalRegistrations = $registrations->count();
-        $confirmedCount = $registrations->where('status', 'confirmed')->count();
-        $cancelledCount = $registrations->where('status', 'cancelled')->count();
-
-        return view('users.staff.events.manage-registrations', compact(
-            'event',
-            'registrations',
-            'totalRegistrations',
-            'confirmedCount',
-            'cancelledCount'
-        ));
+        return view('users.staff.events.manage-registrations', compact('event', 'registrations'));
     }
 
     /**
@@ -462,17 +449,25 @@ class EventController extends Controller
     {
         $this->authorizeEventOwner($event);
 
-        if ($event->status !== 'ongoing') {
-            return redirect()->back()->with('error', 'Can only manage attendance for ongoing events.');
+        if ($event->status !== 'ongoing' && $event->status !== 'completed') {
+            return redirect()->back()->with('error', 'Can only manage attendance for ongoing or completed events.');
         }
 
         $registrations = $event->registrations()
-            ->with('user')
+            ->with('user:id,first_name,last_name,middle_name,name_suffix,email', 'user.studentProfile:id,user_id,student_id')
             ->where('status', 'confirmed')
             ->latest('created_at')
-            ->get();
+            ->paginate(20);
 
-        return view('users.staff.events.manage-attendance', compact('event', 'registrations'));
+        $checkedIn = $registrations->where('checked_in_at', '!=', null)->count();
+        $noShow = $registrations->count() - $checkedIn;
+
+        return view('users.staff.events.manage-attendance', compact(
+            'event',
+            'registrations',
+            'checkedIn',
+            'noShow'
+        ));
     }
 
     /**
@@ -538,13 +533,15 @@ class EventController extends Controller
     }
 
     /**
-     * Download event report (CSV)
+     * Download event report (CSV) - FIXED
      */
     public function downloadReport(Event $event)
     {
         $this->authorizeEventOwner($event);
 
-        $registrations = $event->registrations()->with('user')->get();
+        $registrations = $event->registrations()
+            ->with('user:id,first_name,last_name,middle_name,name_suffix,email', 'user.studentProfile:id,user_id,student_id')
+            ->get();
 
         $fileName = 'event-report-' . $event->id . '-' . now()->format('Y-m-d-His') . '.csv';
 
@@ -573,12 +570,21 @@ class EventController extends Controller
             ]);
 
             foreach ($registrations as $registration) {
+                $phone = null;
+                if ($registration->user->role === 'student' && $registration->user->studentProfile) {
+                    $phone = $registration->user->studentProfile->phone ?? 'N/A';
+                } elseif ($registration->user->role === 'alumni' && $registration->user->alumniProfile) {
+                    $phone = $registration->user->alumniProfile->phone ?? 'N/A';
+                }
+
+                $studentId = $registration->user->studentProfile?->student_id ?? 'N/A';
+
                 fputcsv($file, [
-                    $registration->user->name,
+                    $registration->user->full_name,
                     $registration->user->email,
-                    $registration->user->phone ?? 'N/A',
-                    $registration->user->student_id ?? 'N/A',
-                    $registration->user->department ?? 'N/A',
+                    $phone,
+                    $studentId,
+                    $registration->user->department?->name ?? 'N/A',
                     ucfirst($registration->status),
                     ucfirst($registration->attendance_status ?? 'pending'),
                     $registration->created_at->format('Y-m-d H:i'),
@@ -593,16 +599,46 @@ class EventController extends Controller
         return response()->stream($callback, 200, $headers);
     }
 
-    /**
-     * Export registrations (CSV)
-     */
     public function exportRegistrations(Event $event)
     {
-        return $this->downloadReport($event);
+        $this->authorizeEventOwner($event);
+
+        $registrations = $event->registrations()
+            ->with('user:id,first_name,last_name,email')
+            ->latest('created_at')
+            ->get();
+
+        $fileName = 'registrations-' . $event->id . '-' . now()->format('Y-m-d-His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename=' . $fileName,
+        ];
+
+        $callback = function () use ($event, $registrations) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, ['Event: ' . $event->title]);
+            fputcsv($file, ['Date: ' . $event->event_date->format('F d, Y')]);
+            fputcsv($file, []);
+
+            fputcsv($file, ['Name', 'Email', 'Registered On']);
+
+            foreach ($registrations as $reg) {
+                fputcsv($file, [
+                    $reg->user->first_name . ' ' . $reg->user->last_name,
+                    $reg->user->email,
+                    $reg->created_at->format('Y-m-d H:i'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**
-     * Export attendance (CSV)
+     * Export attendance (CSV) - FIXED
      */
     public function exportAttendance(Event $event)
     {
@@ -610,7 +646,7 @@ class EventController extends Controller
 
         $registrations = $event->registrations()
             ->where('status', 'confirmed')
-            ->with('user')
+            ->with('user:id,first_name,last_name,middle_name,name_suffix,email', 'user.studentProfile:id,user_id,student_id')
             ->get();
 
         $fileName = 'attendance-' . $event->id . '-' . now()->format('Y-m-d-His') . '.csv';
@@ -623,7 +659,7 @@ class EventController extends Controller
         $callback = function () use ($event, $registrations) {
             $file = fopen('php://output', 'w');
             fputcsv($file, ['Attendance Report - ' . $event->title]);
-            fputcsv($file, ['Event Date: ' . $event->event_date->format('Y-m-d')]);
+            fputcsv($file, ['Event Date: ' . $event->event_date->format('F d, Y')]);
             fputcsv($file, ['Generated on ' . now()->format('Y-m-d H:i:s')]);
             fputcsv($file, []);
 
@@ -634,16 +670,25 @@ class EventController extends Controller
                 'Status',
                 'Checked In',
                 'Checked Out',
+                'Duration (minutes)',
             ]);
 
             foreach ($registrations as $registration) {
+                $duration = null;
+                if ($registration->checked_in_at && $registration->checked_out_at) {
+                    $duration = $registration->checked_in_at->diffInMinutes($registration->checked_out_at);
+                }
+
+                $studentId = $registration->user->studentProfile?->student_id ?? 'N/A';
+
                 fputcsv($file, [
-                    $registration->user->name,
+                    $registration->user->full_name,
                     $registration->user->email,
-                    $registration->user->student_id ?? 'N/A',
+                    $studentId,
                     ucfirst($registration->attendance_status ?? 'absent'),
                     $registration->checked_in_at?->format('Y-m-d H:i') ?? 'No',
                     $registration->checked_out_at?->format('Y-m-d H:i') ?? 'No',
+                    $duration ?? 'N/A',
                 ]);
             }
 
@@ -655,9 +700,7 @@ class EventController extends Controller
 
     // ===== HELPER METHODS =====
 
-    /**
-     * Authorize event owner
-     */
+
     private function authorizeEventOwner(Event $event)
     {
         if ($event->created_by !== auth()->id()) {
