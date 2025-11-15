@@ -13,21 +13,22 @@ class EventApprovalController extends Controller
     /**
      * Display all events with filtering capability
      * Admin can see all events from all staff members
+     * Search and filtering handled server-side for better performance
      */
     public function index(Request $request)
     {
         $status = $request->get('status', 'all');
-        $search = $request->get('search');
+        $search = $request->get('search', '');
 
-        // Base query - get ALL events (not just pending)
-        $query = Event::with('creator');
+        // Base query - exclude draft events, get ALL other events
+        $query = Event::with('creator')->where('status', '!=', 'draft');
 
         // Filter by status
         if ($status !== 'all') {
             $query->where('status', $status);
         }
 
-        // Search functionality
+        // Server-side search functionality
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
@@ -44,15 +45,14 @@ class EventApprovalController extends Controller
         // Sort by latest
         $events = $query->latest('created_at')->paginate(15);
 
-        // Get counts for all statuses
+        // Get counts for all statuses (excluding draft)
         $data = [
             'events' => $events,
             'current_status' => $status,
             'search_query' => $search,
 
-            // Statistics
-            'total_count' => Event::count(),
-            'draft_count' => Event::where('status', 'draft')->count(),
+            // Statistics (draft excluded)
+            'total_count' => Event::where('status', '!=', 'draft')->count(),
             'pending_count' => Event::where('status', 'pending')->count(),
             'approved_count' => Event::where('status', 'approved')->count(),
             'published_count' => Event::where('status', 'published')->count(),
@@ -322,7 +322,7 @@ class EventApprovalController extends Controller
 
     /**
      * Feature an event
-     * Only published events can be featured
+     * Published, ongoing, and completed events can be featured
      */
     public function feature(Request $request, $id)
     {
@@ -331,11 +331,11 @@ class EventApprovalController extends Controller
 
             $event = Event::findOrFail($id);
 
-            // Only published events can be featured
-            if ($event->status !== 'published') {
+            // Published, ongoing, and completed events can be featured
+            if (!in_array($event->status, ['published', 'ongoing', 'completed'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only published events can be featured.'
+                    'message' => 'Only published, ongoing, or completed events can be featured.'
                 ], 400);
             }
 
@@ -432,6 +432,7 @@ class EventApprovalController extends Controller
     /**
      * Delete an event (hard delete)
      * Admin can delete events permanently
+     * Only rejected or completed events can be deleted (draft removed)
      */
     public function destroy(Request $request, $id)
     {
@@ -444,11 +445,11 @@ class EventApprovalController extends Controller
 
             $event = Event::findOrFail($id);
 
-            // Only allow deletion of draft, rejected, or completed events
-            if (!in_array($event->status, ['draft', 'rejected', 'completed'])) {
+            // Only allow deletion of rejected or completed events (draft removed)
+            if (!in_array($event->status, ['rejected', 'completed'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Only draft, rejected, or completed events can be deleted.'
+                    'message' => 'Only rejected or completed events can be deleted.'
                 ], 400);
             }
 
