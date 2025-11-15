@@ -19,7 +19,6 @@
             <p class="text-blue-100">Find and register for amazing events happening at PCUD</p>
         </div>
 
-        <!-- My Registrations Button -->
         @if($stats['registered'] > 0)
             <a href="{{ route('events.myRegistrations') }}" class="inline-flex items-center px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-semibold transition-colors shadow-md">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -42,9 +41,9 @@
             <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Upcoming</p>
             <p class="text-3xl font-bold text-green-600 mt-2">{{ $stats['upcoming'] }}</p>
         </div>
-        <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-purple-500 hover:shadow-md transition-shadow">
-            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Past Events</p>
-            <p class="text-3xl font-bold text-purple-600 mt-2">{{ $stats['past'] }}</p>
+        <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-orange-500 hover:shadow-md transition-shadow">
+            <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Ongoing</p>
+            <p class="text-3xl font-bold text-orange-600 mt-2">{{ $stats['ongoing'] }}</p>
         </div>
         <div class="bg-white rounded-lg p-5 shadow-sm border-l-4 border-yellow-500 hover:shadow-md transition-shadow">
             <p class="text-xs font-semibold text-gray-600 uppercase tracking-wider">Your Registrations</p>
@@ -53,30 +52,30 @@
     </div>
 </div>
 
-<!-- Search & Filter Section -->
+<!-- Search and Filter Section -->
 <div class="container mx-auto px-4 mb-8">
     <div class="bg-white rounded-lg shadow-sm p-6">
-        <form action="{{ route('events.index') }}" method="GET">
+        <form action="{{ route('events.index') }}" method="GET" class="space-y-4">
+            <!-- Basic Search Row -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
                 <!-- Search Input -->
                 <div class="relative">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Search Events</label>
                     <svg class="absolute left-4 top-10 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
-                    <input type="text" name="search" value="{{ $currentSearch }}" placeholder="Search events by title, description, or organizer..."
-                        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200">
+                    <input type="text" name="search" value="{{ $currentSearch }}" placeholder="Search by title, description, organizer, or venue..."
+                        class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
                 </div>
 
                 <!-- Event Type Filter -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Event Type</label>
-                    <select name="type"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none cursor-pointer bg-white">
+                    <select name="type" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
                         <option value="">All Types</option>
-                        <option value="inperson" @if($currentType === 'inperson') selected @endif>In-Person</option>
-                        <option value="virtual" @if($currentType === 'virtual') selected @endif>Virtual</option>
-                        <option value="hybrid" @if($currentType === 'hybrid') selected @endif>Hybrid</option>
+                        <option value="inperson" @selected($currentType === 'inperson')>In-Person</option>
+                        <option value="virtual" @selected($currentType === 'virtual')>Virtual</option>
+                        <option value="hybrid" @selected($currentType === 'hybrid')>Hybrid</option>
                     </select>
                 </div>
 
@@ -88,8 +87,44 @@
                 </div>
             </div>
 
-            <!-- Clear Filters Link -->
-            <div class="text-center mt-3">
+            <!-- Advanced Filters Row -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+                <!-- Event Status Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Event Status</label>
+                    <select name="status" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
+                        <option value="">All Status</option>
+                        <option value="published" @selected($currentStatus === 'published')>Upcoming</option>
+                        <option value="ongoing" @selected($currentStatus === 'ongoing')>Ongoing</option>
+                        <option value="completed" @selected($currentStatus === 'completed')>Completed</option>
+                    </select>
+                </div>
+
+                <!-- Date From Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                    <input type="date" name="date_from" value="{{ $currentDateFrom }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <!-- Date To Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                    <input type="date" name="date_to" value="{{ $currentDateTo }}" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
+                <!-- Capacity Filter -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Capacity</label>
+                    <select name="capacity" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none bg-white">
+                        <option value="">All Events</option>
+                        <option value="available" @selected($currentCapacity === 'available')>Available Spots</option>
+                        <option value="full" @selected($currentCapacity === 'full')>Full</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Clear Filters -->
+            <div class="text-center pt-2">
                 <a href="{{ route('events.index') }}" class="text-sm text-blue-600 hover:text-blue-700 font-medium">
                     Clear All Filters
                 </a>
@@ -98,33 +133,29 @@
     </div>
 </div>
 
-<!-- ✅ HELPER FUNCTION: Get Event Status Badge -->
+<!-- Helper Function: Get Event Status Badge -->
 @php
     $getEventStatusBadge = function($event) {
         if ($event->status === 'completed') {
             return [
-                'label' => 'Completed Event',
-                'color' => 'bg-gray-600',
-                'textColor' => 'text-gray-900',
+                'label' => 'Completed',
                 'bgColor' => 'bg-gray-100',
-                'icon' => '✓'
+                'textColor' => 'text-gray-800',
+                'borderColor' => 'border-gray-300',
             ];
         } elseif ($event->status === 'ongoing') {
             return [
-                'label' => 'Ongoing Event',
-                'color' => 'bg-orange-600',
-                'textColor' => 'text-orange-900',
+                'label' => 'Ongoing',
                 'bgColor' => 'bg-orange-100',
-                'icon' => '●'
+                'textColor' => 'text-orange-800',
+                'borderColor' => 'border-orange-300',
             ];
         } else {
-            // published
             return [
-                'label' => 'Upcoming Event',
-                'color' => 'bg-green-600',
-                'textColor' => 'text-green-900',
+                'label' => 'Upcoming',
                 'bgColor' => 'bg-green-100',
-                'icon' => '→'
+                'textColor' => 'text-green-800',
+                'borderColor' => 'border-green-300',
             ];
         }
     };
@@ -149,9 +180,11 @@
             @foreach($featuredEvents as $event)
                 @php
                     $badgeInfo = $getEventStatusBadge($event);
+                    $registrationCount = $event->registrations()->count();
+                    $capacityPercent = ($event->max_attendees) ? round(($registrationCount / $event->max_attendees) * 100) : 0;
                 @endphp
                 <a href="{{ route('events.show', $event->id) }}" class="group block">
-                    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col border-t-4 border-t-yellow-500 cursor-pointer">
+                    <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col border-t-4 border-t-yellow-500">
                         <!-- Image Container -->
                         <div class="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                             @if($event->event_image)
@@ -164,24 +197,31 @@
                                 </div>
                             @endif
 
-                            <!-- Status and Featured Badges -->
+                            <!-- Badges -->
                             <div class="absolute top-3 right-3 flex flex-col gap-2">
-                                <!-- Featured Badge -->
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-900">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                     </svg>
                                     Featured
                                 </span>
-
-                                <!-- ✅ Status Badge -->
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $badgeInfo['bgColor'] }} {{ $badgeInfo['textColor'] }}">
                                     {{ $badgeInfo['label'] }}
                                 </span>
                             </div>
+
+                            <!-- Capacity Bar -->
+                            @if($event->max_attendees)
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
+                                    <div class="w-full bg-gray-300 rounded-full h-1.5">
+                                        <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ $capacityPercent }}%"></div>
+                                    </div>
+                                    <p class="text-xs text-white mt-1">{{ $registrationCount }}/{{ $event->max_attendees }} registered</p>
+                                </div>
+                            @endif
                         </div>
 
-                        <!-- Content Container -->
+                        <!-- Content -->
                         <div class="p-5 flex flex-col flex-grow">
                             <h3 class="text-base font-bold text-gray-900 line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">
                                 {{ $event->title }}
@@ -199,13 +239,7 @@
                                     <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
-                                    <p class="text-gray-700">
-                                        @if($event->is_multiday && $event->end_date)
-                                            {{ $event->event_date?->format('M d') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('M d, Y') }}
-                                        @else
-                                            {{ $event->event_date?->format('M d, Y') }}
-                                        @endif
-                                    </p>
+                                    <p class="text-gray-700">{{ $event->event_date?->format('M d, Y') }}</p>
                                 </div>
 
                                 <div class="flex items-center space-x-2">
@@ -253,9 +287,11 @@
         @forelse($events as $event)
             @php
                 $badgeInfo = $getEventStatusBadge($event);
+                $registrationCount = $event->registrations()->count();
+                $capacityPercent = ($event->max_attendees) ? round(($registrationCount / $event->max_attendees) * 100) : 0;
             @endphp
             <a href="{{ route('events.show', $event->id) }}" class="group block">
-                <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col border-t-4 border-t-blue-500 cursor-pointer">
+                <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col border-t-4 border-t-blue-500">
                     <!-- Image Container -->
                     <div class="relative w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
                         @if($event->event_image)
@@ -268,15 +304,25 @@
                             </div>
                         @endif
 
-                        <!-- ✅ Status Badge -->
+                        <!-- Status Badge -->
                         <div class="absolute top-3 right-3">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $badgeInfo['bgColor'] }} {{ $badgeInfo['textColor'] }}">
                                 {{ $badgeInfo['label'] }}
                             </span>
                         </div>
+
+                        <!-- Capacity Bar -->
+                        @if($event->max_attendees)
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-3">
+                                <div class="w-full bg-gray-300 rounded-full h-1.5">
+                                    <div class="bg-blue-600 h-1.5 rounded-full" style="width: {{ $capacityPercent }}%"></div>
+                                </div>
+                                <p class="text-xs text-white mt-1">{{ $registrationCount }}/{{ $event->max_attendees }} registered</p>
+                            </div>
+                        @endif
                     </div>
 
-                    <!-- Content Container -->
+                    <!-- Content -->
                     <div class="p-5 flex flex-col flex-grow">
                         <h3 class="text-base font-bold text-gray-900 line-clamp-2 mb-3 group-hover:text-blue-600 transition-colors">
                             {{ $event->title }}
@@ -294,13 +340,7 @@
                                 <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
-                                <p class="text-gray-700">
-                                    @if($event->is_multiday && $event->end_date)
-                                        {{ $event->event_date?->format('M d') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('M d, Y') }}
-                                    @else
-                                        {{ $event->event_date?->format('M d, Y') }}
-                                    @endif
-                                </p>
+                                <p class="text-gray-700">{{ $event->event_date?->format('M d, Y') }}</p>
                             </div>
 
                             <div class="flex items-center space-x-2">
@@ -336,7 +376,6 @@
                 </div>
             </a>
         @empty
-            <!-- Empty State -->
             <div class="col-span-full bg-white rounded-lg shadow-md p-16 text-center">
                 <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 9l2 2 4-4M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
