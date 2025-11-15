@@ -6,6 +6,13 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\ActivityLog;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Mail\Mailable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Mail\Envelope;
+use Illuminate\Mail\Content;
+use Illuminate\Http\Request;
+
 
 class EventRegistrationController extends Controller
 {
@@ -17,12 +24,17 @@ class EventRegistrationController extends Controller
         $this->authorizeEventOwner($event);
 
         $registrations = $event->registrations()
-            ->with('user:id,first_name,last_name,email')
+            ->with([
+                'user:id,first_name,last_name,email,role',
+                'user.studentProfile:id,user_id,student_id',
+                'user.alumniProfile:id,user_id'
+            ])
             ->latest('created_at')
             ->paginate(20);
 
         return view('users.staff.events.registrations.index', compact('event', 'registrations'));
     }
+
 
     /**
      * Export registrations to CSV
@@ -151,6 +163,72 @@ class EventRegistrationController extends Controller
     {
         if ($event->created_by !== auth()->id()) {
             abort(403, 'Unauthorized action');
+        }
+    }
+    /**
+     * Send email to multiple registrants
+     */
+    public function sendEmail(Event $event, Request $request)
+    {
+        $this->authorizeEventOwner($event);
+
+        try {
+            $request->validate([
+                'recipients' => 'required|json',
+                'subject' => 'required|string|max:255',
+                'message' => 'required|string',
+            ]);
+
+            $recipients = json_decode($request->recipients, true);
+            $subject = $request->input('subject');
+            $message = $request->input('message');
+
+            if (empty($recipients)) {
+                return redirect()->back()->with('error', 'No recipients selected.');
+            }
+
+            // Send emails
+            foreach ($recipients as $email) {
+                try {
+                    Mail::raw($message, function ($mail) use ($email, $subject) {
+                        $mail->to($email)
+                            ->subject($subject)
+                            ->from(config('mail.from.address'), config('mail.from.name'));
+                    });
+                } catch (\Exception $e) {
+                    \Log::error("Failed to send email to {$email}: " . $e->getMessage());
+                }
+            }
+
+            // ✅ LOG ACTIVITY
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'created',
+                'subject_type' => Event::class,
+                'subject_id' => $event->id,
+                'description' => "Sent email notification to " . count($recipients) . " participant(s) for event: {$event->title} (Subject: {$subject})",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            return redirect()->back()->with('success', 'Email sent successfully to ' . count($recipients) . ' participant(s).');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->back()->withErrors($e->errors())->with('error', 'Validation failed');
+        } catch (\Exception $e) {
+            \Log::error('Failed to send bulk email: ' . $e->getMessage());
+
+            // ✅ LOG ACTIVITY - Error
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'failed',
+                'subject_type' => Event::class,
+                'subject_id' => $event->id,
+                'description' => "Failed to send email for event: {$event->title}. Error: {$e->getMessage()}",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to send email. Please try again.');
         }
     }
 }

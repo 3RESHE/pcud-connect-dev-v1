@@ -279,10 +279,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::post('/{event}/mark-ongoing', [EventController::class, 'markOngoing'])->name('mark-ongoing');
             Route::post('/{event}/mark-completed', [EventController::class, 'markCompleted'])->name('mark-completed');
 
+
             // REGISTRATION MANAGEMENT (NEW CONTROLLER)
             Route::prefix('{event}/registrations')->name('registrations.')->group(function () {
                 Route::get('/', [EventRegistrationController::class, 'index'])->name('index');
                 Route::get('/export', [EventRegistrationController::class, 'export'])->name('export');
+                Route::post('/send-email', [EventRegistrationController::class, 'sendEmail'])->name('send-email');
                 Route::get('/{registration}', [EventRegistrationController::class, 'show'])->name('show');
                 Route::post('/{registration}/confirm', [EventRegistrationController::class, 'confirm'])->name('confirm');
                 Route::post('/{registration}/cancel', [EventRegistrationController::class, 'cancel'])->name('cancel');
