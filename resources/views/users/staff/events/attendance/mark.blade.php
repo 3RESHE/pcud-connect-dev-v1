@@ -13,6 +13,25 @@
     </a>
 </div>
 
+<!-- ✅ ERROR MESSAGE ALERT -->
+@if ($errors->any())
+<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+    <div class="flex items-start gap-3">
+        <svg class="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+        <div class="flex-1">
+            <h3 class="text-sm font-medium text-red-800">Error adding participant</h3>
+            <ul class="mt-2 list-disc list-inside text-sm text-red-700 space-y-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- Page Header -->
 <div class="mb-8">
     <div class="flex items-center justify-between">
@@ -161,9 +180,7 @@
                             </div>
                             <div>
                                 <p class="font-medium text-gray-900 text-base">{{ $registration->user->first_name }} {{ $registration->user->last_name }}</p>
-                                @if($registration->user_type === 'student' && $registration->user->studentProfile)
-                                    <p class="text-gray-500 text-sm">ID: {{ $registration->user->studentProfile->student_id }}</p>
-                                @elseif($registration->user_type === 'alumni')
+                                @if($registration->user_type === 'alumni')
                                     <p class="text-gray-500 text-sm">Alumni</p>
                                 @endif
                             </div>
@@ -252,9 +269,9 @@
     @endif
 </div>
 
-<!-- ✅ WALK-IN MODAL WITH STUDENT/ALUMNI TABS -->
+<!-- ✅ WALK-IN MODAL - No Student ID, Form Persistence -->
 <div id="walkinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         <!-- Modal Header -->
         <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
             <h2 class="text-xl font-bold text-gray-900">Add Walk-in Participant</h2>
@@ -298,7 +315,7 @@
                 @csrf
                 <input type="hidden" name="user_type" value="student">
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
                         <input type="text" name="first_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Juan">
@@ -307,31 +324,9 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
                         <input type="text" name="last_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Dela Cruz">
                     </div>
-                    <div class="col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Student ID <span class="text-red-500">*</span></label>
-                        <input type="text" name="student_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="2021-12345">
-                    </div>
-                    <div class="col-span-2">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-500">*</span></label>
                         <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="student@pcu.edu.ph">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone <span class="text-gray-400">(Optional)</span></label>
-                        <input type="tel" name="phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="+63 912 345 6789">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Year Level <span class="text-gray-400">(Optional)</span></label>
-                        <select name="year_level" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            <option value="">Select Year</option>
-                            <option value="1st Year">1st Year</option>
-                            <option value="2nd Year">2nd Year</option>
-                            <option value="3rd Year">3rd Year</option>
-                            <option value="4th Year">4th Year</option>
-                        </select>
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes <span class="text-gray-400">(Optional)</span></label>
-                        <textarea name="notes" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Any special requirements..."></textarea>
                     </div>
                 </div>
 
@@ -351,7 +346,7 @@
                 @csrf
                 <input type="hidden" name="user_type" value="alumni">
 
-                <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">First Name <span class="text-red-500">*</span></label>
                         <input type="text" name="first_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Maria">
@@ -360,21 +355,9 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Last Name <span class="text-red-500">*</span></label>
                         <input type="text" name="last_name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Santos">
                     </div>
-                    <div class="col-span-2">
+                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Email <span class="text-red-500">*</span></label>
                         <input type="email" name="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="alumni@pcu.edu.ph">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Phone <span class="text-gray-400">(Optional)</span></label>
-                        <input type="tel" name="phone" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="+63 912 345 6789">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Graduation Year <span class="text-gray-400">(Optional)</span></label>
-                        <input type="number" name="graduation_year" min="1990" max="2099" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="2020">
-                    </div>
-                    <div class="col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Notes <span class="text-gray-400">(Optional)</span></label>
-                        <textarea name="notes" rows="2" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent" placeholder="Any special requirements..."></textarea>
                     </div>
                 </div>
 
@@ -411,7 +394,7 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-900" id="detailName">Juan Dela Cruz</h3>
-                        <p class="text-gray-600" id="detailSubtitle">Student ID: 2021-12345</p>
+                        <p class="text-gray-600" id="detailSubtitle">Participant</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
@@ -434,6 +417,35 @@
 
 <!-- JavaScript Functions -->
 <script>
+// ✅ Store form data in localStorage when user types
+function saveFormData(formId) {
+    const form = document.getElementById(formId);
+    const formData = new FormData(form);
+    const dataObj = {
+        first_name: formData.get('first_name'),
+        last_name: formData.get('last_name'),
+        email: formData.get('email')
+    };
+    localStorage.setItem(formId + '_data', JSON.stringify(dataObj));
+}
+
+// ✅ Restore form data from localStorage when modal opens
+function restoreFormData(formId) {
+    const savedData = localStorage.getItem(formId + '_data');
+    if (savedData) {
+        const dataObj = JSON.parse(savedData);
+        document.querySelector(`#${formId} input[name="first_name"]`).value = dataObj.first_name || '';
+        document.querySelector(`#${formId} input[name="last_name"]`).value = dataObj.last_name || '';
+        document.querySelector(`#${formId} input[name="email"]`).value = dataObj.email || '';
+    }
+}
+
+// ✅ Save data on input events
+document.addEventListener('input', function(e) {
+    if (e.target.closest('#studentForm')) saveFormData('studentForm');
+    if (e.target.closest('#alumniForm')) saveFormData('alumniForm');
+});
+
 function filterTable() {
     const searchInput = document.getElementById('searchInput').value.toLowerCase();
     const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
@@ -452,7 +464,6 @@ function filterTable() {
 
 function markAllAttended() {
     if (confirm('Mark all registered participants as attended?')) {
-        // This would need AJAX implementation for better UX
         alert('Feature to be implemented with AJAX for better UX');
     }
 }
@@ -461,34 +472,28 @@ function exportAttendance() {
     window.location.href = "{{ route('staff.events.attendance.export', $event->id) }}";
 }
 
-// Walk-in Modal Functions
 function openWalkinModal() {
     document.getElementById('walkinModal').classList.remove('hidden');
-    switchTab('student'); // Open on student tab by default
+    switchTab('student');
+    // ✅ Restore saved form data
+    restoreFormData('studentForm');
+    restoreFormData('alumniForm');
 }
 
 function closeWalkinModal() {
     document.getElementById('walkinModal').classList.add('hidden');
-    resetWalkinForms(); // Reset forms when closing
-}
-
-function resetWalkinForms() {
-    document.getElementById('studentForm').reset();
-    document.getElementById('alumniForm').reset();
+    // ✅ DO NOT reset forms - keep data for next time
 }
 
 function switchTab(tab) {
-    // Hide both forms
     document.getElementById('studentForm').classList.add('hidden');
     document.getElementById('alumniForm').classList.add('hidden');
 
-    // Reset tab styles
     document.getElementById('studentTab').classList.remove('border-blue-600', 'text-blue-600');
     document.getElementById('studentTab').classList.add('border-transparent', 'text-gray-600');
     document.getElementById('alumniTab').classList.remove('border-purple-600', 'text-purple-600');
     document.getElementById('alumniTab').classList.add('border-transparent', 'text-gray-600');
 
-    // Show selected tab
     if (tab === 'student') {
         document.getElementById('studentForm').classList.remove('hidden');
         document.getElementById('studentTab').classList.remove('border-transparent', 'text-gray-600');
@@ -500,7 +505,6 @@ function switchTab(tab) {
     }
 }
 
-// Details Modal Functions
 function openDetailsModal(name, email) {
     const initials = name.split(' ').map(n => n[0]).join('');
     document.getElementById('detailInitials').textContent = initials.substring(0, 2);
@@ -513,7 +517,6 @@ function closeDetailsModal() {
     document.getElementById('detailsModal').classList.add('hidden');
 }
 
-// Close modals when clicking outside
 document.addEventListener('click', function(event) {
     const walkinModal = document.getElementById('walkinModal');
     const detailsModal = document.getElementById('detailsModal');
@@ -526,12 +529,17 @@ document.addEventListener('click', function(event) {
     }
 });
 
-// Close modal with Escape key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeWalkinModal();
         closeDetailsModal();
     }
+});
+
+// ✅ Restore form data on page load
+window.addEventListener('load', function() {
+    restoreFormData('studentForm');
+    restoreFormData('alumniForm');
 });
 </script>
 

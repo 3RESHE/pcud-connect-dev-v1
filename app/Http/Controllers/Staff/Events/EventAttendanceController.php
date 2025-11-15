@@ -6,8 +6,10 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\ActivityLog;
 use App\Models\User;
+use App\Models\Department;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+
 
 class EventAttendanceController extends Controller
 {
@@ -45,7 +47,9 @@ class EventAttendanceController extends Controller
     }
 
     /**
-     * ✅ NEW: Add walk-in participant and mark attendance
+     * ✅ Add walk-in participant and mark attendance
+     * Simplified: Only name and email (student_id removed)
+     * For students: Assigns default "N/A" department
      */
     public function storeWalkin(Event $event, Request $request)
     {
@@ -58,102 +62,52 @@ class EventAttendanceController extends Controller
 
         $userType = $request->input('user_type');
 
-        // Validate based on user type
-        if ($userType === 'student') {
-            $validated = $request->validate([
-                'user_type' => 'required|in:student,alumni',
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'student_id' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
-                'phone' => 'nullable|string|max:20',
-                'year_level' => 'nullable|string|max:50',
-                'notes' => 'nullable|string',
-            ]);
-        } else {
-            $validated = $request->validate([
-                'user_type' => 'required|in:student,alumni',
-                'first_name' => 'required|string|max:255',
-                'last_name' => 'required|string|max:255',
-                'email' => 'required|email|max:255',
-                'phone' => 'nullable|string|max:20',
-                'graduation_year' => 'nullable|integer|min:1990|max:2099',
-                'notes' => 'nullable|string',
-            ]);
-        }
+        // Validate - SAME for both student and alumni (no student_id required)
+        $validated = $request->validate([
+            'user_type' => 'required|in:student,alumni',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255|unique:users,email',
+        ]);
 
         try {
-            // Check if user already exists
-            $user = User::where('email', $validated['email'])->first();
-
-            if (!$user) {
-                // Create new user for walk-in
-                $user = User::create([
-                    'first_name' => $validated['first_name'],
-                    'last_name' => $validated['last_name'],
-                    'email' => $validated['email'],
-                    'password' => bcrypt('temporary_password_' . time()), // Temporary password
-                    'role' => $userType === 'student' ? 'student' : 'alumni',
-                    'is_active' => true,
-                ]);
-
-                // If student, add phone to profile if provided
-                if ($userType === 'student' && $validated['phone']) {
-                    $user->studentProfile()->updateOrCreate(
-                        ['user_id' => $user->id],
-                        ['phone' => $validated['phone']]
-                    );
-                }
-                // If alumni, add phone to profile if provided
-                elseif ($userType === 'alumni' && $validated['phone']) {
-                    $user->alumniProfile()->updateOrCreate(
-                        ['user_id' => $user->id],
-                        ['phone' => $validated['phone']]
-                    );
-                }
+            // ✅ For students: Get or create default "N/A" department
+            $department = null;
+            if ($userType === 'student') {
+                $department = Department::firstOrCreate(
+                    ['code' => 'N/A'],
+                    ['title' => 'Not Assigned']
+                );
             }
 
-            // Check if registration already exists
-            $existingRegistration = EventRegistration::where([
-                'event_id' => $event->id,
-                'user_id' => $user->id,
-            ])->first();
+            // Create new user for walk-in
+            $userData = [
+                'first_name' => $validated['first_name'],
+                'last_name' => $validated['last_name'],
+                'email' => $validated['email'],
+                'password' => bcrypt('temp_' . time()),
+                'role' => $userType === 'student' ? 'student' : 'alumni',
+                'is_active' => true,
+            ];
 
-            if ($existingRegistration) {
-                // Update existing registration to attended
-                if ($existingRegistration->attendance_status !== 'attended') {
-                    $previousStatus = $existingRegistration->attendance_status;
-                    $existingRegistration->update([
-                        'attendance_status' => 'attended',
-                        'checked_in_at' => now(),
-                    ]);
-
-                    // Log activity
-                    ActivityLog::create([
-                        'user_id' => auth()->id(),
-                        'action' => 'updated',
-                        'subject_type' => EventRegistration::class,
-                        'subject_id' => $existingRegistration->id,
-                        'description' => "Updated walk-in attendance from '{$previousStatus}' to 'attended' for {$user->first_name} {$user->last_name} - Event: {$event->title}",
-                        'ip_address' => $request->ip(),
-                        'user_agent' => $request->userAgent(),
-                    ]);
-                }
-
-                return redirect()->back()->with('success', 'Walk-in participant already registered. Attendance marked!');
+            // ✅ Add department_id for students
+            if ($userType === 'student' && $department) {
+                $userData['department_id'] = $department->id;
             }
+
+            $user = User::create($userData);
 
             // Create new registration for walk-in
             $registration = EventRegistration::create([
                 'event_id' => $event->id,
                 'user_id' => $user->id,
                 'user_type' => $validated['user_type'],
-                'registration_type' => 'walkin', // Mark as walk-in registration
-                'attendance_status' => 'attended', // Automatically mark as attended
+                'registration_type' => 'walkin',
+                'attendance_status' => 'attended',
                 'checked_in_at' => now(),
             ]);
 
-            // ✅ LOG ACTIVITY
+            // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'created',
@@ -165,10 +119,11 @@ class EventAttendanceController extends Controller
             ]);
 
             return redirect()->back()->with('success', "Walk-in participant {$user->first_name} {$user->last_name} added and checked in successfully!");
+
         } catch (\Exception $e) {
             \Log::error('Walk-in registration error: ' . $e->getMessage());
 
-            // ✅ LOG ACTIVITY - Error
+            // Log activity - Error
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'failed',
@@ -179,7 +134,7 @@ class EventAttendanceController extends Controller
                 'user_agent' => $request->userAgent(),
             ]);
 
-            return redirect()->back()->with('error', 'Failed to add walk-in participant. Please try again.');
+            return redirect()->back()->withErrors(['error' => 'Failed to add walk-in participant: ' . $e->getMessage()]);
         }
     }
 
@@ -217,7 +172,7 @@ class EventAttendanceController extends Controller
             'checked_in_at' => $checkedInTime,
         ]);
 
-        // ✅ LOG ACTIVITY
+        // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => 'updated',
@@ -264,7 +219,7 @@ class EventAttendanceController extends Controller
                 }
             }
 
-            // ✅ LOG ACTIVITY
+            // Log activity
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'updated',
@@ -373,7 +328,7 @@ class EventAttendanceController extends Controller
             fclose($file);
         };
 
-        // ✅ LOG ACTIVITY
+        // Log activity
         ActivityLog::create([
             'user_id' => auth()->id(),
             'action' => 'exported',
