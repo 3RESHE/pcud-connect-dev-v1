@@ -98,6 +98,38 @@
     </div>
 </div>
 
+<!-- ✅ HELPER FUNCTION: Get Event Status Badge -->
+@php
+    $getEventStatusBadge = function($event) {
+        if ($event->status === 'completed') {
+            return [
+                'label' => 'Completed Event',
+                'color' => 'bg-gray-600',
+                'textColor' => 'text-gray-900',
+                'bgColor' => 'bg-gray-100',
+                'icon' => '✓'
+            ];
+        } elseif ($event->status === 'ongoing') {
+            return [
+                'label' => 'Ongoing Event',
+                'color' => 'bg-orange-600',
+                'textColor' => 'text-orange-900',
+                'bgColor' => 'bg-orange-100',
+                'icon' => '●'
+            ];
+        } else {
+            // published
+            return [
+                'label' => 'Upcoming Event',
+                'color' => 'bg-green-600',
+                'textColor' => 'text-green-900',
+                'bgColor' => 'bg-green-100',
+                'icon' => '→'
+            ];
+        }
+    };
+@endphp
+
 <!-- Featured Events Section -->
 @php
     $featuredEvents = $events->where('is_featured', true)->take(4);
@@ -115,6 +147,9 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             @foreach($featuredEvents as $event)
+                @php
+                    $badgeInfo = $getEventStatusBadge($event);
+                @endphp
                 <a href="{{ route('events.show', $event->id) }}" class="group block">
                     <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col border-t-4 border-t-yellow-500 cursor-pointer">
                         <!-- Image Container -->
@@ -129,13 +164,19 @@
                                 </div>
                             @endif
 
-                            <!-- Featured Badge -->
-                            <div class="absolute top-3 right-3">
+                            <!-- Status and Featured Badges -->
+                            <div class="absolute top-3 right-3 flex flex-col gap-2">
+                                <!-- Featured Badge -->
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-yellow-400 text-yellow-900">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                     </svg>
                                     Featured
+                                </span>
+
+                                <!-- ✅ Status Badge -->
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $badgeInfo['bgColor'] }} {{ $badgeInfo['textColor'] }}">
+                                    {{ $badgeInfo['label'] }}
                                 </span>
                             </div>
                         </div>
@@ -158,7 +199,13 @@
                                     <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
-                                    <p class="text-gray-700">{{ $event->event_date?->format('M d, Y') }}</p>
+                                    <p class="text-gray-700">
+                                        @if($event->is_multiday && $event->end_date)
+                                            {{ $event->event_date?->format('M d') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('M d, Y') }}
+                                        @else
+                                            {{ $event->event_date?->format('M d, Y') }}
+                                        @endif
+                                    </p>
                                 </div>
 
                                 <div class="flex items-center space-x-2">
@@ -204,6 +251,9 @@
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         @forelse($events as $event)
+            @php
+                $badgeInfo = $getEventStatusBadge($event);
+            @endphp
             <a href="{{ route('events.show', $event->id) }}" class="group block">
                 <div class="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden h-full flex flex-col border-t-4 border-t-blue-500 cursor-pointer">
                     <!-- Image Container -->
@@ -217,6 +267,13 @@
                                 </svg>
                             </div>
                         @endif
+
+                        <!-- ✅ Status Badge -->
+                        <div class="absolute top-3 right-3">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold {{ $badgeInfo['bgColor'] }} {{ $badgeInfo['textColor'] }}">
+                                {{ $badgeInfo['label'] }}
+                            </span>
+                        </div>
                     </div>
 
                     <!-- Content Container -->
@@ -237,7 +294,13 @@
                                 <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
-                                <p class="text-gray-700">{{ $event->event_date?->format('M d, Y') }}</p>
+                                <p class="text-gray-700">
+                                    @if($event->is_multiday && $event->end_date)
+                                        {{ $event->event_date?->format('M d') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('M d, Y') }}
+                                    @else
+                                        {{ $event->event_date?->format('M d, Y') }}
+                                    @endif
+                                </p>
                             </div>
 
                             <div class="flex items-center space-x-2">

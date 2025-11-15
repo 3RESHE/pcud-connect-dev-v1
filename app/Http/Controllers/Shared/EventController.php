@@ -4,20 +4,21 @@ namespace App\Http\Controllers\Shared;
 
 use App\Models\Event;
 use App\Models\EventRegistration;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
 class EventController extends Controller
 {
     /**
-     * Display a listing of published events
+     * Display a listing of events (published, ongoing, completed)
      */
     public function index(Request $request)
     {
         $user = auth()->user();
 
-        // Base query for published events
-        $query = Event::where('status', 'published')
+        // ✅ UPDATED: Show published, ongoing, and completed events
+        $query = Event::whereIn('status', ['published', 'ongoing', 'completed'])
             ->with(['creator', 'registrations'])
             ->orderBy('event_date', 'asc');
 
@@ -54,23 +55,7 @@ class EventController extends Controller
             ->toArray();
 
         // Get event statistics
-        $stats = [
-            'total' => Event::where('status', 'published')
-                ->when($user->role === 'student', fn($q) => $q->whereIn('target_audience', ['allstudents', 'openforall']))
-                ->when($user->role === 'alumni', fn($q) => $q->whereIn('target_audience', ['alumni', 'openforall']))
-                ->count(),
-            'upcoming' => Event::where('status', 'published')
-                ->where('event_date', '>=', now()->toDateString())
-                ->when($user->role === 'student', fn($q) => $q->whereIn('target_audience', ['allstudents', 'openforall']))
-                ->when($user->role === 'alumni', fn($q) => $q->whereIn('target_audience', ['alumni', 'openforall']))
-                ->count(),
-            'past' => Event::where('status', 'published')
-                ->where('event_date', '<', now()->toDateString())
-                ->when($user->role === 'student', fn($q) => $q->whereIn('target_audience', ['allstudents', 'openforall']))
-                ->when($user->role === 'alumni', fn($q) => $q->whereIn('target_audience', ['alumni', 'openforall']))
-                ->count(),
-            'registered' => count($registeredEventIds),
-        ];
+        $stats = $this->getEventStats($user);
 
         return view('shared.events.index', [
             'events' => $events,
@@ -83,16 +68,29 @@ class EventController extends Controller
     }
 
     /**
-     * Display a specific published event
+     * Display a specific event (published, ongoing, completed)
      */
     public function show(Event $event)
     {
-        // Verify event is published
-        if ($event->status !== 'published') {
+        // ✅ UPDATED: Allow viewing of published, ongoing, and completed events
+        if (!in_array($event->status, ['published', 'ongoing', 'completed'])) {
             abort(404, 'Event not found');
         }
 
         $user = auth()->user();
+
+        // Check if user role is allowed for this event's target audience
+        $allowedAudiences = ['openforall'];
+        if ($user->role === 'student') {
+            $allowedAudiences[] = 'allstudents';
+        }
+        if ($user->role === 'alumni') {
+            $allowedAudiences[] = 'alumni';
+        }
+
+        if (!in_array($event->target_audience, $allowedAudiences)) {
+            abort(403, 'You do not have access to this event');
+        }
 
         // Check if user is registered for this event
         $isRegistered = $event->registrations()
@@ -107,11 +105,20 @@ class EventController extends Controller
                 ->first();
         }
 
-        // Get similar published events
-        $similarEvents = Event::where('status', 'published')
+        // ✅ UPDATED: Get similar events (published, ongoing, completed) - multi-day support
+        $similarEvents = Event::whereIn('status', ['published', 'ongoing', 'completed'])
             ->where('event_format', $event->event_format)
             ->where('id', '!=', $event->id)
-            ->where('event_date', '>=', now()->toDateString())
+            ->where(function ($q) {
+                $q->where(function ($singleDay) {
+                    $singleDay->where('is_multiday', false)
+                        ->where('event_date', '>=', today());
+                })
+                ->orWhere(function ($multiDay) {
+                    $multiDay->where('is_multiday', true)
+                        ->where('end_date', '>=', today());
+                });
+            })
             ->orderBy('event_date', 'asc')
             ->limit(3)
             ->get();
@@ -139,12 +146,25 @@ class EventController extends Controller
      */
     public function register(Request $request, Event $event)
     {
-        // Verify event is published
-        if ($event->status !== 'published') {
+        // ✅ UPDATED: Allow registration for published and ongoing events only
+        if (!in_array($event->status, ['published', 'ongoing'])) {
             return redirect()->back()->with('error', 'This event is not available for registration');
         }
 
         $user = auth()->user();
+
+        // Check if user role is allowed
+        $allowedAudiences = ['openforall'];
+        if ($user->role === 'student') {
+            $allowedAudiences[] = 'allstudents';
+        }
+        if ($user->role === 'alumni') {
+            $allowedAudiences[] = 'alumni';
+        }
+
+        if (!in_array($event->target_audience, $allowedAudiences)) {
+            return redirect()->back()->with('error', 'You do not have permission to register for this event');
+        }
 
         // Check if already registered
         if ($event->registrations()->where('user_id', $user->id)->exists()) {
@@ -198,9 +218,13 @@ class EventController extends Controller
             return redirect()->back()->with('error', 'You are not registered for this event');
         }
 
-        // Check if event has already started
-        if ($event->event_date <= now()->toDateString()) {
-            return redirect()->back()->with('error', 'Cannot unregister from events that have already started');
+        // ✅ UPDATED: Check end_date for multi-day events
+        $eventEndDate = $event->is_multiday && $event->end_date
+            ? $event->end_date
+            : $event->event_date;
+
+        if ($eventEndDate <= today()) {
+            return redirect()->back()->with('error', 'Cannot unregister from events that have already started or ended');
         }
 
         try {
@@ -216,44 +240,145 @@ class EventController extends Controller
     }
 
     /**
-     * Show user's event registrations
+     * ✅ UPDATED: Show user's event registrations with tabs (All, Upcoming, Ongoing, Completed)
      */
     public function myRegistrations(Request $request)
     {
         $user = auth()->user();
+        $filter = $request->get('filter', 'all');
 
-        // Get all user registrations with event details
+        // ✅ UPDATED: Show registrations based on filter
         $registrations = $user->eventRegistrations()
             ->with('event')
-            ->when($request->get('filter') === 'upcoming', function ($q) {
+            ->when($filter === 'upcoming', function ($q) {
                 $q->whereHas('event', function ($eq) {
-                    $eq->where('event_date', '>=', now()->toDateString());
+                    $eq->where(function ($subQuery) {
+                        $subQuery->where(function ($singleDay) {
+                            $singleDay->where('is_multiday', false)
+                                ->where('event_date', '>=', today());
+                        })
+                        ->orWhere(function ($multiDay) {
+                            $multiDay->where('is_multiday', true)
+                                ->where('end_date', '>=', today());
+                        });
+                    })->where('status', 'published');
                 });
             })
-            ->when($request->get('filter') === 'past', function ($q) {
+            ->when($filter === 'ongoing', function ($q) {
                 $q->whereHas('event', function ($eq) {
-                    $eq->where('event_date', '<', now()->toDateString());
+                    $eq->where('status', 'ongoing');
+                });
+            })
+            ->when($filter === 'completed', function ($q) {
+                $q->whereHas('event', function ($eq) {
+                    $eq->where(function ($subQuery) {
+                        $subQuery->where('status', 'completed')
+                            ->orWhere(function ($dateQuery) {
+                                $dateQuery->where('is_multiday', false)
+                                    ->where('event_date', '<', today());
+                            })
+                            ->orWhere(function ($multiDayQuery) {
+                                $multiDayQuery->where('is_multiday', true)
+                                    ->where('end_date', '<', today());
+                            });
+                    });
                 });
             })
             ->orderByDesc('created_at')
             ->paginate(10);
 
-        // Calculate registration statistics
+        // ✅ UPDATED: Calculate statistics for all four tabs
         $stats = [
             'total' => $user->eventRegistrations()->count(),
             'upcoming' => $user->eventRegistrations()
-                ->whereHas('event', fn($q) => $q->where('event_date', '>=', now()->toDateString()))
+                ->whereHas('event', function ($q) {
+                    $q->where('status', 'published')
+                        ->where(function ($subQuery) {
+                            $subQuery->where(function ($singleDay) {
+                                $singleDay->where('is_multiday', false)
+                                    ->where('event_date', '>=', today());
+                            })
+                            ->orWhere(function ($multiDay) {
+                                $multiDay->where('is_multiday', true)
+                                    ->where('end_date', '>=', today());
+                            });
+                        });
+                })
                 ->count(),
-            'past' => $user->eventRegistrations()
-                ->whereHas('event', fn($q) => $q->where('event_date', '<', now()->toDateString()))
+            'ongoing' => $user->eventRegistrations()
+                ->whereHas('event', function ($q) {
+                    $q->where('status', 'ongoing');
+                })
+                ->count(),
+            'completed' => $user->eventRegistrations()
+                ->whereHas('event', function ($q) {
+                    $q->where(function ($subQuery) {
+                        $subQuery->where('status', 'completed')
+                            ->orWhere(function ($dateQuery) {
+                                $dateQuery->where('is_multiday', false)
+                                    ->where('event_date', '<', today());
+                            })
+                            ->orWhere(function ($multiDayQuery) {
+                                $multiDayQuery->where('is_multiday', true)
+                                    ->where('end_date', '<', today());
+                            });
+                    });
+                })
                 ->count(),
         ];
 
         return view('shared.events.registrations', [
             'registrations' => $registrations,
             'userRole' => $user->role,
-            'filter' => $request->get('filter', 'all'),
+            'filter' => $filter,
             'stats' => $stats,
         ]);
+    }
+
+    /**
+     * ✅ UPDATED: Get event statistics helper method
+     */
+    private function getEventStats($user)
+    {
+        // ✅ UPDATED: Include published, ongoing, and completed events
+        $baseQuery = Event::whereIn('status', ['published', 'ongoing', 'completed'])
+            ->when($user->role === 'student', fn($q) => $q->whereIn('target_audience', ['allstudents', 'openforall']))
+            ->when($user->role === 'alumni', fn($q) => $q->whereIn('target_audience', ['alumni', 'openforall']));
+
+        return [
+            'total' => (clone $baseQuery)->count(),
+            'upcoming' => (clone $baseQuery)
+                ->where('status', 'published')
+                ->where(function ($q) {
+                    $q->where(function ($singleDay) {
+                        $singleDay->where('is_multiday', false)
+                            ->where('event_date', '>=', today());
+                    })
+                    ->orWhere(function ($multiDay) {
+                        $multiDay->where('is_multiday', true)
+                            ->where('end_date', '>=', today());
+                    });
+                })
+                ->count(),
+            'ongoing' => (clone $baseQuery)
+                ->where('status', 'ongoing')
+                ->count(),
+            'completed' => (clone $baseQuery)
+                ->where('status', 'completed')
+                ->count(),
+            'past' => (clone $baseQuery)
+                ->where(function ($q) {
+                    $q->where(function ($singleDay) {
+                        $singleDay->where('is_multiday', false)
+                            ->where('event_date', '<', today());
+                    })
+                    ->orWhere(function ($multiDay) {
+                        $multiDay->where('is_multiday', true)
+                            ->where('end_date', '<', today());
+                    });
+                })
+                ->count(),
+            'registered' => $user->eventRegistrations()->count(),
+        ];
     }
 }

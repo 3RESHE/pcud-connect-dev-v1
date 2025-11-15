@@ -34,7 +34,7 @@
                 <div class="ml-4">
                     <h3 class="text-base font-medium text-green-800">Registered Successfully!</h3>
                     <p class="mt-2 text-sm text-green-700">
-                        You are registered for this event. Check your email for confirmation and updates.
+                        You are registered for this event. Check your email for confirmation and updates including meeting links.
                     </p>
                 </div>
             </div>
@@ -70,6 +70,10 @@
                             Featured
                         </span>
                     @endif
+                    <!-- ✅ UPCOMING EVENT BADGE -->
+                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-green-600 shadow-lg w-fit">
+                        📅 Upcoming Event
+                    </span>
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-blue-600 shadow-lg w-fit">
                         @if($event->event_format === 'inperson') In-Person
                         @elseif($event->event_format === 'virtual') Virtual
@@ -84,17 +88,16 @@
 <!-- Action Buttons -->
 <div class="container mx-auto px-4 mb-8 flex justify-end">
     <div class="flex space-x-4">
-        @if($isRegistered && $registration->created_at->toDateString() >= now()->toDateString())
-            <form action="{{ route('events.unregister', $event->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel your registration?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="px-8 py-3 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg font-medium flex items-center text-base transition-colors">
-                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                    Cancel Registration
-                </button>
-            </form>
+        @if($isRegistered)
+            <button
+                type="button"
+                onclick="openCancelModal('{{ $event->id }}', '{{ addslashes($event->title) }}')"
+                class="px-8 py-3 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg font-medium flex items-center text-base transition-colors">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Cancel Registration
+            </button>
         @endif
     </div>
 </div>
@@ -142,9 +145,21 @@
                         <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
-                        <span class="text-base font-medium text-gray-700">Start Date</span>
+                        <span class="text-base font-medium text-gray-700">
+                            @if($event->is_multiday && $event->end_date)
+                                Event Duration
+                            @else
+                                Start Date
+                            @endif
+                        </span>
                     </div>
-                    <p class="text-lg font-semibold text-gray-900">{{ $event->event_date->format('F d, Y') }}</p>
+                    <p class="text-lg font-semibold text-gray-900">
+                        @if($event->is_multiday && $event->end_date)
+                            {{ $event->event_date->format('F d, Y') }} - {{ \Carbon\Carbon::parse($event->end_date)->format('F d, Y') }}
+                        @else
+                            {{ $event->event_date->format('F d, Y') }}
+                        @endif
+                    </p>
                 </div>
 
                 <!-- Time -->
@@ -199,26 +214,46 @@
                         <p class="text-base text-gray-500 mb-2 font-medium">🌐 Platform</p>
                         <p class="font-semibold text-gray-900 text-lg">{{ $event->platform === 'other' ? $event->custom_platform : ucfirst($event->platform) }}</p>
                     </div>
-                    @if($event->meeting_link)
-                        <div>
-                            <p class="text-base text-gray-500 mb-2 font-medium">🔗 Meeting Link</p>
-                            <a href="{{ $event->meeting_link }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-colors">
-                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM15.657 14.243a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM11 17a1 1 0 102 0v-1a1 1 0 10-2 0v1zM5.757 15.657a1 1 0 00-1.414-1.414l-.707.707a1 1 0 101.414 1.414l.707-.707zM2 10a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.757 4.343a1 1 0 00-1.414 1.414l.707.707a1 1 0 101.414-1.414l-.707-.707z"></path>
-                                </svg>
-                                Join Meeting
-                            </a>
-                        </div>
-                    @endif
                 @endif
             </div>
+
+            <!-- Meeting Link Info -->
+            @if($isRegistered && in_array($event->event_format, ['virtual', 'hybrid']))
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-blue-900">Meeting Link Coming Soon</p>
+                                <p class="text-sm text-blue-800 mt-1">The event organizer will send you the meeting link and any access details via email before the event starts.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @elseif(!$isRegistered && in_array($event->event_format, ['virtual', 'hybrid']))
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                            <div>
+                                <p class="font-semibold text-yellow-900">Register to Get Meeting Link</p>
+                                <p class="text-sm text-yellow-800 mt-1">Register for this event to receive the meeting link and connection details via email.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
     <!-- Right Sidebar -->
     <div class="space-y-8">
         <!-- Registration Card -->
-        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100 top-6">
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100 sticky top-6">
             <h3 class="text-xl font-bold text-gray-900 mb-6">Register</h3>
 
             @if($isRegistered)
@@ -265,9 +300,9 @@
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
             <h3 class="font-bold text-gray-900 text-xl mb-6">Event Status</h3>
             <div class="space-y-4">
-                <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div class="p-4 bg-green-50 rounded-lg border border-green-200">
                     <p class="text-sm text-gray-500 mb-1 font-medium">Status</p>
-                    <p class="font-semibold text-gray-900 text-lg capitalize">{{ $event->status }}</p>
+                    <p class="font-semibold text-green-700 text-lg">🟢 Upcoming Event</p>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <p class="text-sm text-gray-500 mb-1 font-medium">Registrations</p>
@@ -312,12 +347,83 @@
                         <a href="{{ route('events.show', $similar->id) }}"
                             class="block p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all group">
                             <p class="font-semibold text-gray-900 group-hover:text-blue-600 text-sm line-clamp-2">{{ $similar->title }}</p>
-                            <p class="text-xs text-gray-500 mt-2">📅 {{ $similar->event_date->format('M d, Y') }}</p>
+                            <p class="text-xs text-gray-500 mt-2">
+                                📅
+                                @if($similar->is_multiday && $similar->end_date)
+                                    {{ $similar->event_date->format('M d') }} - {{ \Carbon\Carbon::parse($similar->end_date)->format('M d, Y') }}
+                                @else
+                                    {{ $similar->event_date->format('M d, Y') }}
+                                @endif
+                            </p>
                         </a>
                     @endforeach
                 </div>
             </div>
         @endif
+    </div>
+</div>
+
+<!-- ✅ CANCEL REGISTRATION MODAL -->
+<div id="cancelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in duration-200">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 rounded-t-xl">
+            <div class="flex items-start justify-between">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-white mr-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <h2 class="text-xl font-bold text-white">Cancel Registration</h2>
+                </div>
+                <button onclick="closeCancelModal()" class="text-red-100 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="px-6 py-6">
+            <div class="mb-4">
+                <p class="text-gray-900 font-semibold text-lg">Are you sure?</p>
+            </div>
+            <p class="text-gray-600 mb-4">
+                You are about to cancel your registration for <span class="font-bold text-gray-900" id="eventTitle"></span>
+            </p>
+
+            <!-- Warning Alert -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <svg class="w-5 h-5 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                    </svg>
+                    <div>
+                        <p class="text-sm font-medium text-yellow-800">
+                            This action cannot be undone. You may need to register again if spots are still available.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end gap-3 border-t border-gray-200">
+            <button
+                onclick="closeCancelModal()"
+                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition-colors">
+                Keep Registration
+            </button>
+            <form id="cancelForm" method="POST" style="display: inline;">
+                @csrf
+                @method('DELETE')
+                <button
+                    type="submit"
+                    class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+                    Yes, Cancel Registration
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -330,5 +436,31 @@
         <p class="font-semibold">{{ $errors->first() }}</p>
     </div>
 @endif
+
+<!-- JavaScript for Modal -->
+<script>
+    function openCancelModal(eventId, eventTitle) {
+        document.getElementById('eventTitle').textContent = eventTitle;
+        const actionUrl = `{{ route('events.unregister', ':eventId') }}`.replace(':eventId', eventId);
+        document.getElementById('cancelForm').action = actionUrl;
+        document.getElementById('cancelModal').classList.remove('hidden');
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancelModal').classList.add('hidden');
+    }
+
+    document.getElementById('cancelModal')?.addEventListener('click', function(event) {
+        if (event.target === this) {
+            closeCancelModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && !document.getElementById('cancelModal').classList.contains('hidden')) {
+            closeCancelModal();
+        }
+    });
+</script>
 
 @endsection
