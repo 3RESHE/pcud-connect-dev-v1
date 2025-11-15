@@ -13,7 +13,7 @@
     </a>
 </div>
 
-<!-- PENDING STATUS -->
+<!-- STATUS ALERTS -->
 @if($event->status === 'pending')
     <div class="bg-yellow-50 border-l-4 border-yellow-400 p-6 mb-8 rounded-r-lg">
         <div class="flex items-start">
@@ -31,7 +31,6 @@
         </div>
     </div>
 
-<!-- APPROVED STATUS -->
 @elseif($event->status === 'approved')
     <div class="bg-green-50 border-l-4 border-green-400 p-6 mb-8 rounded-r-lg">
         <div class="flex items-start">
@@ -45,7 +44,6 @@
         </div>
     </div>
 
-<!-- REJECTED STATUS -->
 @elseif($event->status === 'rejected')
     <div class="bg-red-50 border-l-4 border-red-400 p-6 mb-8 rounded-r-lg">
         <div class="flex items-start">
@@ -65,7 +63,6 @@
         </div>
     </div>
 
-<!-- PUBLISHED STATUS -->
 @elseif($event->status === 'published')
     <div class="bg-blue-50 border-l-4 border-blue-400 p-6 mb-8 rounded-r-lg">
         <div class="flex items-start">
@@ -81,7 +78,6 @@
         </div>
     </div>
 
-<!-- ONGOING STATUS -->
 @elseif($event->status === 'ongoing')
     <div class="bg-purple-50 border-l-4 border-purple-400 p-6 mb-8 rounded-r-lg">
         <div class="flex items-start">
@@ -97,7 +93,6 @@
         </div>
     </div>
 
-<!-- COMPLETED STATUS -->
 @elseif($event->status === 'completed')
     <div class="bg-gray-50 border-l-4 border-gray-400 p-6 mb-8 rounded-r-lg">
         <div class="flex items-start">
@@ -124,26 +119,13 @@
         <div class="flex justify-center mb-4 space-x-3 flex-wrap">
             <span class="@if($event->status === 'pending') bg-yellow-100 text-yellow-800 @elseif($event->status === 'approved') bg-green-100 text-green-800 @elseif($event->status === 'rejected') bg-red-100 text-red-800 @elseif($event->status === 'published') bg-blue-100 text-blue-800 @elseif($event->status === 'ongoing') bg-purple-100 text-purple-800 @else bg-gray-100 text-gray-800 @endif px-4 py-1 rounded-full text-base font-medium">
                 @switch($event->status)
-                    @case('pending')
-                        Under Review
-                        @break
-                    @case('approved')
-                        Approved
-                        @break
-                    @case('published')
-                        Published
-                        @break
-                    @case('rejected')
-                        Rejected
-                        @break
-                    @case('ongoing')
-                        Ongoing
-                        @break
-                    @case('completed')
-                        Completed
-                        @break
-                    @default
-                        Draft
+                    @case('pending') Under Review @break
+                    @case('approved') Approved @break
+                    @case('published') Published @break
+                    @case('rejected') Rejected @break
+                    @case('ongoing') Ongoing @break
+                    @case('completed') Completed @break
+                    @default Draft
                 @endswitch
             </span>
             <span class="bg-green-100 text-green-800 px-4 py-1 rounded-full text-base font-medium">
@@ -152,21 +134,19 @@
             @if($event->registration_required)
                 <span class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-base font-medium">Registration Required</span>
             @endif
-            <span class="bg-orange-100 text-orange-800 px-4 py-1 rounded-full text-base font-medium">University Event</span>
         </div>
         <h1 class="text-4xl font-bold text-white mb-4">{{ $event->title }}</h1>
         <p class="text-blue-100 text-lg max-w-3xl mx-auto">{{ $event->description }}</p>
     </div>
 </div>
 
-<!-- Action Buttons - Dynamic based on Status -->
+<!-- Action Buttons -->
 <div class="mb-8 flex justify-end gap-4">
     @if($event->status === 'pending')
-        <!-- PENDING: Edit, Delete -->
         <form action="{{ route('staff.events.destroy', $event->id) }}" method="POST" style="display:inline;">
             @csrf
             @method('DELETE')
-            <button type="submit" onclick="return confirm('Are you sure you want to delete this event?')" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+            <button type="submit" onclick="return confirm('Are you sure?')" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
                 <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                 </svg>
@@ -181,16 +161,6 @@
         </a>
 
     @elseif($event->status === 'approved')
-        <!-- APPROVED: Publish -->
-        <form action="{{ route('staff.events.publish', $event->id) }}" method="POST" style="display:inline;">
-            @csrf
-            <button type="submit" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                Decline
-            </button>
-        </form>
         <form action="{{ route('staff.events.publish', $event->id) }}" method="POST" style="display:inline;">
             @csrf
             <button type="submit" class="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center text-base">
@@ -202,11 +172,10 @@
         </form>
 
     @elseif($event->status === 'rejected')
-        <!-- REJECTED: Edit & Resubmit, Delete -->
         <form action="{{ route('staff.events.destroy', $event->id) }}" method="POST" style="display:inline;">
             @csrf
             @method('DELETE')
-            <button type="submit" onclick="return confirm('Are you sure you want to delete this event?')" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+            <button type="submit" onclick="return confirm('Are you sure?')" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
                 <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                 </svg>
@@ -221,8 +190,7 @@
         </a>
 
     @elseif($event->status === 'published')
-        <!-- PUBLISHED: Manage Registrations, View Attendees, Mark Ongoing -->
-        <a href="{{ route('staff.events.manage-registrations', $event->id) }}" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
+        <a href="{{ route('staff.events.registrations.index', $event->id) }}" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 12H9m6 0a6 6 0 11-12 0 6 6 0 0112 0z"></path>
             </svg>
@@ -239,7 +207,6 @@
         </form>
 
     @elseif($event->status === 'ongoing')
-        <!-- ONGOING: Manage Attendance, Mark Completed -->
         <a href="{{ route('staff.events.manage-attendance', $event->id) }}" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
             <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -255,26 +222,11 @@
                 Mark Completed
             </button>
         </form>
-
-    @elseif($event->status === 'completed')
-        <!-- COMPLETED: View Statistics, Download Report -->
-        <a href="{{ route('staff.events.statistics', $event->id) }}" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base">
-            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-            </svg>
-            View Statistics
-        </a>
-        <a href="{{ route('staff.events.download-report', $event->id) }}" class="px-8 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center text-base">
-            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            Download Report
-        </a>
     @endif
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <!-- Main Content Column -->
+    <!-- Main Content -->
     <div class="lg:col-span-2 space-y-8">
         <!-- Event Information -->
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
@@ -323,16 +275,29 @@
                 </svg>
                 Date & Time
             </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-{{ $event->is_multiday ? '3' : '2' }} gap-6">
                 <div class="p-4 bg-blue-50 rounded-lg">
                     <div class="flex items-center mb-2">
                         <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
-                        <span class="text-base font-medium text-gray-700">Event Date</span>
+                        <span class="text-base font-medium text-gray-700">{{ $event->is_multiday ? 'Start Date' : 'Event Date' }}</span>
                     </div>
                     <p class="text-lg font-semibold text-gray-900">{{ $event->event_date->format('F j, Y') }}</p>
                 </div>
+
+                @if($event->is_multiday && $event->end_date)
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <div class="flex items-center mb-2">
+                            <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span class="text-base font-medium text-gray-700">End Date</span>
+                        </div>
+                        <p class="text-lg font-semibold text-gray-900">{{ \Carbon\Carbon::parse($event->end_date)->format('F j, Y') }}</p>
+                    </div>
+                @endif
+
                 <div class="p-4 bg-blue-50 rounded-lg">
                     <div class="flex items-center mb-2">
                         <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -341,17 +306,8 @@
                         <span class="text-base font-medium text-gray-700">Time</span>
                     </div>
                     <p class="text-lg font-semibold text-gray-900">
-                        {{ $event->formatted_start_time }} - {{ $event->formatted_end_time }}
+                        {{ \Carbon\Carbon::parse($event->start_time)->format('g:i A') }} - {{ \Carbon\Carbon::parse($event->end_time)->format('g:i A') }}
                     </p>
-                </div>
-                <div class="p-4 bg-blue-50 rounded-lg">
-                    <div class="flex items-center mb-2">
-                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        <span class="text-base font-medium text-gray-700">Multi-Day Event</span>
-                    </div>
-                    <p class="text-lg font-semibold text-gray-900">{{ $event->is_multiday ? 'Yes' : 'No' }}</p>
                 </div>
             </div>
         </div>
@@ -396,7 +352,6 @@
                         <div class="md:col-span-2">
                             <p class="text-base text-gray-500 mb-1">Meeting Link</p>
                             <a href="{{ $event->meeting_link }}" target="_blank" class="text-blue-600 font-medium text-lg break-all hover:underline">{{ $event->meeting_link }}</a>
-                            <p class="text-sm text-gray-500 mt-1">This will be shared with registered participants</p>
                         </div>
                     @endif
                 </div>
@@ -413,30 +368,22 @@
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="p-4 bg-blue-50 rounded-lg">
-                    <div class="flex items-center mb-2">
-                        <span class="text-base font-medium text-gray-700">Registration Required</span>
-                    </div>
+                    <span class="text-base font-medium text-gray-700">Registration Required</span>
                     <p class="text-lg font-semibold text-gray-900">{{ $event->registration_required ? 'Yes' : 'No' }}</p>
                 </div>
                 <div class="p-4 bg-blue-50 rounded-lg">
-                    <div class="flex items-center mb-2">
-                        <span class="text-base font-medium text-gray-700">Walk-In Registration</span>
-                    </div>
+                    <span class="text-base font-medium text-gray-700">Walk-In Registration</span>
                     <p class="text-lg font-semibold text-gray-900">{{ $event->walkin_allowed ? 'Allowed' : 'Not Allowed' }}</p>
                 </div>
                 @if($event->registration_deadline)
                     <div class="p-4 bg-yellow-50 rounded-lg">
-                        <div class="flex items-center mb-2">
-                            <span class="text-base font-medium text-gray-700">Registration Deadline</span>
-                        </div>
-                        <p class="text-lg font-semibold text-gray-900">{{ $event->registration_deadline->format('F j, Y') }}</p>
+                        <span class="text-base font-medium text-gray-700">Registration Deadline</span>
+                        <p class="text-lg font-semibold text-gray-900">{{ \Carbon\Carbon::parse($event->registration_deadline)->format('F j, Y') }}</p>
                     </div>
                 @endif
                 @if($event->max_attendees)
                     <div class="p-4 bg-green-50 rounded-lg">
-                        <div class="flex items-center mb-2">
-                            <span class="text-base font-medium text-gray-700">Maximum Attendees</span>
-                        </div>
+                        <span class="text-base font-medium text-gray-700">Maximum Attendees</span>
                         <p class="text-lg font-semibold text-gray-900">{{ $event->max_attendees }}</p>
                     </div>
                 @endif
@@ -451,92 +398,48 @@
                 </svg>
                 Target Audience
             </h2>
-            <div class="space-y-6">
-                <div class="p-4 bg-blue-50 rounded-lg">
-                    <p class="font-semibold text-gray-900 text-lg">Audience Type</p>
-                    <p class="text-gray-700 text-base">
-                        @switch($event->target_audience)
-                            @case('allstudents')
-                                All Students
-                                @break
-                            @case('alumni')
-                                Alumni
-                                @break
-                            @case('openforall')
-                                Open for All (Students, Alumni & Public)
-                                @break
-                            @default
-                                All Students
-                        @endswitch
-                    </p>
-                </div>
+            <div class="p-4 bg-blue-50 rounded-lg">
+                <p class="font-semibold text-gray-900 text-lg">
+                    @switch($event->target_audience)
+                        @case('allstudents') All Students @break
+                        @case('alumni') Alumni @break
+                        @case('openforall') Open for All (Students, Alumni & Public) @break
+                        @default All Students
+                    @endswitch
+                </p>
             </div>
         </div>
     </div>
 
-    <!-- Sidebar Column -->
+    <!-- Sidebar -->
     <div class="space-y-8">
         <!-- Event Status -->
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
             <h3 class="font-bold text-gray-900 text-xl mb-6">Event Status</h3>
             <div class="space-y-6">
                 <div class="p-4 @if($event->status === 'pending') bg-yellow-50 border border-yellow-200 @elseif($event->status === 'approved') bg-green-50 border border-green-200 @elseif($event->status === 'rejected') bg-red-50 border border-red-200 @elseif($event->status === 'published') bg-blue-50 border border-blue-200 @elseif($event->status === 'ongoing') bg-purple-50 border border-purple-200 @else bg-gray-50 @endif rounded-lg">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-base font-medium text-gray-700">Review Status</span>
-                        @if($event->status === 'pending')
-                            <svg class="w-6 h-6 text-yellow-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        @elseif($event->status === 'ongoing')
-                            <svg class="w-6 h-6 text-purple-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2 1m2-1l-2-1m2 1v2.5"></path>
-                            </svg>
-                        @endif
-                    </div>
                     <p class="text-lg font-bold @if($event->status === 'pending') text-yellow-800 @elseif($event->status === 'approved') text-green-800 @elseif($event->status === 'rejected') text-red-800 @elseif($event->status === 'published') text-blue-800 @elseif($event->status === 'ongoing') text-purple-800 @else text-gray-800 @endif">
                         @switch($event->status)
-                            @case('pending')
-                                Under Review
-                                @break
-                            @case('approved')
-                                Approved
-                                @break
-                            @case('published')
-                                Published
-                                @break
-                            @case('rejected')
-                                Rejected
-                                @break
-                            @case('ongoing')
-                                Ongoing
-                                @break
-                            @case('completed')
-                                Completed
-                                @break
-                            @default
-                                Draft
+                            @case('pending') Under Review @break
+                            @case('approved') Approved @break
+                            @case('published') Published @break
+                            @case('rejected') Rejected @break
+                            @case('ongoing') Ongoing @break
+                            @case('completed') Completed @break
+                            @default Draft
                         @endswitch
                     </p>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg">
-                    <p class="text-base text-gray-500 mb-1">Registration</p>
-                    <p class="font-semibold text-gray-900 text-lg">{{ $event->status === 'published' || $event->status === 'ongoing' ? 'Open' : 'Not Yet Open' }}</p>
-                </div>
-                <div class="p-4 bg-gray-50 rounded-lg">
                     <p class="text-base text-gray-500 mb-1">Current Registrations</p>
-                    <p class="font-semibold text-gray-900 text-lg">{{ $event->getTotalRegistrations() }} participants</p>
+                    <p class="font-semibold text-gray-900 text-lg">{{ $event->registrations()->count() }} participants</p>
                 </div>
             </div>
         </div>
 
         <!-- Contact Information -->
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-            <h3 class="font-bold text-gray-900 text-xl mb-6 flex items-center">
-                <svg class="w-6 h-6 mr-3 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-                Contact Information
-            </h3>
+            <h3 class="font-bold text-gray-900 text-xl mb-6">Contact Information</h3>
             <div class="space-y-6">
                 <div>
                     <p class="text-base text-gray-500">Contact Person</p>
@@ -552,27 +455,6 @@
                         <a href="tel:{{ $event->contact_phone }}" class="text-blue-600 hover:underline text-lg">{{ $event->contact_phone }}</a>
                     </div>
                 @endif
-            </div>
-        </div>
-
-        <!-- Additional Information -->
-        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-            <h3 class="font-bold text-gray-900 text-xl mb-6">Additional Information</h3>
-            <div class="space-y-6 text-base">
-                @if($event->special_instructions)
-                    <div class="p-4 bg-blue-50 rounded-lg">
-                        <p class="font-medium text-gray-900 text-lg">Registration Instructions</p>
-                        <p class="text-gray-700 text-base mt-2 whitespace-pre-wrap">{{ $event->special_instructions }}</p>
-                    </div>
-                @endif
-                <div class="p-4 bg-green-50 rounded-lg">
-                    <p class="font-medium text-gray-900 text-lg">Event Image</p>
-                    @if($event->event_image)
-                        <img src="{{ asset($event->event_image) }}" alt="{{ $event->title }}" class="mt-2 h-32 w-full object-cover rounded">
-                    @else
-                        <p class="text-gray-700 text-base mt-2">No image uploaded</p>
-                    @endif
-                </div>
             </div>
         </div>
     </div>

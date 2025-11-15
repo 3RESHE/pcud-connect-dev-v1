@@ -28,6 +28,7 @@ use App\Http\Controllers\Partner\ProfileController as PartnerProfileController;
 use App\Http\Controllers\Partner\SettingsController as PartnerSettingsController;
 use App\Http\Controllers\Shared\EventController as SharedEventController;
 use App\Http\Controllers\Staff\Events\EventController;
+use App\Http\Controllers\Staff\Events\EventRegistrationController;
 use App\Http\Controllers\Staff\News\NewsController as StaffNewsController;
 use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Student\DashboardController;
@@ -37,6 +38,7 @@ use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
 use Illuminate\Support\Facades\Route;
+
 
 // =====================================================
 // PUBLIC ROUTES (No Authentication Required)
@@ -272,31 +274,19 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::put('/{event}', [EventController::class, 'update'])->name('update');
             Route::delete('/{event}', [EventController::class, 'destroy'])->name('destroy');
 
-            // Status Actions (add these for show.blade.php template integration)
-            Route::post('/{event}/publish', [EventController::class, 'publish'])->name('publish'); // For approved->published
-            Route::post('/{event}/mark-ongoing', [EventController::class, 'markOngoing'])->name('mark-ongoing'); // For published->ongoing
-            Route::post('/{event}/mark-completed', [EventController::class, 'markCompleted'])->name('mark-completed'); // For ongoing->completed
-            Route::post('/{event}/decline', [EventController::class, 'decline'])->name('decline'); // For approved->rejected (optional)
+            // Status Actions
+            Route::post('/{event}/publish', [EventController::class, 'publish'])->name('publish');
+            Route::post('/{event}/mark-ongoing', [EventController::class, 'markOngoing'])->name('mark-ongoing');
+            Route::post('/{event}/mark-completed', [EventController::class, 'markCompleted'])->name('mark-completed');
 
-
-            // Registration/Attendance Pages & Actions
-            Route::get('/{event}/manage-registrations', [EventController::class, 'manageRegistrations'])->name('manage-registrations');
-            Route::get('/{event}/manage-attendance', [EventController::class, 'manageAttendance'])->name('manage-attendance');
-
-            // Statistics & Reports (for completed)
-            Route::get('/{event}/statistics', [EventController::class, 'statistics'])->name('statistics');
-            Route::get('/{event}/download-report', [EventController::class, 'downloadReport'])->name('download-report');
-
-            // The rest of your already existing registration/attendance/exports routes...
-            Route::get('/{event}/registrations', [EventController::class, 'registrations'])->name('registrations');
-            Route::post('/{event}/registrations/{registration}/confirm', [EventController::class, 'confirmRegistration'])->name('registrations.confirm');
-            Route::post('/{event}/registrations/{registration}/cancel', [EventController::class, 'cancelRegistration'])->name('registrations.cancel');
-            Route::get('/{event}/registrations/{registration}', [EventController::class, 'registrationDetails'])->name('registrations.details');
-            Route::get('/{event}/attendance', [EventController::class, 'attendance'])->name('attendance');
-            Route::post('/{event}/attendance/{registration}/check-in', [EventController::class, 'checkIn'])->name('attendance.check-in');
-            Route::post('/{event}/attendance/{registration}/check-out', [EventController::class, 'checkOut'])->name('attendance.check-out');
-            Route::get('/{event}/attendance/export', [EventController::class, 'exportAttendance'])->name('attendance.export');
-            Route::get('/{event}/registrations/export', [EventController::class, 'exportRegistrations'])->name('registrations.export');
+            // REGISTRATION MANAGEMENT (NEW CONTROLLER)
+            Route::prefix('{event}/registrations')->name('registrations.')->group(function () {
+                Route::get('/', [EventRegistrationController::class, 'index'])->name('index');
+                Route::get('/export', [EventRegistrationController::class, 'export'])->name('export');
+                Route::get('/{registration}', [EventRegistrationController::class, 'show'])->name('show');
+                Route::post('/{registration}/confirm', [EventRegistrationController::class, 'confirm'])->name('confirm');
+                Route::post('/{registration}/cancel', [EventRegistrationController::class, 'cancel'])->name('cancel');
+            });
         });
 
         // NEWS MANAGEMENT (keep unchanged)

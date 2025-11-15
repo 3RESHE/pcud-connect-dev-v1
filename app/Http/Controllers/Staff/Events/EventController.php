@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Staff\Events;
 
 use App\Models\Event;
-use App\Models\EventRegistration;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class EventController extends Controller
 {
@@ -25,24 +24,12 @@ class EventController extends Controller
         $data = [
             'events' => $events,
             'total_events' => Event::where('created_by', $staff->id)->count(),
-            'published_events' => Event::where('created_by', $staff->id)
-                ->where('status', 'published')
-                ->count(),
-            'pending_events' => Event::where('created_by', $staff->id)
-                ->where('status', 'pending')
-                ->count(),
-            'approved_events' => Event::where('created_by', $staff->id)
-                ->where('status', 'approved')
-                ->count(),
-            'ongoing_events' => Event::where('created_by', $staff->id)
-                ->where('status', 'ongoing')
-                ->count(),
-            'rejected_events' => Event::where('created_by', $staff->id)
-                ->where('status', 'rejected')
-                ->count(),
-            'completed_events' => Event::where('created_by', $staff->id)
-                ->where('status', 'completed')
-                ->count(),
+            'published_events' => Event::where('created_by', $staff->id)->where('status', 'published')->count(),
+            'pending_events' => Event::where('created_by', $staff->id)->where('status', 'pending')->count(),
+            'approved_events' => Event::where('created_by', $staff->id)->where('status', 'approved')->count(),
+            'ongoing_events' => Event::where('created_by', $staff->id)->where('status', 'ongoing')->count(),
+            'rejected_events' => Event::where('created_by', $staff->id)->where('status', 'rejected')->count(),
+            'completed_events' => Event::where('created_by', $staff->id)->where('status', 'completed')->count(),
         ];
 
         return view('users.staff.events.index', $data);
@@ -62,7 +49,6 @@ class EventController extends Controller
     public function store(Request $request)
     {
         try {
-            // VALIDATION RULES
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string|min:10',
@@ -90,24 +76,14 @@ class EventController extends Controller
                 'contact_phone' => 'nullable|string|max:20',
                 'special_instructions' => 'nullable|string',
                 'event_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-            ], [
-                'venue_name.required_if' => 'Venue Name is required for in-person events.',
-                'venue_capacity.required_if' => 'Venue Capacity is required for in-person events.',
-                'platform.required_if' => 'Platform is required for virtual/hybrid events.',
-                'custom_platform.required_if' => 'Custom Platform name is required when selecting "Other".',
-                'end_time.after' => 'End time must be after start time.',
-                'end_date.after_or_equal' => 'End date must be on or after event date.',
-                'registration_deadline.before_or_equal' => 'Registration deadline cannot be after event date.',
             ]);
 
             $action = $request->input('action', 'draft');
 
-            // Convert checkboxes to boolean (0 or 1)
             $is_multiday = $request->has('is_multiday') ? 1 : 0;
             $registration_required = $request->has('registration_required') ? 1 : 0;
             $walkin_allowed = $request->has('walkin_allowed') ? 1 : 0;
 
-            // Prepare event data
             $eventData = [
                 'created_by' => auth()->id(),
                 'title' => $validated['title'],
@@ -138,7 +114,6 @@ class EventController extends Controller
                 'status' => $action === 'submit' ? 'pending' : 'draft',
             ];
 
-            // Handle image upload
             if ($request->hasFile('event_image')) {
                 try {
                     $file = $request->file('event_image');
@@ -153,10 +128,19 @@ class EventController extends Controller
                 }
             }
 
-            // Create the event
             $event = Event::create($eventData);
 
-            // Redirect based on action
+            // ✅ LOG ACTIVITY
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'created',
+                'subject_type' => Event::class,
+                'subject_id' => $event->id,
+                'description' => "Created event: {$event->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
             if ($action === 'submit') {
                 return redirect()->route('staff.events.show', $event->id)
                     ->with('success', 'Event created and submitted for admin review!');
@@ -165,14 +149,10 @@ class EventController extends Controller
                     ->with('success', 'Event saved as draft. You can publish it later.');
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput();
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             \Log::error('Event creation error: ' . $e->getMessage());
-            return redirect()->back()
-                ->withErrors(['error' => 'Failed to create event: ' . $e->getMessage()])
-                ->withInput();
+            return redirect()->back()->withErrors(['error' => 'Failed to create event: ' . $e->getMessage()])->withInput();
         }
     }
 
@@ -235,22 +215,12 @@ class EventController extends Controller
                 'contact_phone' => 'nullable|string|max:20',
                 'special_instructions' => 'nullable|string',
                 'event_image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:10240',
-            ], [
-                'venue_name.required_if' => 'Venue Name is required for in-person events.',
-                'venue_capacity.required_if' => 'Venue Capacity is required for in-person events.',
-                'platform.required_if' => 'Platform is required for virtual/hybrid events.',
-                'custom_platform.required_if' => 'Custom Platform name is required when selecting "Other".',
-                'end_time.after' => 'End time must be after start time.',
-                'end_date.after_or_equal' => 'End date must be on or after event date.',
-                'registration_deadline.before_or_equal' => 'Registration deadline cannot be after event date.',
             ]);
 
-            // Convert checkboxes to boolean (0 or 1)
             $is_multiday = $request->has('is_multiday') ? 1 : 0;
             $registration_required = $request->has('registration_required') ? 1 : 0;
             $walkin_allowed = $request->has('walkin_allowed') ? 1 : 0;
 
-            // Format time fields properly
             $start_time = is_string($validated['start_time']) ? $validated['start_time'] : $validated['start_time']->format('H:i');
             $end_time = is_string($validated['end_time']) ? $validated['end_time'] : $validated['end_time']->format('H:i');
 
@@ -282,23 +252,26 @@ class EventController extends Controller
                 'special_instructions' => $validated['special_instructions'] ?? null,
             ]);
 
-            // Handle image update
             if ($request->hasFile('event_image')) {
                 $this->updateEventImage($event, $request->file('event_image'));
             }
 
+            // ✅ LOG ACTIVITY
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'updated',
+                'subject_type' => Event::class,
+                'subject_id' => $event->id,
+                'description' => "Updated event: {$event->title}",
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+
             return redirect()->route('staff.events.show', $event->id)
                 ->with('success', 'Event updated successfully!');
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return redirect()->back()
-                ->withErrors($e->errors())
-                ->withInput();
         } catch (\Exception $e) {
             \Log::error('Event update error: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
-            return redirect()->back()
-                ->withErrors(['error' => 'Failed to update event: ' . $e->getMessage()])
-                ->withInput();
+            return redirect()->back()->withErrors(['error' => 'Failed to update event'])->withInput();
         }
     }
 
@@ -310,9 +283,10 @@ class EventController extends Controller
         $this->authorizeEventOwner($event);
 
         if (!in_array($event->status, ['draft', 'pending', 'rejected'])) {
-            return redirect()->back()
-                ->with('error', 'Only draft, pending, or rejected events can be deleted.');
+            return redirect()->back()->with('error', 'Only draft, pending, or rejected events can be deleted.');
         }
+
+        $eventTitle = $event->title; // Save title before deletion
 
         if ($event->event_image && Storage::disk('public')->exists($event->event_image)) {
             Storage::disk('public')->delete($event->event_image);
@@ -320,11 +294,19 @@ class EventController extends Controller
 
         $event->delete();
 
-        return redirect()->route('staff.events.index')
-            ->with('success', 'Event deleted successfully!');
-    }
+        // ✅ LOG ACTIVITY
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'deleted',
+            'subject_type' => Event::class,
+            'subject_id' => $event->id,
+            'description' => "Deleted event: {$eventTitle}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
 
-    // ===== STATUS CHANGE METHODS =====
+        return redirect()->route('staff.events.index')->with('success', 'Event deleted successfully!');
+    }
 
     /**
      * Publish event (from approved status)
@@ -340,6 +322,17 @@ class EventController extends Controller
         $event->update([
             'status' => 'published',
             'published_at' => now(),
+        ]);
+
+        // ✅ LOG ACTIVITY
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'published',
+            'subject_type' => Event::class,
+            'subject_id' => $event->id,
+            'description' => "Published event: {$event->title}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
         ]);
 
         return redirect()->back()->with('success', 'Event published successfully!');
@@ -358,6 +351,17 @@ class EventController extends Controller
 
         $event->update(['status' => 'ongoing']);
 
+        // ✅ LOG ACTIVITY
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'updated',
+            'subject_type' => Event::class,
+            'subject_id' => $event->id,
+            'description' => "Marked event as ongoing: {$event->title}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
         return redirect()->back()->with('success', 'Event marked as ongoing!');
     }
 
@@ -374,333 +378,23 @@ class EventController extends Controller
 
         $event->update(['status' => 'completed']);
 
+        // ✅ LOG ACTIVITY
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'completed',
+            'subject_type' => Event::class,
+            'subject_id' => $event->id,
+            'description' => "Marked event as completed: {$event->title}",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
         return redirect()->back()->with('success', 'Event marked as completed!');
     }
 
-    // ===== REGISTRATION MANAGEMENT METHODS =====
-
     /**
-     * Manage registrations for an event
+     * Authorize event owner
      */
-    public function manageRegistrations(Event $event)
-    {
-        $this->authorizeEventOwner($event);
-
-        $registrations = $event->registrations()
-            ->with('user:id,first_name,last_name,email')
-            ->latest('created_at')
-            ->paginate(20);
-
-        return view('users.staff.events.manage-registrations', compact('event', 'registrations'));
-    }
-
-    /**
-     * View registration details
-     */
-    public function registrationDetails(Event $event, EventRegistration $registration)
-    {
-        $this->authorizeEventOwner($event);
-
-        if ($registration->event_id !== $event->id) {
-            abort(404, 'Registration not found');
-        }
-
-        return view('users.staff.events.registration-details', compact('event', 'registration'));
-    }
-
-    /**
-     * Confirm registration
-     */
-    public function confirmRegistration(Event $event, EventRegistration $registration)
-    {
-        $this->authorizeEventOwner($event);
-
-        if ($registration->event_id !== $event->id) {
-            abort(404, 'Registration not found');
-        }
-
-        $registration->update(['status' => 'confirmed']);
-
-        return redirect()->back()->with('success', 'Registration confirmed!');
-    }
-
-    /**
-     * Cancel registration
-     */
-    public function cancelRegistration(Event $event, EventRegistration $registration)
-    {
-        $this->authorizeEventOwner($event);
-
-        if ($registration->event_id !== $event->id) {
-            abort(404, 'Registration not found');
-        }
-
-        $registration->update(['status' => 'cancelled']);
-
-        return redirect()->back()->with('success', 'Registration cancelled!');
-    }
-
-    // ===== ATTENDANCE MANAGEMENT METHODS =====
-
-    /**
-     * Manage attendance
-     */
-    public function manageAttendance(Event $event)
-    {
-        $this->authorizeEventOwner($event);
-
-        if ($event->status !== 'ongoing' && $event->status !== 'completed') {
-            return redirect()->back()->with('error', 'Can only manage attendance for ongoing or completed events.');
-        }
-
-        $registrations = $event->registrations()
-            ->with('user:id,first_name,last_name,middle_name,name_suffix,email', 'user.studentProfile:id,user_id,student_id')
-            ->where('status', 'confirmed')
-            ->latest('created_at')
-            ->paginate(20);
-
-        $checkedIn = $registrations->where('checked_in_at', '!=', null)->count();
-        $noShow = $registrations->count() - $checkedIn;
-
-        return view('users.staff.events.manage-attendance', compact(
-            'event',
-            'registrations',
-            'checkedIn',
-            'noShow'
-        ));
-    }
-
-    /**
-     * Check-in attendee
-     */
-    public function checkIn(Event $event, EventRegistration $registration)
-    {
-        $this->authorizeEventOwner($event);
-
-        if ($registration->event_id !== $event->id) {
-            abort(404, 'Registration not found');
-        }
-
-        $registration->update([
-            'attendance_status' => 'attended',
-            'checked_in_at' => now(),
-        ]);
-
-        return redirect()->back()->with('success', 'Attendee checked in!');
-    }
-
-    /**
-     * Check-out attendee
-     */
-    public function checkOut(Event $event, EventRegistration $registration)
-    {
-        $this->authorizeEventOwner($event);
-
-        if ($registration->event_id !== $event->id) {
-            abort(404, 'Registration not found');
-        }
-
-        $registration->update(['checked_out_at' => now()]);
-
-        return redirect()->back()->with('success', 'Attendee checked out!');
-    }
-
-    // ===== STATISTICS & REPORTING METHODS =====
-
-    /**
-     * View event statistics
-     */
-    public function statistics(Event $event)
-    {
-        $this->authorizeEventOwner($event);
-
-        $totalRegistrations = $event->registrations()->count();
-        $confirmedRegistrations = $event->registrations()->where('status', 'confirmed')->count();
-        $cancelledRegistrations = $event->registrations()->where('status', 'cancelled')->count();
-        $attended = $event->registrations()->where('attendance_status', 'attended')->count();
-
-        $data = [
-            'event' => $event,
-            'totalRegistrations' => $totalRegistrations,
-            'confirmedRegistrations' => $confirmedRegistrations,
-            'cancelledRegistrations' => $cancelledRegistrations,
-            'attended' => $attended,
-            'noShow' => $totalRegistrations - $attended,
-            'attendanceRate' => $totalRegistrations > 0 ? round(($attended / $totalRegistrations) * 100, 2) : 0,
-        ];
-
-        return view('users.staff.events.statistics', $data);
-    }
-
-    /**
-     * Download event report (CSV) - FIXED
-     */
-    public function downloadReport(Event $event)
-    {
-        $this->authorizeEventOwner($event);
-
-        $registrations = $event->registrations()
-            ->with('user:id,first_name,last_name,middle_name,name_suffix,email', 'user.studentProfile:id,user_id,student_id')
-            ->get();
-
-        $fileName = 'event-report-' . $event->id . '-' . now()->format('Y-m-d-His') . '.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename=' . $fileName,
-        ];
-
-        $callback = function () use ($event, $registrations) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Event Report - ' . $event->title]);
-            fputcsv($file, ['Generated on ' . now()->format('Y-m-d H:i:s')]);
-            fputcsv($file, []);
-
-            fputcsv($file, [
-                'Name',
-                'Email',
-                'Phone',
-                'Student ID',
-                'Department',
-                'Registration Status',
-                'Attendance Status',
-                'Registered On',
-                'Checked In',
-                'Checked Out',
-            ]);
-
-            foreach ($registrations as $registration) {
-                $phone = null;
-                if ($registration->user->role === 'student' && $registration->user->studentProfile) {
-                    $phone = $registration->user->studentProfile->phone ?? 'N/A';
-                } elseif ($registration->user->role === 'alumni' && $registration->user->alumniProfile) {
-                    $phone = $registration->user->alumniProfile->phone ?? 'N/A';
-                }
-
-                $studentId = $registration->user->studentProfile?->student_id ?? 'N/A';
-
-                fputcsv($file, [
-                    $registration->user->full_name,
-                    $registration->user->email,
-                    $phone,
-                    $studentId,
-                    $registration->user->department?->name ?? 'N/A',
-                    ucfirst($registration->status),
-                    ucfirst($registration->attendance_status ?? 'pending'),
-                    $registration->created_at->format('Y-m-d H:i'),
-                    $registration->checked_in_at?->format('Y-m-d H:i') ?? 'N/A',
-                    $registration->checked_out_at?->format('Y-m-d H:i') ?? 'N/A',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    public function exportRegistrations(Event $event)
-    {
-        $this->authorizeEventOwner($event);
-
-        $registrations = $event->registrations()
-            ->with('user:id,first_name,last_name,email')
-            ->latest('created_at')
-            ->get();
-
-        $fileName = 'registrations-' . $event->id . '-' . now()->format('Y-m-d-His') . '.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename=' . $fileName,
-        ];
-
-        $callback = function () use ($event, $registrations) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Event: ' . $event->title]);
-            fputcsv($file, ['Date: ' . $event->event_date->format('F d, Y')]);
-            fputcsv($file, []);
-
-            fputcsv($file, ['Name', 'Email', 'Registered On']);
-
-            foreach ($registrations as $reg) {
-                fputcsv($file, [
-                    $reg->user->first_name . ' ' . $reg->user->last_name,
-                    $reg->user->email,
-                    $reg->created_at->format('Y-m-d H:i'),
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    /**
-     * Export attendance (CSV) - FIXED
-     */
-    public function exportAttendance(Event $event)
-    {
-        $this->authorizeEventOwner($event);
-
-        $registrations = $event->registrations()
-            ->where('status', 'confirmed')
-            ->with('user:id,first_name,last_name,middle_name,name_suffix,email', 'user.studentProfile:id,user_id,student_id')
-            ->get();
-
-        $fileName = 'attendance-' . $event->id . '-' . now()->format('Y-m-d-His') . '.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename=' . $fileName,
-        ];
-
-        $callback = function () use ($event, $registrations) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, ['Attendance Report - ' . $event->title]);
-            fputcsv($file, ['Event Date: ' . $event->event_date->format('F d, Y')]);
-            fputcsv($file, ['Generated on ' . now()->format('Y-m-d H:i:s')]);
-            fputcsv($file, []);
-
-            fputcsv($file, [
-                'Name',
-                'Email',
-                'Student ID',
-                'Status',
-                'Checked In',
-                'Checked Out',
-                'Duration (minutes)',
-            ]);
-
-            foreach ($registrations as $registration) {
-                $duration = null;
-                if ($registration->checked_in_at && $registration->checked_out_at) {
-                    $duration = $registration->checked_in_at->diffInMinutes($registration->checked_out_at);
-                }
-
-                $studentId = $registration->user->studentProfile?->student_id ?? 'N/A';
-
-                fputcsv($file, [
-                    $registration->user->full_name,
-                    $registration->user->email,
-                    $studentId,
-                    ucfirst($registration->attendance_status ?? 'absent'),
-                    $registration->checked_in_at?->format('Y-m-d H:i') ?? 'No',
-                    $registration->checked_out_at?->format('Y-m-d H:i') ?? 'No',
-                    $duration ?? 'N/A',
-                ]);
-            }
-
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    // ===== HELPER METHODS =====
-
-
     private function authorizeEventOwner(Event $event)
     {
         if ($event->created_by !== auth()->id()) {
@@ -714,12 +408,10 @@ class EventController extends Controller
     private function updateEventImage(Event $event, $imageFile)
     {
         try {
-            // Delete old image
             if ($event->event_image && Storage::disk('public')->exists($event->event_image)) {
                 Storage::disk('public')->delete($event->event_image);
             }
 
-            // Upload new image
             $filename = time() . '_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
             $path = $imageFile->storeAs('events', $filename, 'public');
             $event->update(['event_image' => 'storage/' . $path]);
