@@ -27,6 +27,7 @@ use App\Http\Controllers\Partner\PartnershipController;
 use App\Http\Controllers\Partner\ProfileController as PartnerProfileController;
 use App\Http\Controllers\Partner\SettingsController as PartnerSettingsController;
 use App\Http\Controllers\Shared\EventController as SharedEventController;
+use App\Http\Controllers\Staff\Events\EventAttendanceController;
 use App\Http\Controllers\Staff\Events\EventController;
 use App\Http\Controllers\Staff\Events\EventRegistrationController;
 use App\Http\Controllers\Staff\News\NewsController as StaffNewsController;
@@ -38,6 +39,7 @@ use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
 use Illuminate\Support\Facades\Route;
+
 
 
 // =====================================================
@@ -279,7 +281,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::post('/{event}/mark-ongoing', [EventController::class, 'markOngoing'])->name('mark-ongoing');
             Route::post('/{event}/mark-completed', [EventController::class, 'markCompleted'])->name('mark-completed');
 
-
             // REGISTRATION MANAGEMENT (NEW CONTROLLER)
             Route::prefix('{event}/registrations')->name('registrations.')->group(function () {
                 Route::get('/', [EventRegistrationController::class, 'index'])->name('index');
@@ -288,6 +289,22 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::get('/{registration}', [EventRegistrationController::class, 'show'])->name('show');
                 Route::post('/{registration}/confirm', [EventRegistrationController::class, 'confirm'])->name('confirm');
                 Route::post('/{registration}/cancel', [EventRegistrationController::class, 'cancel'])->name('cancel');
+            });
+
+            // ✅ ATTENDANCE MANAGEMENT
+            Route::prefix('{event}/attendance')->name('attendance.')->group(function () {
+                // Mark attendance (ongoing events)
+                Route::get('/mark', [EventAttendanceController::class, 'markAttendance'])->name('mark');
+                Route::post('/mark', [EventAttendanceController::class, 'storeWalkin'])->name('store'); // ✅ NEW
+                Route::put('/{registration}', [EventAttendanceController::class, 'updateAttendance'])->name('update');
+                Route::post('/bulk-update', [EventAttendanceController::class, 'bulkUpdateAttendance'])->name('bulk-update');
+
+                // View attendance (completed events)
+                Route::get('/view', [EventAttendanceController::class, 'viewAttendance'])->name('view');
+                Route::get('/export', [EventAttendanceController::class, 'exportAttendance'])->name('export');
+
+                // API endpoint for statistics
+                Route::get('/statistics', [EventAttendanceController::class, 'getStatistics'])->name('statistics');
             });
         });
 
