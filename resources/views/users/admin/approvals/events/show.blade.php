@@ -413,9 +413,9 @@
                             </svg>
                             Reject Event
                         </button>
-                    @elseif($event->status === 'published')
+                    @elseif(in_array($event->status, ['published', 'ongoing', 'completed']))
                         @if ($event->is_featured)
-                            <button onclick="unfeatureEvent()"
+                            <button onclick="openUnfeatureModal()"
                                 class="w-full px-4 py-3 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -424,7 +424,7 @@
                                 Unfeature Event
                             </button>
                         @else
-                            <button onclick="featureEvent()"
+                            <button onclick="openFeatureModal()"
                                 class="w-full px-4 py-3 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center">
                                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path
@@ -434,25 +434,21 @@
                                 Feature Event
                             </button>
                         @endif
-                        <button onclick="openUnpublishModal()"
-                            class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
-                                </path>
-                            </svg>
-                            Unpublish & Reject
-                        </button>
-                    @elseif(in_array($event->status, ['approved', 'ongoing', 'completed']))
+                        @if ($event->status === 'published')
+                            <button onclick="openUnpublishModal()"
+                                class="w-full px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors flex items-center justify-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z">
+                                    </path>
+                                </svg>
+                                Unpublish & Reject
+                            </button>
+                        @endif
+                    @elseif($event->status === 'approved')
                         <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <p class="text-sm text-blue-800">
-                                @if ($event->status === 'approved')
-                                    Event is approved and ready for staff to publish.
-                                @elseif($event->status === 'ongoing')
-                                    Event is currently happening. Live tracking is active.
-                                @else
-                                    Event has been completed.
-                                @endif
+                                Event is approved and ready for staff to publish.
                             </p>
                         </div>
                     @elseif($event->status === 'rejected')
@@ -483,6 +479,90 @@
                                 class="text-blue-600 hover:underline">{{ $event->contact_phone }}</a>
                         </div>
                     @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feature Modal -->
+    <div id="featureModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Feature Event</h3>
+                    <button onclick="closeFeatureModal()" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-yellow-100">
+                        <svg class="h-6 w-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path
+                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z">
+                            </path>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">
+                        Featured events appear on the homepage and receive more visibility. Are you sure you want to
+                        feature this event?
+                    </p>
+                    <p class="text-sm font-medium text-gray-900 mt-2">{{ $event->title }}</p>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeFeatureModal()"
+                        class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                        Cancel
+                    </button>
+                    <button onclick="featureEvent()" id="featureButton"
+                        class="flex-1 px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">
+                        Feature Event
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unfeature Modal -->
+    <div id="unfeatureModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Unfeature Event</h3>
+                    <button onclick="closeUnfeatureModal()" class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="text-center">
+                    <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100">
+                        <svg class="h-6 w-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-4">
+                        This event will no longer appear on the homepage. Are you sure?
+                    </p>
+                    <p class="text-sm font-medium text-gray-900 mt-2">{{ $event->title }}</p>
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeUnfeatureModal()"
+                        class="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
+                        Cancel
+                    </button>
+                    <button onclick="unfeatureEvent()" id="unfeatureButton"
+                        class="flex-1 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+                        Unfeature Event
+                    </button>
                 </div>
             </div>
         </div>
@@ -586,7 +666,87 @@
     </div>
 
     <script>
-        // Modal Functions
+        // Feature Modal Functions
+        function openFeatureModal() {
+            document.getElementById('featureModal').classList.remove('hidden');
+        }
+
+        function closeFeatureModal() {
+            document.getElementById('featureModal').classList.add('hidden');
+        }
+
+        async function featureEvent() {
+            const button = document.getElementById('featureButton');
+            button.disabled = true;
+            button.textContent = 'Featuring...';
+
+            try {
+                const response = await fetch(`{{ route('admin.events.feature', $event->id) }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to feature event');
+                    button.disabled = false;
+                    button.textContent = 'Feature Event';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred');
+                button.disabled = false;
+                button.textContent = 'Feature Event';
+            }
+        }
+
+        // Unfeature Modal Functions
+        function openUnfeatureModal() {
+            document.getElementById('unfeatureModal').classList.remove('hidden');
+        }
+
+        function closeUnfeatureModal() {
+            document.getElementById('unfeatureModal').classList.add('hidden');
+        }
+
+        async function unfeatureEvent() {
+            const button = document.getElementById('unfeatureButton');
+            button.disabled = true;
+            button.textContent = 'Unfeaturing...';
+
+            try {
+                const response = await fetch(`{{ route('admin.events.unfeature', $event->id) }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to unfeature event');
+                    button.disabled = false;
+                    button.textContent = 'Unfeature Event';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred');
+                button.disabled = false;
+                button.textContent = 'Unfeature Event';
+            }
+        }
+
+        // Approve Modal Functions
         function openApproveModal() {
             document.getElementById('approveModal').classList.remove('hidden');
         }
@@ -626,6 +786,7 @@
             }
         }
 
+        // Reject Modal Functions
         function openRejectModal() {
             document.getElementById('rejectModal').classList.remove('hidden');
         }
@@ -679,6 +840,7 @@
             }
         }
 
+        // Unpublish Modal Functions
         function openUnpublishModal() {
             document.getElementById('unpublishModal').classList.remove('hidden');
         }
@@ -732,64 +894,11 @@
             }
         }
 
-        async function featureEvent() {
-            if (!confirm('Feature this event on the homepage?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`{{ route('admin.events.feature', $event->id) }}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Failed to feature event');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred');
-            }
-        }
-
-        async function unfeatureEvent() {
-            if (!confirm('Remove this event from featured list?')) {
-                return;
-            }
-
-            try {
-                const response = await fetch(`{{ route('admin.events.unfeature', $event->id) }}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    }
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert(data.message || 'Failed to unfeature event');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                alert('An error occurred');
-            }
-        }
-
-
         // Close modals on ESC
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
+                closeFeatureModal();
+                closeUnfeatureModal();
                 closeApproveModal();
                 closeRejectModal();
                 closeUnpublishModal();
