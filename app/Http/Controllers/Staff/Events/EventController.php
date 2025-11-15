@@ -181,7 +181,7 @@ class EventController extends Controller
     }
 
     /**
-     * Update event
+     * Update event - Status automatically changes to 'pending' when updated
      */
     public function update(Request $request, Event $event)
     {
@@ -224,6 +224,9 @@ class EventController extends Controller
             $start_time = is_string($validated['start_time']) ? $validated['start_time'] : $validated['start_time']->format('H:i');
             $end_time = is_string($validated['end_time']) ? $validated['end_time'] : $validated['end_time']->format('H:i');
 
+            // Store previous status for logging
+            $previousStatus = $event->status;
+
             $event->update([
                 'title' => $validated['title'],
                 'description' => $validated['description'],
@@ -250,25 +253,28 @@ class EventController extends Controller
                 'contact_email' => $validated['contact_email'],
                 'contact_phone' => $validated['contact_phone'] ?? null,
                 'special_instructions' => $validated['special_instructions'] ?? null,
+                'status' => 'pending', // ✅ AUTOMATICALLY CHANGE TO PENDING
+                'approved_by' => null, // ✅ CLEAR PREVIOUS APPROVAL
             ]);
 
             if ($request->hasFile('event_image')) {
                 $this->updateEventImage($event, $request->file('event_image'));
             }
 
-            // ✅ LOG ACTIVITY
+            // ✅ LOG ACTIVITY - Include status change details
+            $statusMessage = $previousStatus !== 'pending' ? " (Changed from '{$previousStatus}' to 'pending')" : '';
             ActivityLog::create([
                 'user_id' => auth()->id(),
                 'action' => 'updated',
                 'subject_type' => Event::class,
                 'subject_id' => $event->id,
-                'description' => "Updated event: {$event->title}",
+                'description' => "Updated event: {$event->title}{$statusMessage}",
                 'ip_address' => $request->ip(),
                 'user_agent' => $request->userAgent(),
             ]);
 
             return redirect()->route('staff.events.show', $event->id)
-                ->with('success', 'Event updated successfully!');
+                ->with('success', 'Event updated successfully! Status has been changed to pending and requires admin review.');
         } catch (\Exception $e) {
             \Log::error('Event update error: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => 'Failed to update event'])->withInput();
