@@ -61,6 +61,7 @@ class ActivityLogController extends Controller
                 ],
                 'subject_types' => [
                     'Event',
+                    'EventRegistration',
                     'News',
                     'JobPosting',
                     'JobApplication',  // ✅ ADDED
@@ -68,7 +69,6 @@ class ActivityLogController extends Controller
                     'Partnership',
                 ],
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Activity logs index error: ' . $e->getMessage());
             abort(500, 'Failed to load activity logs');
@@ -99,7 +99,6 @@ class ActivityLogController extends Controller
                     'properties' => json_decode($log->properties ?? '[]', true),
                 ],
             ]);
-
         } catch (\Exception $e) {
             \Log::error('Activity log show error: ' . $e->getMessage());
             return response()->json([
@@ -168,7 +167,6 @@ class ActivityLogController extends Controller
 
             fclose($csv);
             exit;
-
         } catch (\Exception $e) {
             \Log::error('Activity log export error: ' . $e->getMessage());
             abort(500, 'Failed to export logs');
@@ -190,7 +188,6 @@ class ActivityLogController extends Controller
 
             return redirect()->back()
                 ->with('success', "Deleted {$deleted} activity logs older than {$validated['days']} days");
-
         } catch (\Exception $e) {
             \Log::error('Clear old logs error: ' . $e->getMessage());
             return redirect()->back()
@@ -203,7 +200,7 @@ class ActivityLogController extends Controller
      */
     private function getActionDisplay($action): string
     {
-        return match($action) {
+        return match ($action) {
             'created' => 'Created',
             'updated' => 'Updated',
             'deleted' => 'Deleted',
@@ -229,19 +226,19 @@ class ActivityLogController extends Controller
     {
         $basename = class_basename($subjectType ?? '');
 
-        return match($basename) {
+        return match ($basename) {
             'JobPosting' => 'Job Posting',
-            'JobApplication' => 'Job Application',  // ✅ ADDED
+            'JobApplication' => 'Job Application',
             'Event' => 'Event',
-            'EventRegistration' => 'Event Registration',
+            'EventRegistration' => 'Event Registration',  // ✅ ADD THIS
             'News' => 'News',
             'NewsArticle' => 'News Article',
             'Partnership' => 'Partnership',
             'User' => 'User',
-            'Application' => 'Application',
             default => $basename ?: 'Unknown',
         };
     }
+
 
     /**
      * Helper: Get subject display (handle deleted records)
@@ -275,7 +272,7 @@ class ActivityLogController extends Controller
         }
 
         // Generic fallback
-        return match($log->subject_type) {
+        return match ($log->subject_type) {
             'App\Models\JobApplication' => 'Job Application #' . $log->subject_id,
             'App\Models\JobPosting' => 'Job Posting #' . $log->subject_id,
             'App\Models\Event' => 'Event #' . $log->subject_id,
@@ -370,7 +367,7 @@ class ActivityLogController extends Controller
      */
     private function getActionColor($action): string
     {
-        return match($action) {
+        return match ($action) {
             'created' => 'success',
             'updated' => 'info',
             'deleted' => 'danger',
@@ -406,7 +403,6 @@ class ActivityLogController extends Controller
             ];
 
             return response()->json($stats);
-
         } catch (\Exception $e) {
             \Log::error('Statistics error: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to load statistics'], 500);
