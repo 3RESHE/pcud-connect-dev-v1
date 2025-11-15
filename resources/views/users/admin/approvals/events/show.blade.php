@@ -13,16 +13,15 @@
             Back to Event Approvals
         </a>
     </div>
-
     <!-- Status Alert Banner -->
     <div
         class="mb-6 rounded-r-lg @if ($event->status === 'pending') bg-yellow-50 border-l-4 border-yellow-400
-    @elseif($event->status === 'approved') bg-green-50 border-l-4 border-green-400
-    @elseif($event->status === 'rejected') bg-red-50 border-l-4 border-red-400
-    @elseif($event->status === 'published') bg-blue-50 border-l-4 border-blue-400
-    @elseif($event->status === 'ongoing') bg-orange-50 border-l-4 border-orange-400
-    @elseif($event->status === 'completed') bg-gray-50 border-l-4 border-gray-400
-    @else bg-gray-50 border-l-4 border-gray-400 @endif p-4">
+@elseif($event->status === 'approved') bg-green-50 border-l-4 border-green-400
+@elseif($event->status === 'rejected') bg-red-50 border-l-4 border-red-400
+@elseif($event->status === 'published') bg-blue-50 border-l-4 border-blue-400
+@elseif($event->status === 'ongoing') bg-orange-50 border-l-4 border-orange-400
+@elseif($event->status === 'completed') bg-gray-50 border-l-4 border-gray-400
+@else bg-gray-50 border-l-4 border-gray-400 @endif p-4">
         <div class="flex items-start">
             <div class="flex-shrink-0">
                 @if ($event->status === 'pending')
@@ -56,12 +55,12 @@
             <div class="ml-3 flex-1">
                 <h3
                     class="text-sm font-medium @if ($event->status === 'pending') text-yellow-800
-                @elseif($event->status === 'approved') text-green-800
-                @elseif($event->status === 'rejected') text-red-800
-                @elseif($event->status === 'published') text-blue-800
-                @elseif($event->status === 'ongoing') text-orange-800
-                @elseif($event->status === 'completed') text-gray-800
-                @else text-gray-800 @endif">
+            @elseif($event->status === 'approved') text-green-800
+            @elseif($event->status === 'rejected') text-red-800
+            @elseif($event->status === 'published') text-blue-800
+            @elseif($event->status === 'ongoing') text-orange-800
+            @elseif($event->status === 'completed') text-gray-800
+            @else text-gray-800 @endif">
                     @if ($event->status === 'pending')
                         Event Awaiting Review
                     @elseif($event->status === 'approved')
@@ -78,12 +77,12 @@
                 </h3>
                 <p
                     class="mt-2 text-sm @if ($event->status === 'pending') text-yellow-700
-                @elseif($event->status === 'approved') text-green-700
-                @elseif($event->status === 'rejected') text-red-700
-                @elseif($event->status === 'published') text-blue-700
-                @elseif($event->status === 'ongoing') text-orange-700
-                @elseif($event->status === 'completed') text-gray-700
-                @else text-gray-700 @endif">
+            @elseif($event->status === 'approved') text-green-700
+            @elseif($event->status === 'rejected') text-red-700
+            @elseif($event->status === 'published') text-blue-700
+            @elseif($event->status === 'ongoing') text-orange-700
+            @elseif($event->status === 'completed') text-gray-700
+            @else text-gray-700 @endif">
                     @if ($event->status === 'pending')
                         Please review this event submission and approve or reject it.
                     @elseif($event->status === 'approved')
@@ -102,38 +101,51 @@
         </div>
     </div>
 
-    <!-- Event Banner -->
+    <!-- Event Banner with Image -->
     <div
         class="relative @if ($event->status === 'pending') bg-gradient-to-r from-yellow-600 to-amber-600
-    @elseif($event->status === 'approved') bg-gradient-to-r from-green-600 to-emerald-600
-    @elseif($event->status === 'rejected') bg-gradient-to-r from-red-600 to-pink-600
-    @elseif($event->status === 'published') bg-gradient-to-r from-blue-600 to-cyan-600
-    @elseif($event->status === 'ongoing') bg-gradient-to-r from-orange-600 to-red-600
-    @elseif($event->status === 'completed') bg-gradient-to-r from-gray-600 to-gray-700
-    @else bg-gradient-to-r from-blue-600 to-cyan-600 @endif rounded-xl overflow-hidden mb-8 shadow-lg @if ($event->status === 'pending') border-l-4 border-yellow-500
-    @elseif($event->status === 'approved') border-l-4 border-green-500
-    @elseif($event->status === 'rejected') border-l-4 border-red-500
-    @elseif($event->status === 'published') border-l-4 border-blue-500
-    @elseif($event->status === 'ongoing') border-l-4 border-orange-500
-    @elseif($event->status === 'completed') border-l-4 border-gray-500
-    @else border-l-4 border-blue-500 @endif">
-        <div class="absolute inset-0 bg-black opacity-20"></div>
+@elseif($event->status === 'approved') bg-gradient-to-r from-green-600 to-emerald-600
+@elseif($event->status === 'rejected') bg-gradient-to-r from-red-600 to-pink-600
+@elseif($event->status === 'published') bg-gradient-to-r from-blue-600 to-cyan-600
+@elseif($event->status === 'ongoing') bg-gradient-to-r from-orange-600 to-red-600
+@elseif($event->status === 'completed') bg-gradient-to-r from-gray-600 to-gray-700
+@else bg-gradient-to-r from-blue-600 to-cyan-600 @endif rounded-xl overflow-hidden mb-8 shadow-lg @if ($event->status === 'pending') border-l-4 border-yellow-500
+@elseif($event->status === 'approved') border-l-4 border-green-500
+@elseif($event->status === 'rejected') border-l-4 border-red-500
+@elseif($event->status === 'published') border-l-4 border-blue-500
+@elseif($event->status === 'ongoing') border-l-4 border-orange-500
+@elseif($event->status === 'completed') border-l-4 border-gray-500
+@else border-l-4 border-blue-500 @endif">
+
+        <!-- Background Image (if exists) -->
+        @if ($event->event_image)
+            <div class="absolute inset-0">
+                <img src="{{ asset('storage/' . $event->event_image) }}" alt="{{ $event->title }}"
+                    class="w-full h-full object-cover"
+                    onerror="this.onerror=null; this.src='{{ asset($event->event_image) }}';">
+                <div class="absolute inset-0 bg-black opacity-60"></div>
+            </div>
+        @else
+            <div class="absolute inset-0 bg-black opacity-20"></div>
+        @endif
+
+        <!-- Banner Content -->
         <div class="relative px-8 py-16 text-center">
             <div class="flex justify-center mb-4 space-x-2">
                 <span
                     class="@if ($event->status === 'pending') bg-yellow-100 text-yellow-800
-                @elseif($event->status === 'approved') bg-green-100 text-green-800
-                @elseif($event->status === 'rejected') bg-red-100 text-red-800
-                @elseif($event->status === 'published') bg-blue-100 text-blue-800
-                @elseif($event->status === 'ongoing') bg-orange-100 text-orange-800 animate-pulse
-                @elseif($event->status === 'completed') bg-gray-100 text-gray-800
-                @else bg-blue-100 text-blue-800 @endif px-3 py-1 rounded-full text-sm font-medium">
+            @elseif($event->status === 'approved') bg-green-100 text-green-800
+            @elseif($event->status === 'rejected') bg-red-100 text-red-800
+            @elseif($event->status === 'published') bg-blue-100 text-blue-800
+            @elseif($event->status === 'ongoing') bg-orange-100 text-orange-800 animate-pulse
+            @elseif($event->status === 'completed') bg-gray-100 text-gray-800
+            @else bg-blue-100 text-blue-800 @endif px-3 py-1 rounded-full text-sm font-medium">
                     {{ ucfirst($event->status) }}
                 </span>
                 <span
                     class="@if ($event->event_format === 'inperson') bg-purple-100 text-purple-800
-                @elseif($event->event_format === 'virtual') bg-indigo-100 text-indigo-800
-                @else bg-pink-100 text-pink-800 @endif px-3 py-1 rounded-full text-sm font-medium">
+            @elseif($event->event_format === 'virtual') bg-indigo-100 text-indigo-800
+            @else bg-pink-100 text-pink-800 @endif px-3 py-1 rounded-full text-sm font-medium">
                     @if ($event->event_format === 'inperson')
                         In-Person
                     @elseif($event->event_format === 'virtual')
@@ -341,20 +353,20 @@
                 <div class="space-y-4">
                     <div
                         class="@if ($event->status === 'pending') p-4 bg-yellow-50 rounded-lg border border-yellow-200
-                    @elseif($event->status === 'approved') p-4 bg-green-50 rounded-lg border border-green-200
-                    @elseif($event->status === 'rejected') p-4 bg-red-50 rounded-lg border border-red-200
-                    @elseif($event->status === 'published') p-4 bg-blue-50 rounded-lg border border-blue-200
-                    @elseif($event->status === 'ongoing') p-4 bg-orange-50 rounded-lg border border-orange-200
-                    @elseif($event->status === 'completed') p-4 bg-gray-50 rounded-lg border border-gray-200
-                    @else p-4 bg-blue-50 rounded-lg border border-blue-200 @endif">
+                @elseif($event->status === 'approved') p-4 bg-green-50 rounded-lg border border-green-200
+                @elseif($event->status === 'rejected') p-4 bg-red-50 rounded-lg border border-red-200
+                @elseif($event->status === 'published') p-4 bg-blue-50 rounded-lg border border-blue-200
+                @elseif($event->status === 'ongoing') p-4 bg-orange-50 rounded-lg border border-orange-200
+                @elseif($event->status === 'completed') p-4 bg-gray-50 rounded-lg border border-gray-200
+                @else p-4 bg-blue-50 rounded-lg border border-blue-200 @endif">
                         <p
                             class="text-lg font-bold @if ($event->status === 'pending') text-yellow-800
-                        @elseif($event->status === 'approved') text-green-800
-                        @elseif($event->status === 'rejected') text-red-800
-                        @elseif($event->status === 'published') text-blue-800
-                        @elseif($event->status === 'ongoing') text-orange-800
-                        @elseif($event->status === 'completed') text-gray-800
-                        @else text-blue-800 @endif">
+                    @elseif($event->status === 'approved') text-green-800
+                    @elseif($event->status === 'rejected') text-red-800
+                    @elseif($event->status === 'published') text-blue-800
+                    @elseif($event->status === 'ongoing') text-orange-800
+                    @elseif($event->status === 'completed') text-gray-800
+                    @else text-blue-800 @endif">
                             @if ($event->status === 'pending')
                                 Awaiting Review
                             @elseif($event->status === 'approved')
