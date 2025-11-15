@@ -24,15 +24,15 @@
 <!-- Success Alert Banner -->
 @if($isRegistered)
     <div class="container mx-auto px-4 mb-8">
-        <div class="bg-green-50 border-l-4 border-green-400 p-6 rounded-r-lg">
+        <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
-                    <svg class="w-6 h-6 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                     </svg>
                 </div>
                 <div class="ml-4">
-                    <h3 class="text-base font-medium text-green-800">Registered Successfully!</h3>
+                    <h3 class="text-base font-semibold text-green-800">Registration Confirmed</h3>
                     <p class="mt-2 text-sm text-green-700">
                         You are registered for this event. Check your email for confirmation and updates including meeting links.
                     </p>
@@ -67,17 +67,21 @@
                             <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                             </svg>
-                            Featured
+                            Featured Event
                         </span>
                     @endif
-                    <!-- ✅ UPCOMING EVENT BADGE -->
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-green-600 shadow-lg w-fit">
-                        📅 Upcoming Event
+                        <span class="inline-block w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                        Upcoming
                     </span>
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-blue-600 shadow-lg w-fit">
-                        @if($event->event_format === 'inperson') In-Person
-                        @elseif($event->event_format === 'virtual') Virtual
-                        @else Hybrid @endif
+                        @if($event->event_format === 'inperson')
+                            In-Person
+                        @elseif($event->event_format === 'virtual')
+                            Virtual
+                        @else
+                            Hybrid
+                        @endif
                     </span>
                 </div>
             </div>
@@ -116,8 +120,8 @@
             </h2>
             <div class="mb-6 space-y-4">
                 <div>
-                    <p class="text-sm text-gray-500 font-semibold uppercase mb-1">Description</p>
-                    <p class="text-gray-700 leading-relaxed">{{ $event->description }}</p>
+                    <p class="text-sm text-gray-500 font-semibold uppercase mb-2">Description</p>
+                    <p class="text-gray-700 leading-relaxed text-base">{{ $event->description }}</p>
                 </div>
             </div>
 
@@ -136,20 +140,20 @@
                 <svg class="w-7 h-7 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
-                Date & Time
+                Date and Time
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <!-- Start Date -->
                 <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
                     <div class="flex items-center mb-2">
-                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                         </svg>
-                        <span class="text-base font-medium text-gray-700">
+                        <span class="text-sm font-medium text-gray-700">
                             @if($event->is_multiday && $event->end_date)
                                 Event Duration
                             @else
-                                Start Date
+                                Event Date
                             @endif
                         </span>
                     </div>
@@ -165,23 +169,29 @@
                 <!-- Time -->
                 <div class="p-4 bg-purple-50 rounded-lg border border-purple-100">
                     <div class="flex items-center mb-2">
-                        <svg class="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <span class="text-base font-medium text-gray-700">Time</span>
+                        <span class="text-sm font-medium text-gray-700">Time</span>
                     </div>
-                    <p class="text-lg font-semibold text-gray-900">{{ $event->start_time }} - {{ $event->end_time }}</p>
+                    <p class="text-lg font-semibold text-gray-900">
+                        @if($event->start_time && $event->end_time)
+                            {{ $event->start_time }} - {{ $event->end_time }}
+                        @else
+                            TBA
+                        @endif
+                    </p>
                 </div>
 
                 <!-- Capacity -->
                 <div class="p-4 bg-green-50 rounded-lg border border-green-100">
                     <div class="flex items-center mb-2">
-                        <svg class="w-6 h-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM16 12a2 2 0 11-4 0 2 2 0 014 0zM13 16a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 10a3 3 0 11-6 0 3 3 0 016 0zM16 12a2 2 0 11-4 0 2 2 0 014 0z"></path>
                         </svg>
-                        <span class="text-base font-medium text-gray-700">Attendees</span>
+                        <span class="text-sm font-medium text-gray-700">Attendees</span>
                     </div>
-                    <p class="text-lg font-semibold text-gray-900">{{ $registrationCount }}/{{ $event->max_attendees ?? '∞' }}</p>
+                    <p class="text-lg font-semibold text-gray-900">{{ $registrationCount }}/{{ $event->max_attendees ?? 'Unlimited' }}</p>
                 </div>
             </div>
         </div>
@@ -193,26 +203,26 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
-                Location & Format
+                Location and Format
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 @if(in_array($event->event_format, ['inperson', 'hybrid']))
                     <div>
-                        <p class="text-base text-gray-500 mb-2 font-medium">📍 Venue</p>
-                        <p class="font-semibold text-gray-900 text-lg">{{ $event->venue_name ?? 'TBA' }}</p>
+                        <p class="text-sm text-gray-500 mb-2 font-medium uppercase">Venue</p>
+                        <p class="font-semibold text-gray-900 text-base">{{ $event->venue_name ?? 'TBA' }}</p>
                     </div>
                     @if($event->venue_address)
                         <div>
-                            <p class="text-base text-gray-500 mb-2 font-medium">📮 Address</p>
-                            <p class="text-gray-700 text-lg">{{ $event->venue_address }}</p>
+                            <p class="text-sm text-gray-500 mb-2 font-medium uppercase">Address</p>
+                            <p class="text-gray-700 text-base">{{ $event->venue_address }}</p>
                         </div>
                     @endif
                 @endif
 
                 @if(in_array($event->event_format, ['virtual', 'hybrid']))
                     <div>
-                        <p class="text-base text-gray-500 mb-2 font-medium">🌐 Platform</p>
-                        <p class="font-semibold text-gray-900 text-lg">{{ $event->platform === 'other' ? $event->custom_platform : ucfirst($event->platform) }}</p>
+                        <p class="text-sm text-gray-500 mb-2 font-medium uppercase">Platform</p>
+                        <p class="font-semibold text-gray-900 text-base">{{ $event->platform === 'other' ? $event->custom_platform : ucfirst($event->platform) }}</p>
                     </div>
                 @endif
             </div>
@@ -226,7 +236,7 @@
                                 <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd"></path>
                             </svg>
                             <div>
-                                <p class="font-semibold text-blue-900">Meeting Link Coming Soon</p>
+                                <p class="font-semibold text-blue-900">Meeting Link</p>
                                 <p class="text-sm text-blue-800 mt-1">The event organizer will send you the meeting link and any access details via email before the event starts.</p>
                             </div>
                         </div>
@@ -234,14 +244,14 @@
                 </div>
             @elseif(!$isRegistered && in_array($event->event_format, ['virtual', 'hybrid']))
                 <div class="mt-8 pt-8 border-t border-gray-200">
-                    <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
                         <div class="flex items-start">
-                            <svg class="w-5 h-5 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <svg class="w-5 h-5 text-amber-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                             </svg>
                             <div>
-                                <p class="font-semibold text-yellow-900">Register to Get Meeting Link</p>
-                                <p class="text-sm text-yellow-800 mt-1">Register for this event to receive the meeting link and connection details via email.</p>
+                                <p class="font-semibold text-amber-900">Register to Get Meeting Link</p>
+                                <p class="text-sm text-amber-800 mt-1">Register for this event to receive the meeting link and connection details via email.</p>
                             </div>
                         </div>
                     </div>
@@ -253,8 +263,8 @@
     <!-- Right Sidebar -->
     <div class="space-y-8">
         <!-- Registration Card -->
-        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100 sticky top-6">
-            <h3 class="text-xl font-bold text-gray-900 mb-6">Register</h3>
+        <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Event Registration</h3>
 
             @if($isRegistered)
                 <!-- Already Registered -->
@@ -263,7 +273,7 @@
                         <svg class="w-6 h-6 text-green-600 mr-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                         </svg>
-                        <p class="font-bold text-green-800">You're Registered!</p>
+                        <p class="font-bold text-green-800">Registration Confirmed</p>
                     </div>
                     <p class="text-sm text-green-700">Registered on {{ $registration->created_at->format('M d, Y') }}</p>
                 </div>
@@ -271,8 +281,8 @@
                 <!-- Registration Form or Full Message -->
                 @if($event->max_attendees && $registrationCount >= $event->max_attendees)
                     <div class="p-4 bg-red-50 border-2 border-red-300 rounded-lg text-center">
-                        <p class="text-red-800 font-bold text-lg">❌ Event Full</p>
-                        <p class="text-sm text-red-700 mt-1">This event has reached capacity</p>
+                        <p class="text-red-800 font-bold text-base">Event Full</p>
+                        <p class="text-sm text-red-700 mt-1">This event has reached maximum capacity and is no longer accepting registrations.</p>
                     </div>
                 @else
                     <form action="{{ route('events.register', $event->id) }}" method="POST" class="space-y-4">
@@ -296,27 +306,31 @@
             @endif
         </div>
 
-        <!-- Event Status -->
+        <!-- Event Status Card -->
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
             <h3 class="font-bold text-gray-900 text-xl mb-6">Event Status</h3>
             <div class="space-y-4">
                 <div class="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <p class="text-sm text-gray-500 mb-1 font-medium">Status</p>
-                    <p class="font-semibold text-green-700 text-lg">🟢 Upcoming Event</p>
+                    <p class="text-sm text-gray-500 mb-1 font-medium uppercase">Status</p>
+                    <div class="flex items-center">
+                        <span class="inline-block w-2.5 h-2.5 bg-green-600 rounded-full mr-2"></span>
+                        <p class="font-semibold text-green-700 text-base">Upcoming Event</p>
+                    </div>
                 </div>
                 <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p class="text-sm text-gray-500 mb-1 font-medium">Registrations</p>
-                    <p class="font-semibold text-gray-900 text-lg">{{ $registrationCount }}/{{ $event->max_attendees ?? '∞' }}</p>
+                    <p class="text-sm text-gray-500 mb-2 font-medium uppercase">Registrations</p>
+                    <p class="font-semibold text-gray-900 text-base">{{ $registrationCount }}/{{ $event->max_attendees ?? 'Unlimited' }}</p>
                     @if($event->max_attendees)
-                        <div class="w-full bg-gray-300 rounded-full h-2 mt-2">
-                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $capacityPercent }}%"></div>
+                        <div class="w-full bg-gray-300 rounded-full h-2 mt-3">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all" style="width: {{ $capacityPercent }}%"></div>
                         </div>
+                        <p class="text-xs text-gray-600 mt-2">{{ $capacityPercent }}% capacity</p>
                     @endif
                 </div>
             </div>
         </div>
 
-        <!-- Contact Information -->
+        <!-- Contact Information Card -->
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
             <h3 class="font-bold text-gray-900 text-xl mb-6 flex items-center">
                 <svg class="w-6 h-6 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -324,31 +338,30 @@
                 </svg>
                 Contact Information
             </h3>
-            <div class="space-y-6">
+            <div class="space-y-5">
                 <div>
-                    <p class="text-base text-gray-500">Contact Person</p>
-                    <p class="font-medium text-gray-900 text-lg">{{ $event->creator->full_name }}</p>
+                    <p class="text-xs text-gray-500 mb-1 font-medium uppercase">Contact Person</p>
+                    <p class="font-medium text-gray-900 text-base">{{ $event->creator->full_name }}</p>
                 </div>
                 @if($event->creator->email)
                     <div>
-                        <p class="text-base text-gray-500">Contact Email</p>
-                        <a href="mailto:{{ $event->creator->email }}" class="text-blue-600 hover:underline text-lg">{{ $event->creator->email }}</a>
+                        <p class="text-xs text-gray-500 mb-1 font-medium uppercase">Email</p>
+                        <a href="mailto:{{ $event->creator->email }}" class="text-blue-600 hover:text-blue-700 text-sm break-all">{{ $event->creator->email }}</a>
                     </div>
                 @endif
             </div>
         </div>
 
-        <!-- Similar Events -->
+        <!-- Similar Events Card -->
         @if($similarEvents->count())
             <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
-                <h3 class="text-lg font-bold text-gray-900 mb-4">Similar Events</h3>
+                <h3 class="text-lg font-bold text-gray-900 mb-6">Similar Events</h3>
                 <div class="space-y-3">
                     @foreach($similarEvents as $similar)
                         <a href="{{ route('events.show', $similar->id) }}"
-                            class="block p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all group">
-                            <p class="font-semibold text-gray-900 group-hover:text-blue-600 text-sm line-clamp-2">{{ $similar->title }}</p>
+                            class="block p-4 border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all">
+                            <p class="font-semibold text-gray-900 text-sm line-clamp-2">{{ $similar->title }}</p>
                             <p class="text-xs text-gray-500 mt-2">
-                                📅
                                 @if($similar->is_multiday && $similar->end_date)
                                     {{ $similar->event_date->format('M d') }} - {{ \Carbon\Carbon::parse($similar->end_date)->format('M d, Y') }}
                                 @else
@@ -363,9 +376,9 @@
     </div>
 </div>
 
-<!-- ✅ CANCEL REGISTRATION MODAL -->
+<!-- Cancel Registration Modal -->
 <div id="cancelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in fade-in zoom-in duration-200">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
         <!-- Modal Header -->
         <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 rounded-t-xl">
             <div class="flex items-start justify-between">
@@ -386,20 +399,20 @@
         <!-- Modal Body -->
         <div class="px-6 py-6">
             <div class="mb-4">
-                <p class="text-gray-900 font-semibold text-lg">Are you sure?</p>
+                <p class="text-gray-900 font-semibold text-lg">Confirm Cancellation</p>
             </div>
             <p class="text-gray-600 mb-4">
                 You are about to cancel your registration for <span class="font-bold text-gray-900" id="eventTitle"></span>
             </p>
 
             <!-- Warning Alert -->
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
                 <div class="flex">
-                    <svg class="w-5 h-5 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg class="w-5 h-5 text-amber-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                     </svg>
                     <div>
-                        <p class="text-sm font-medium text-yellow-800">
+                        <p class="text-sm font-medium text-amber-800">
                             This action cannot be undone. You may need to register again if spots are still available.
                         </p>
                     </div>
@@ -420,7 +433,7 @@
                 <button
                     type="submit"
                     class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
-                    Yes, Cancel Registration
+                    Cancel Registration
                 </button>
             </form>
         </div>
@@ -429,11 +442,14 @@
 
 <!-- Error Messages -->
 @if ($errors->any())
-    <div class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-xl flex items-center z-50">
-        <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 20 20">
+    <div class="fixed bottom-4 right-4 bg-red-500 text-white px-6 py-4 rounded-lg shadow-xl flex items-center z-50 max-w-sm">
+        <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
         </svg>
-        <p class="font-semibold">{{ $errors->first() }}</p>
+        <div>
+            <p class="font-semibold">Error</p>
+            <p class="text-sm">{{ $errors->first() }}</p>
+        </div>
     </div>
 @endif
 
@@ -444,10 +460,12 @@
         const actionUrl = `{{ route('events.unregister', ':eventId') }}`.replace(':eventId', eventId);
         document.getElementById('cancelForm').action = actionUrl;
         document.getElementById('cancelModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeCancelModal() {
         document.getElementById('cancelModal').classList.add('hidden');
+        document.body.style.overflow = 'auto';
     }
 
     document.getElementById('cancelModal')?.addEventListener('click', function(event) {
