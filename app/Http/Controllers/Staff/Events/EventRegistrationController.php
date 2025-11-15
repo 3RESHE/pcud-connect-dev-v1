@@ -17,91 +17,23 @@ use Illuminate\Http\Request;
 class EventRegistrationController extends Controller
 {
     /**
-     * Display a listing of events with status filtering
+     * Show all registrations for an event
      */
-    public function index(Request $request)
+    public function index(Event $event)
     {
-        $user = auth()->user();
-        $status = $request->get('status', 'published'); // Default to published (upcoming)
+        $this->authorizeEventOwner($event);
 
-        // ✅ Build base query with status filter
-        $query = Event::with(['creator', 'registrations'])
-            ->orderBy('event_date', 'asc');
+        $registrations = $event->registrations()
+            ->with([
+                'user:id,first_name,last_name,email,role',
+                'user.studentProfile:id,user_id,student_id',
+                'user.alumniProfile:id,user_id'
+            ])
+            ->latest('created_at')
+            ->paginate(20);
 
-        // Apply status filter
-        if ($status === 'published') {
-            // Upcoming events - only published
-            $query->where('status', 'published')
-                ->where(function ($q) {
-                    $q->where(function ($singleDay) {
-                        $singleDay->where('is_multiday', false)
-                            ->where('event_date', '>=', today());
-                    })
-                        ->orWhere(function ($multiDay) {
-                            $multiDay->where('is_multiday', true)
-                                ->where('end_date', '>=', today());
-                        });
-                });
-        } elseif ($status === 'ongoing') {
-            $query->where('status', 'ongoing');
-        } elseif ($status === 'completed') {
-            $query->where('status', 'completed')
-                ->orWhere(function ($q) {
-                    $q->where('is_multiday', false)
-                        ->where('event_date', '<', today());
-                })
-                ->orWhere(function ($q) {
-                    $q->where('is_multiday', true)
-                        ->where('end_date', '<', today());
-                });
-        }
-
-        // Filter by target audience based on user role
-        if ($user->role === 'student') {
-            $query->whereIn('target_audience', ['allstudents', 'openforall']);
-        } elseif ($user->role === 'alumni') {
-            $query->whereIn('target_audience', ['alumni', 'openforall']);
-        }
-
-        // Filter by event type if provided
-        if ($request->has('type') && $request->type !== '') {
-            $query->where('event_format', $request->type);
-        }
-
-        // Server-side search
-        if ($request->has('search') && $request->search) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhereHas('creator', function ($creatorQuery) use ($search) {
-                        $creatorQuery->where('full_name', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        // Paginate results
-        $events = $query->paginate(12);
-
-        // Get current user's registrations
-        $registeredEventIds = $user->eventRegistrations()
-            ->pluck('event_id')
-            ->toArray();
-
-        // Get event statistics
-        $stats = $this->getEventStats($user);
-
-        return view('shared.events.index', [
-            'events' => $events,
-            'registeredEventIds' => $registeredEventIds,
-            'userRole' => $user->role,
-            'currentSearch' => $request->get('search'),
-            'currentType' => $request->get('type'),
-            'currentStatus' => $status,
-            'stats' => $stats,
-        ]);
+        return view('users.staff.events.registrations.index', compact('event', 'registrations'));
     }
-
 
 
     /**
