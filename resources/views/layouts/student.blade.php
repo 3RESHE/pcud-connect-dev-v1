@@ -42,7 +42,6 @@
                             class="@if (request()->routeIs('student.jobs.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Job Opportunities
                         </a>
-                        <!-- ✅ UPDATED: Point to shared events route -->
                         <a href="{{ route('events.index') }}"
                             class="@if (request()->routeIs('events.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             Events
@@ -51,14 +50,10 @@
                             class="@if (request()->routeIs('news.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
                             News
                         </a>
-                        <a href="{{ route('student.profile.show') }}"
-                            class="@if (request()->routeIs('student.profile.*')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200">
-                            Profile
-                        </a>
                     </div>
                 </div>
 
-                <!-- Desktop User Menu - ENHANCED DROPDOWN -->
+                <!-- Desktop User Menu -->
                 <div class="hidden md:flex items-center space-x-4">
                     <div class="relative">
                         <button onclick="toggleUserMenu()"
@@ -79,6 +74,9 @@
                                         </svg>
                                     </div>
                                 @endif
+                                <span class="text-sm text-gray-700 font-medium hidden lg:inline">
+                                    {{ auth()->user()->first_name }}
+                                </span>
                             </div>
                         </button>
 
@@ -106,7 +104,12 @@
                                     @endif
                                     <div class="min-w-0 flex-1">
                                         <p class="text-sm font-semibold text-gray-900 truncate">
-                                            {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
+                                            {{ auth()->user()->first_name }}
+                                            @if(auth()->user()->middle_name)
+                                                {{ auth()->user()->middle_name }}
+                                            @endif
+                                            {{ auth()->user()->last_name }}
+                                        </p>
                                         <p class="text-xs text-gray-500 truncate">{{ auth()->user()->email }}</p>
                                     </div>
                                 </div>
@@ -125,7 +128,7 @@
                                     </svg>
                                     Profile
                                 </a>
-                                <a href="{{ url('/profile') }}"
+                                <a href="{{ route('student.profile.edit') }}"
                                     class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                                     role="menuitem">
                                     <svg class="h-5 w-5 mr-3 text-gray-400" fill="none" stroke="currentColor"
@@ -136,8 +139,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
-                                    Settings
+                                    Manage Password
                                 </a>
+
+                                <!-- Divider -->
+                                <div class="border-t border-gray-200"></div>
+
+                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
+                                    style="display: none;">@csrf</form>
                                 <a href="{{ route('logout') }}"
                                     class="flex items-center px-4 py-2 text-sm text-red-700 hover:bg-red-50 transition-colors duration-200"
                                     role="menuitem"
@@ -150,8 +159,6 @@
                                     </svg>
                                     Logout
                                 </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST"
-                                    style="display: none;">@csrf</form>
                             </div>
                         </div>
                     </div>
@@ -182,18 +189,14 @@
                     <a href="{{ route('student.dashboard') }}"
                         class="@if (request()->routeIs('student.dashboard')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Dashboard</a>
                     <a href="{{ route('student.jobs.index') }}"
-                        class="@if (request()->routeIs('student.jobs.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Job
-                        Opportunities</a>
-                    <!-- ✅ UPDATED: Point to shared events route -->
+                        class="@if (request()->routeIs('student.jobs.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Job Opportunities</a>
                     <a href="{{ route('events.index') }}"
                         class="@if (request()->routeIs('events.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Events</a>
                     <a href="{{ route('news.index') }}"
                         class="@if (request()->routeIs('news.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">News</a>
-                    <a href="{{ route('student.profile.show') }}"
-                        class="@if (request()->routeIs('student.profile.*')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200">Profile</a>
                 </div>
 
-                <!-- Mobile User Profile Section - ENHANCED -->
+                <!-- Mobile User Profile Section -->
                 <div class="pt-4 pb-3 border-t border-gray-200">
                     <div class="flex items-center px-5">
                         <div class="flex-shrink-0">
@@ -214,7 +217,12 @@
                         </div>
                         <div class="ml-3">
                             <div class="text-base font-semibold leading-none text-gray-900">
-                                {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</div>
+                                {{ auth()->user()->first_name }}
+                                @if(auth()->user()->middle_name)
+                                    {{ auth()->user()->middle_name }}
+                                @endif
+                                {{ auth()->user()->last_name }}
+                            </div>
                             <div class="text-sm font-medium leading-none text-gray-500 mt-1">
                                 {{ auth()->user()->email }}</div>
                         </div>
@@ -228,7 +236,7 @@
                             </svg>
                             Profile
                         </a>
-                        <a href="{{ url('/profile') }}"
+                        <a href="{{ route('student.profile.edit') }}"
                             class="flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200">
                             <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -237,8 +245,11 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
-                            Settings
+                            Manage Password
                         </a>
+                        <div class="border-t border-gray-200 my-1"></div>
+                        <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST"
+                            style="display: none;">@csrf</form>
                         <a href="{{ route('logout') }}"
                             class="flex items-center px-3 py-2 rounded-md text-base font-medium text-red-700 hover:text-red-900 hover:bg-red-50 transition-colors duration-200"
                             onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">
@@ -249,8 +260,6 @@
                             </svg>
                             Logout
                         </a>
-                        <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST"
-                            style="display: none;">@csrf</form>
                     </div>
                 </div>
             </div>
@@ -259,8 +268,62 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <!-- Global Error Messages -->
+        @if ($errors->any())
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-start">
+                    <svg class="h-5 w-5 text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800 mb-2">Please fix the following errors:</p>
+                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Success Messages -->
+        @if (session('success'))
+            <div class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+                <div class="flex items-start">
+                    <svg class="h-5 w-5 text-green-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Warning Messages -->
+        @if (session('warning'))
+            <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex items-start">
+                    <svg class="h-5 w-5 text-yellow-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-yellow-800">{{ session('warning') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         @yield('content')
     </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <p class="text-center text-gray-500 text-sm">© 2025 PCU-DASMA Connect. All rights reserved.</p>
+        </div>
+    </footer>
 
     <script>
         // Mobile menu toggle function
@@ -292,6 +355,20 @@
             if (!button && !userMenu.contains(event.target)) {
                 userMenu.classList.add("hidden");
             }
+        });
+
+        // Auto-hide success/warning messages after 5 seconds
+        document.addEventListener("DOMContentLoaded", function() {
+            const alerts = document.querySelectorAll('[role="alert"]');
+            alerts.forEach(alert => {
+                if (alert.classList.contains('bg-green-50') || alert.classList.contains('bg-yellow-50')) {
+                    setTimeout(() => {
+                        alert.style.transition = 'opacity 0.3s ease-out';
+                        alert.style.opacity = '0';
+                        setTimeout(() => alert.remove(), 300);
+                    }, 5000);
+                }
+            });
         });
     </script>
 </body>
