@@ -71,6 +71,10 @@ Route::middleware(['auth'])->group(function () {
         ->name('account.password.change');
     Route::post('/account/security/password', [PasswordManagementController::class, 'updatePassword'])
         ->name('account.password.update');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 // =====================================================
