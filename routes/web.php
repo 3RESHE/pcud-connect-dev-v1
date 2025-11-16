@@ -388,6 +388,10 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 // ✅ APPLICATION ROUTES (Nested under job-postings for organization)
                 Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])
                     ->name('applications');
+
+                // ✅ NEW: Export applications to Excel
+                Route::get('/{jobPosting}/applications/export', [ApplicationController::class, 'exportExcel'])
+                    ->name('applications.export');
             });
 
             // ===== JOB APPLICATIONS =====

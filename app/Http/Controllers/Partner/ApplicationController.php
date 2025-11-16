@@ -10,9 +10,49 @@ use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class ApplicationController extends Controller
 {
+    /**
+     * View all applications for a job posting
+     */
+    public function applications(JobPosting $jobPosting)
+    {
+        try {
+            // ✅ Authorization check
+            if ($jobPosting->partner_id !== auth()->id()) {
+                abort(403, 'Unauthorized');
+            }
+
+            // ✅ Get applications with pagination
+            $applications = $jobPosting->applications()
+                ->with('applicant')
+                ->paginate(15);
+
+            // ✅ Calculate statistics
+            $stats = [
+                'total' => $jobPosting->applications()->count(),
+                'pending' => $jobPosting->applications()->where('status', 'pending')->count(),
+                'contacted' => $jobPosting->applications()->where('status', 'contacted')->count(),
+                'approved' => $jobPosting->applications()->where('status', 'approved')->count(),
+                'rejected' => $jobPosting->applications()->where('status', 'rejected')->count(),
+            ];
+
+            return view('users.partner.job-postings.applications', [
+                'jobPosting' => $jobPosting,
+                'applications' => $applications,
+                'stats' => $stats,
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Applications view error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to load applications');
+        }
+    }
+
     /**
      * View single application details with full profile information
      */
@@ -78,6 +118,36 @@ class ApplicationController extends Controller
         } catch (\Exception $e) {
             \Log::error('Application show error: ' . $e->getMessage());
             return back()->with('error', 'Failed to load application: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export applications to Excel by status
+     * Usage: ?status=approved|rejected|contacted
+     */
+    public function exportExcel(Request $request, JobPosting $jobPosting)
+    {
+        try {
+            // ✅ Authorization check
+            if ($jobPosting->partner_id !== auth()->id()) {
+                abort(403, 'Unauthorized');
+            }
+
+            // ✅ Validate status parameter
+            $request->validate([
+                'status' => 'nullable|in:approved,rejected,contacted,all',
+            ]);
+
+            $status = $request->query('status', 'all');
+            $fileName = "applications-{$status}-" . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new ApplicationExcelExport($jobPosting, $status),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            \Log::error('Excel export failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export applications: ' . $e->getMessage());
         }
     }
 
@@ -250,7 +320,6 @@ class ApplicationController extends Controller
 
     /**
      * Download applicant resume with proper path handling
-     * Handles both profile resumes and application-uploaded resumes
      */
     public function downloadResume(JobApplication $application)
     {
@@ -368,5 +437,84 @@ class ApplicationController extends Controller
         // Remove special characters and replace spaces with underscores
         $filename = preg_replace('/[^A-Za-z0-9_\-]/', '', str_replace(' ', '_', $filename));
         return trim($filename, '_') ?: 'resume';
+    }
+}
+
+/**
+ * ✅ Excel Export Class for Job Applications
+ */
+class ApplicationExcelExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    private $jobPosting;
+    private $status;
+
+    public function __construct(JobPosting $jobPosting, $status = 'all')
+    {
+        $this->jobPosting = $jobPosting;
+        $this->status = $status;
+    }
+
+    public function array(): array
+    {
+        // ✅ Build query based on status
+        $query = $this->jobPosting->applications()
+            ->with('applicant', 'applicant.studentProfile', 'applicant.alumniProfile')
+            ->orderBy('created_at', 'desc');
+
+        // ✅ Filter by status if not 'all'
+        if ($this->status !== 'all') {
+            $query->where('status', $this->status);
+        }
+
+        $applications = $query->get();
+
+        $data = [];
+
+        // ✅ Add title row
+        $data[] = ["Job Applications - {$this->jobPosting->title}"];
+        $data[] = ["Status: " . ucfirst($this->status === 'all' ? 'All' : $this->status)];
+        $data[] = ["Generated: " . now()->format('M d, Y H:i A')];
+        $data[] = [];
+
+        // ✅ Add data rows
+        foreach ($applications as $application) {
+            $applicant = $application->applicant;
+            $profile = $application->applicant_type === 'student'
+                ? $applicant->studentProfile
+                : $applicant->alumniProfile;
+
+            $data[] = [
+                $applicant->name,
+                $applicant->email,
+                ucfirst($application->applicant_type),
+                $applicant->department?->title ?? 'N/A',
+                $profile?->phone ?? 'N/A',
+                $profile?->personal_email ?? 'N/A',
+                ucfirst(str_replace('_', ' ', $application->status)),
+                $application->created_at->format('M d, Y H:i'),
+                $application->reviewed_at ? $application->reviewed_at->format('M d, Y H:i') : 'N/A',
+                $application->last_contacted_at ? $application->last_contacted_at->format('M d, Y H:i') : 'N/A',
+                $application->rejection_reason ?? 'N/A',
+            ];
+        }
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return [
+            'Applicant Name',
+            'University Email',
+            'Type',
+            'Department',
+            'Phone',
+            'Personal Email',
+            'Status',
+            'Applied Date',
+            'Reviewed Date',
+            'Last Contacted',
+            'Rejection Reason',
+        ];
     }
 }
