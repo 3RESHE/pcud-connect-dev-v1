@@ -411,8 +411,8 @@ class UserController extends Controller
             if ($type === 'students') {
                 $headers = ['first_name', 'last_name', 'middle_name', 'name_suffix', 'email', 'student_id'];
                 $rows = [
-                    ['Juan', 'Dela Cruz', 'Carlos', 'Jr.', 'jegluneta@pcu.edu.ph', '202206402'],
-                    ['Marj Celine', 'San Jose', 'Abera', '', 'mcasanjose@pcu.edu.ph', '202206406'],
+                    ['Juan', 'Dela Cruz', 'Carlos', 'Jr.', 'test123@pcu.edu.ph', '202206402'],
+                    ['Marj Celine', 'San Jose', 'Abera', '', 'test333@pcu.edu.ph', '202206406'],
                     ['Antonio', 'Reyes', 'Manuel', 'Sr.', 'test123@pcud.edu.ph', '202206408'],
                 ];
             } else {
