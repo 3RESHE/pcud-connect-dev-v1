@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 class ApplicationController extends Controller
 {
     /**
-     * View single application details
+     * View single application details with full profile information
      */
     public function show(JobApplication $application)
     {
@@ -26,14 +26,45 @@ class ApplicationController extends Controller
                 abort(403, 'Unauthorized to view this application');
             }
 
-            // ✅ Load applicant details
-            $applicant = $application->applicant;
+            // ✅ Load applicant details with all relationships
+            $applicant = $application->applicant()->with('department')->first();
 
-            // ✅ Get applicant profile based on type
+            // ✅ Get applicant profile based on type with all relationships
+            $applicantProfile = null;
+            $experiences = collect();
+            $projects = collect();
+
             if ($application->applicant_type === 'student') {
                 $applicantProfile = $applicant->studentProfile;
+
+                // Load student experiences and projects if they exist
+                if ($applicantProfile) {
+                    $experiences = $applicant->experiences()
+                        ->where('user_type', 'student')
+                        ->orderBy('start_date', 'desc')
+                        ->get();
+
+                    $projects = $applicant->projects()
+                        ->where('user_type', 'student')
+                        ->orderBy('start_date', 'desc')
+                        ->get();
+                }
             } else {
+                // Alumni
                 $applicantProfile = $applicant->alumniProfile;
+
+                // Load alumni experiences and projects if they exist
+                if ($applicantProfile) {
+                    $experiences = $applicant->experiences()
+                        ->where('user_type', 'alumni')
+                        ->orderBy('start_date', 'desc')
+                        ->get();
+
+                    $projects = $applicant->projects()
+                        ->where('user_type', 'alumni')
+                        ->orderBy('start_date', 'desc')
+                        ->get();
+                }
             }
 
             return view('users.partner.job-postings.application-show', [
@@ -41,6 +72,8 @@ class ApplicationController extends Controller
                 'jobPosting' => $jobPosting,
                 'applicant' => $applicant,
                 'applicantProfile' => $applicantProfile,
+                'experiences' => $experiences,
+                'projects' => $projects,
             ]);
         } catch (\Exception $e) {
             \Log::error('Application show error: ' . $e->getMessage());
@@ -135,6 +168,9 @@ class ApplicationController extends Controller
         }
     }
 
+    /**
+     * Contact applicant via email
+     */
     public function contact(Request $request, JobApplication $application)
     {
         try {
@@ -212,9 +248,8 @@ class ApplicationController extends Controller
         }
     }
 
-
     /**
-     * ✅ FIXED: Download applicant resume with proper path handling
+     * Download applicant resume with proper path handling
      * Handles both profile resumes and application-uploaded resumes
      */
     public function downloadResume(JobApplication $application)
