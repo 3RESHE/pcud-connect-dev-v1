@@ -46,7 +46,7 @@
                     <div class="text-sm text-gray-900">
                         <span class="font-medium">{{ $log->getSubjectTypeDisplay() }}</span>
                     </div>
-                    <div class="text-sm text-gray-500">{{ $log->getSubject()?->title ?? 'Deleted Record' }}</div>
+                    <div class="text-sm text-gray-500">{{ $log->getSubject()?->title ?? ' ' }}</div>
                     @if($log->getChangedFieldsCount() > 0)
                         <div class="text-xs text-gray-400 mt-1">Changes: {{ $log->getChangedFieldsCount() }}</div>
                     @endif
