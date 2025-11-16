@@ -9,10 +9,8 @@ use App\Http\Controllers\Admin\Jobs\JobApprovalController;
 use App\Http\Controllers\Admin\News\NewsApprovalController;
 use App\Http\Controllers\Admin\Partnerships\PartnershipApprovalController;
 use App\Http\Controllers\Admin\Users\UserController;
-use App\Http\Controllers\Alumni\AlumniEventController;
 use App\Http\Controllers\Alumni\AlumniExperienceController;
 use App\Http\Controllers\Alumni\AlumniJobController;
-use App\Http\Controllers\Alumni\AlumniNewsController;
 use App\Http\Controllers\Alumni\AlumniProfileController;
 use App\Http\Controllers\Alumni\AlumniProjectController;
 use App\Http\Controllers\Alumni\DashboardController as AlumniDashboardController;
@@ -21,7 +19,6 @@ use App\Http\Controllers\Dashboard\AdminDashboardController;
 use App\Http\Controllers\Dashboard\StaffDashboardController;
 use App\Http\Controllers\Partner\ApplicationController;
 use App\Http\Controllers\Partner\JobPostingController;
-use App\Http\Controllers\Partner\NewsController as PartnerNewsController;
 use App\Http\Controllers\Partner\PartnerDashboardController;
 use App\Http\Controllers\Partner\PartnershipController;
 use App\Http\Controllers\Partner\ProfileController as PartnerProfileController;
@@ -36,7 +33,6 @@ use App\Http\Controllers\Student\DashboardController;
 use App\Http\Controllers\Student\ExperienceController;
 use App\Http\Controllers\Student\ProjectController;
 use App\Http\Controllers\Student\StudentJobController;
-use App\Http\Controllers\Student\StudentNewsController;
 use App\Http\Controllers\Student\StudentProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -360,13 +356,6 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::get('/edit', [PartnerProfileController::class, 'edit'])
                 ->name('edit');
             Route::post('/', [PartnerProfileController::class, 'update'])
-                ->name('update');
-        });
-
-        Route::prefix('settings')->name('settings.')->group(function () {
-            Route::get('/', [PartnerSettingsController::class, 'show'])
-                ->name('show');
-            Route::put('/', [PartnerSettingsController::class, 'update'])
                 ->name('update');
         });
 
