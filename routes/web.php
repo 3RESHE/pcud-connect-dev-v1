@@ -163,6 +163,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
         });
 
+
+
         // ===== DEPARTMENT MANAGEMENT =====
         Route::prefix('departments')->name('departments.')->group(function () {
             Route::get('/', [DepartmentController::class, 'index'])
@@ -254,8 +256,21 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::post('/activity-logs/export', [ActivityLogController::class, 'export'])
             ->name('activity-logs.export');
 
+        // ===== REPORTS & EXPORTS =====
         Route::get('/reports', [ReportController::class, 'index'])
             ->name('reports');
+        Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])
+            ->name('reports.export-excel');
+
+        // AJAX endpoints for charts
+        Route::get('/reports/user-growth', [ReportController::class, 'getUserGrowth'])
+            ->name('reports.user-growth');
+        Route::get('/reports/approval-stats', [ReportController::class, 'getApprovalStats'])
+            ->name('reports.approval-stats');
+        Route::get('/reports/activity-heatmap', [ReportController::class, 'getActivityHeatmap'])
+            ->name('reports.activity-heatmap');
+        Route::get('/reports/content-distribution', [ReportController::class, 'getContentDistribution'])
+            ->name('reports.content-distribution');
     });
 
     // =====================================================
