@@ -4,11 +4,13 @@ use App\Http\Middleware\AlumniProfileComplete;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\PartnerProfileComplete;
+use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\StudentProfileComplete;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+
 
 
 
@@ -28,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'partner.profile.complete' => PartnerProfileComplete::class,
             'student.profile.complete' => StudentProfileComplete::class,
             'active' => EnsureUserIsActive::class,
+            'guest' => RedirectIfAuthenticated::class,
         ]);
 
         // Apply globally to web routes
