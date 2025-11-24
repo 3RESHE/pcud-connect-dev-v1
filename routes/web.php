@@ -34,7 +34,9 @@ use App\Http\Controllers\Student\ExperienceController;
 use App\Http\Controllers\Student\ProjectController;
 use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentProfileController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -42,9 +44,9 @@ use Illuminate\Support\Facades\Route;
 // PUBLIC ROUTES (No Authentication Required)
 // =====================================================
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+Route::middleware('guest')->group(function () {
+    Route::get('/', [WelcomeController::class, 'index'])->name('home');
+});
 
 // =====================================================
 // AUTHENTICATION ROUTES (from Laravel Breeze)
