@@ -10,7 +10,7 @@
             <div class="flex justify-between items-start">
                 <div class="flex-1">
                     <h1 class="text-3xl font-bold mb-2">Welcome back, {{ auth()->user()->first_name }}! 👋</h1>
-                    <p class="text-blue-100 mb-4">Class of {{ $alumniProfile?->graduation_year ?? 'Year Unknown' }} | {{ auth()->user()->department?->title ?? 'Department' }}</p>
+                    <p class="text-blue-100 mb-4">Class of {{ $alumniProfile?->graduation_year ?? 'Year Unknown' }}</p>
 
                     <!-- Profile Completion Alert -->
                     @if (!$isProfileComplete && $profileCompletionPercentage < 100)
