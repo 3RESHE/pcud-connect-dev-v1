@@ -8,7 +8,6 @@
         <!-- Main Content -->
         <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
 
-
             <!-- Header Section -->
             <div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                 <div>
@@ -109,7 +108,6 @@
                 </form>
             </div>
 
-
             <!-- Applications List -->
             <div class="bg-white rounded-lg shadow-sm overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200">
@@ -117,111 +115,112 @@
                 </div>
 
                 @forelse($applications as $application)
-                    <div class="border-b border-gray-200 last:border-b-0">
-                        <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
-                            <!-- Application Header -->
-                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
-                                <div class="flex-1">
-                                    <!-- Job Title -->
-                                    <h4 class="text-lg font-semibold text-gray-900 mb-1">
-                                        {{ $application->jobPosting?->title ?? 'Job Posting' }}
-                                    </h4>
-                                    <!-- Company Name -->
-                                    <p class="text-gray-600 text-sm">
-                                        <span class="font-medium">Company:</span>
-                                        {{ $application->jobPosting?->partnerProfile?->company_name ?? 'N/A' }}
-                                    </p>
+                    {{-- ✅ FILTER: Only show applications where job posting status is 'approved' --}}
+                    @if($application->jobPosting && $application->jobPosting->status === 'approved')
+                        <div class="border-b border-gray-200 last:border-b-0">
+                            <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+                                <!-- Application Header -->
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
+                                    <div class="flex-1">
+                                        <!-- Job Title -->
+                                        <h4 class="text-lg font-semibold text-gray-900 mb-1">
+                                            {{ $application->jobPosting->title }}
+                                        </h4>
+                                        <!-- Company Name -->
+                                        <p class="text-gray-600 text-sm">
+                                            <span class="font-medium">Company:</span>
+                                            {{ $application->jobPosting->partnerProfile?->company_name ?? 'N/A' }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Status Badge -->
+                                    <div>
+                                        @if ($application->status === 'pending')
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                                Pending Review
+                                            </span>
+                                        @elseif($application->status === 'approved')
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                                Approved
+                                            </span>
+                                        @elseif($application->status === 'rejected')
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                                Rejected
+                                            </span>
+                                        @else
+                                            <span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                                {{ ucfirst($application->status) }}
+                                            </span>
+                                        @endif
+                                    </div>
                                 </div>
 
-                                <!-- Status Badge -->
-                                <div>
-                                    @if ($application->status === 'pending')
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
-                                            Pending Review
-                                        </span>
-                                    @elseif($application->status === 'approved')
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                                            Approved
-                                        </span>
-                                    @elseif($application->status === 'rejected')
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                                            Rejected
-                                        </span>
-                                    @else
-                                        <span
-                                            class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                                            {{ ucfirst($application->status) }}
-                                        </span>
+                                <!-- Application Details -->
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 text-sm text-gray-600">
+                                    <!-- Job Type -->
+                                    <div>
+                                        <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Job Type</p>
+                                        <p class="font-medium">{{ ucfirst($application->jobPosting->job_type ?? 'N/A') }}</p>
+                                    </div>
+
+                                    <!-- Location -->
+                                    <div>
+                                        <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Location</p>
+                                        <p class="font-medium">{{ $application->jobPosting->location ?? 'Remote' }}</p>
+                                    </div>
+
+                                    <!-- Applied Date -->
+                                    <div>
+                                        <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Applied On</p>
+                                        <p class="font-medium">{{ $application->created_at->format('M d, Y') }}</p>
+                                    </div>
+
+                                    <!-- Status Update -->
+                                    <div>
+                                        <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Status Update</p>
+                                        <p class="font-medium">{{ $application->updated_at->diffForHumans() }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Application Meta -->
+                                <div
+                                    class="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">
+                                    @if ($application->jobPosting->salary_min && $application->jobPosting->salary_max)
+                                        <div class="flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
+                                                </path>
+                                            </svg>
+                                            <span class="font-semibold text-green-600">
+                                                PHP {{ number_format($application->jobPosting->salary_min) }} - PHP
+                                                {{ number_format($application->jobPosting->salary_max) }}
+                                            </span>
+                                        </div>
                                     @endif
-                                </div>
-                            </div>
-
-                            <!-- Application Details -->
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4 text-sm text-gray-600">
-                                <!-- Job Type -->
-                                <div>
-                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Job Type</p>
-                                    <p class="font-medium">{{ ucfirst($application->jobPosting?->job_type ?? 'N/A') }}</p>
-                                </div>
-
-                                <!-- Location -->
-                                <div>
-                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Location</p>
-                                    <p class="font-medium">{{ $application->jobPosting?->location ?? 'Remote' }}</p>
-                                </div>
-
-                                <!-- Applied Date -->
-                                <div>
-                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Applied On</p>
-                                    <p class="font-medium">{{ $application->created_at->format('M d, Y') }}</p>
-                                </div>
-
-                                <!-- Status Update -->
-                                <div>
-                                    <p class="text-gray-500 text-xs uppercase font-semibold mb-1">Status Update</p>
-                                    <p class="font-medium">{{ $application->updated_at->diffForHumans() }}</p>
-                                </div>
-                            </div>
-
-                            <!-- Application Meta -->
-                            <div
-                                class="flex flex-wrap items-center gap-3 text-xs text-gray-500 mb-4 pb-4 border-b border-gray-100">
-                                @if ($application->jobPosting?->salary_min && $application->jobPosting?->salary_max)
                                     <div class="flex items-center">
                                         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
-                                            </path>
+                                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
-                                        <span class="font-semibold text-green-600">
-                                            PHP {{ number_format($application->jobPosting->salary_min) }} - PHP
-                                            {{ number_format($application->jobPosting->salary_max) }}
-                                        </span>
+                                        Application ID: {{ $application->id }}
                                     </div>
-                                @endif
-                                <div class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    Application ID: {{ $application->id }}
                                 </div>
-                            </div>
 
-                            <!-- Action Buttons -->
-                            <div class="flex flex-wrap gap-3">
-                                @if ($application->jobPosting)
+                                <!-- Action Buttons -->
+                                <div class="flex flex-wrap gap-3">
                                     <a href="{{ route('student.applications.show', $application->id) }}"
                                         class="inline-flex items-center px-4 py-2 bg-primary text-white text-sm rounded-lg hover:bg-blue-700 font-medium transition-colors">
                                         View Application Details
                                     </a>
-                                @endif
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
                 @empty
                     <!-- Empty State -->
                     <div class="px-6 py-12 text-center">
