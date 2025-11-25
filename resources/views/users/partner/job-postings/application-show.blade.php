@@ -40,10 +40,17 @@
                     <div class="space-y-6">
                         <!-- Profile Header -->
                         <div class="flex flex-col sm:flex-row items-start gap-4 pb-4 border-b">
-                            <div
-                                class="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
-                                {{ substr($applicant->name, 0, 1) }}
-                            </div>
+                            {{-- Profile Photo --}}
+                            @if ($applicantProfile && $applicantProfile->profile_photo)
+                                <img src="{{ asset('storage/' . $applicantProfile->profile_photo) }}"
+                                     alt="{{ $applicant->name }}"
+                                     class="h-16 w-16 rounded-full object-cover flex-shrink-0 border-2 border-gray-200">
+                            @else
+                                <div class="h-16 w-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-2xl font-bold flex-shrink-0">
+                                    {{ substr($applicant->name, 0, 1) }}
+                                </div>
+                            @endif
+
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-lg font-bold text-gray-900 break-words">
                                     {{ $applicant->name }}</h3>
