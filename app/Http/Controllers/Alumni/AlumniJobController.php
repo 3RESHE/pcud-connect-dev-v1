@@ -168,7 +168,6 @@ class AlumniJobController extends Controller
                 $filename = auth()->id() . '_' . time() . '_' . $file->getClientOriginalName();
                 $resumePath = $file->storeAs('resumes/job-applications/' . auth()->id(), $filename, 'public');
             } else {
-                // ❌ ERROR 1 FIX: Changed from studentProfile to alumniProfile
                 $alumniProfile = auth()->user()->alumniProfile;
                 if ($alumniProfile && $alumniProfile->resume_path) {
                     $resumePath = $alumniProfile->resume_path;
@@ -185,7 +184,6 @@ class AlumniJobController extends Controller
             $application = JobApplication::create([
                 'job_posting_id' => $job->id,
                 'applicant_id' => auth()->id(),
-                // ❌ ERROR 2 FIX: Changed from 'student' to 'alumni'
                 'applicant_type' => 'alumni',
                 'cover_letter' => $validated['cover_letter'],
                 'resume_path' => $resumePath,
@@ -222,14 +220,18 @@ class AlumniJobController extends Controller
 
     /**
      * View alumni's job applications
+     * ✅ UPDATED: Filter only applications for approved job postings
      */
     public function applications(): View
     {
         try {
             $query = JobApplication::where('applicant_id', auth()->id())
-                // ❌ ERROR 3 FIX: Changed from 'student' to 'alumni'
                 ->where('applicant_type', 'alumni')
-                ->with(['jobPosting', 'applicant']);
+                ->with(['jobPosting', 'applicant'])
+                // ✅ Filter by approved job postings only
+                ->whereHas('jobPosting', function ($q) {
+                    $q->where('status', 'approved');
+                });
 
             // Search by job title or company name
             if (request('search')) {
@@ -247,20 +249,28 @@ class AlumniJobController extends Controller
 
             $applications = $query->orderBy('created_at', 'desc')->paginate(10);
 
-            // Count by status
+            // Count by status (only for approved job postings)
             $statuses = [
                 'pending' => JobApplication::where('applicant_id', auth()->id())
-                    // ❌ ALSO FIX THIS: Changed from 'student' to 'alumni'
                     ->where('applicant_type', 'alumni')
                     ->where('status', 'pending')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
                     ->count(),
                 'approved' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'alumni')
                     ->where('status', 'approved')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
                     ->count(),
                 'rejected' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'alumni')
                     ->where('status', 'rejected')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
                     ->count(),
             ];
 
