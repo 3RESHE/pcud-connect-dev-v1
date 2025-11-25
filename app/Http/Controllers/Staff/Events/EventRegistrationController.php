@@ -13,7 +13,6 @@ use Illuminate\Mail\Envelope;
 use Illuminate\Mail\Content;
 use Illuminate\Http\Request;
 
-
 class EventRegistrationController extends Controller
 {
     /**
@@ -26,15 +25,14 @@ class EventRegistrationController extends Controller
         $registrations = $event->registrations()
             ->with([
                 'user:id,first_name,last_name,email,role',
-                'user.studentProfile:id,user_id,student_id',
-                'user.alumniProfile:id,user_id'
+                'user.studentProfile:id,user_id,student_id,profile_photo',
+                'user.alumniProfile:id,user_id,profile_photo'
             ])
             ->latest('created_at')
             ->paginate(20);
 
         return view('users.staff.events.registrations.index', compact('event', 'registrations'));
     }
-
 
     /**
      * Export registrations to CSV
@@ -98,6 +96,13 @@ class EventRegistrationController extends Controller
         if ($registration->event_id !== $event->id) {
             abort(404, 'Registration not found');
         }
+
+        // Load registration with user profile and photo
+        $registration->load([
+            'user:id,first_name,last_name,email,role',
+            'user.studentProfile:id,user_id,student_id,profile_photo',
+            'user.alumniProfile:id,user_id,profile_photo'
+        ]);
 
         return view('users.staff.events.registrations.show', compact('event', 'registration'));
     }
@@ -165,6 +170,7 @@ class EventRegistrationController extends Controller
             abort(403, 'Unauthorized action');
         }
     }
+
     /**
      * Send email to multiple registrants
      */

@@ -163,11 +163,28 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                        <span class="text-blue-600 font-semibold text-sm">
-                                            {{ strtoupper(substr($registration->user->first_name, 0, 1)) }}{{ strtoupper(substr($registration->user->last_name, 0, 1)) }}
-                                        </span>
-                                    </div>
+                                    {{-- Profile Photo with Fallback --}}
+                                    @php
+                                        $userProfile = null;
+                                        if ($registration->user->role === 'student') {
+                                            $userProfile = $registration->user->studentProfile;
+                                        } elseif ($registration->user->role === 'alumni') {
+                                            $userProfile = $registration->user->alumniProfile;
+                                        }
+                                    @endphp
+
+                                    @if($userProfile && $userProfile->profile_photo)
+                                        <img src="{{ asset('storage/' . $userProfile->profile_photo) }}"
+                                             alt="{{ $registration->user->first_name }} {{ $registration->user->last_name }}"
+                                             class="w-10 h-10 rounded-full object-cover mr-3 border-2 border-gray-200">
+                                    @else
+                                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                            <span class="text-blue-600 font-semibold text-sm">
+                                                {{ strtoupper(substr($registration->user->first_name, 0, 1)) }}{{ strtoupper(substr($registration->user->last_name, 0, 1)) }}
+                                            </span>
+                                        </div>
+                                    @endif
+
                                     <div>
                                         <p class="font-semibold text-gray-900">
                                             {{ $registration->user->first_name }} {{ $registration->user->last_name }}

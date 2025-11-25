@@ -186,9 +186,26 @@
                 <tr class="hover:bg-gray-50 transition-colors" data-search="{{ strtolower($registration->user->first_name . ' ' . $registration->user->last_name . ' ' . $registration->user->email) }}" data-status="{{ $registration->attendance_status }}">
                     <td class="px-8 py-4">
                         <div class="flex items-center">
-                            <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                <span class="text-blue-600 font-semibold text-sm">{{ substr($registration->user->first_name, 0, 1) }}{{ substr($registration->user->last_name, 0, 1) }}</span>
-                            </div>
+                            {{-- Profile Photo with Fallback --}}
+                            @php
+                                $userProfile = null;
+                                if ($registration->user_type === 'student') {
+                                    $userProfile = $registration->user->studentProfile;
+                                } elseif ($registration->user_type === 'alumni') {
+                                    $userProfile = $registration->user->alumniProfile;
+                                }
+                            @endphp
+
+                            @if($userProfile && $userProfile->profile_photo)
+                                <img src="{{ asset('storage/' . $userProfile->profile_photo) }}"
+                                     alt="{{ $registration->user->first_name }} {{ $registration->user->last_name }}"
+                                     class="h-10 w-10 rounded-full object-cover mr-3 border-2 border-gray-200">
+                            @else
+                                <div class="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                    <span class="text-blue-600 font-semibold text-sm">{{ substr($registration->user->first_name, 0, 1) }}{{ substr($registration->user->last_name, 0, 1) }}</span>
+                                </div>
+                            @endif
+
                             <div>
                                 <p class="font-medium text-gray-900 text-base">{{ $registration->user->first_name }} {{ $registration->user->last_name }}</p>
                                 @if($registration->user_type === 'student' && $registration->user->studentProfile)

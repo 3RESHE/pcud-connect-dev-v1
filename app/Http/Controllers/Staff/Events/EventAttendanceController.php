@@ -10,7 +10,6 @@ use App\Models\Department;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-
 class EventAttendanceController extends Controller
 {
     /**
@@ -25,12 +24,12 @@ class EventAttendanceController extends Controller
             return redirect()->back()->with('error', 'Only ongoing events can have attendance marked.');
         }
 
-        // Get registrations with user data
+        // Get registrations with user data AND profile photos
         $registrations = $event->registrations()
             ->with([
                 'user:id,first_name,last_name,email',
-                'user.studentProfile:id,user_id,student_id',
-                'user.alumniProfile:id,user_id'
+                'user.studentProfile:id,user_id,student_id,profile_photo',
+                'user.alumniProfile:id,user_id,profile_photo'
             ])
             ->latest('created_at')
             ->paginate(20);
@@ -249,12 +248,12 @@ class EventAttendanceController extends Controller
             return redirect()->back()->with('error', 'Attendance records are only available for ongoing or completed events.');
         }
 
-        // Get registrations with attendance data
+        // Get registrations with attendance data AND profile photos
         $registrations = $event->registrations()
             ->with([
                 'user:id,first_name,last_name,email',
-                'user.studentProfile:id,user_id,student_id',
-                'user.alumniProfile:id,user_id'
+                'user.studentProfile:id,user_id,student_id,profile_photo',
+                'user.alumniProfile:id,user_id,profile_photo'
             ])
             ->latest('created_at')
             ->paginate(20);
