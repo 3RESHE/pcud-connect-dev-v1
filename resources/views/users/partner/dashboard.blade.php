@@ -9,7 +9,7 @@
         <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white rounded-lg p-8">
             <div class="flex justify-between items-start">
                 <div>
-                    <h1 class="text-3xl font-bold mb-2">Welcome, {{ $partner->name }}! 👋</h1>
+                    <h1 class="text-3xl font-bold mb-2">Welcome, {{ $partner->partnerProfile?->company_name ?? 'Company' }}! 👋</h1>
                     <p class="text-blue-100">{{ $partner->partnerProfile?->company_name ?? 'Company' }} - Partner Dashboard</p>
                 </div>
                 <a href="{{ route('partner.profile.show') }}" class="text-sm bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
