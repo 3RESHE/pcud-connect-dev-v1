@@ -4,6 +4,10 @@
         'alumni' => 'layouts.alumni',
         default => 'layouts.app',
     };
+
+    // Check event status
+    $isOngoing = $event->status === 'ongoing';
+    $isCompleted = $event->status === 'completed';
 @endphp
 
 @extends($layout)
@@ -22,7 +26,7 @@
 </div>
 
 <!-- Success Alert Banner -->
-@if($isRegistered)
+@if($isRegistered && !$isCompleted)
     <div class="container mx-auto px-4 mb-8">
         <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg">
             <div class="flex items-start">
@@ -35,6 +39,48 @@
                     <h3 class="text-base font-semibold text-green-800">Registration Confirmed</h3>
                     <p class="mt-2 text-sm text-green-700">
                         You are registered for this event. Check your email for confirmation and updates including meeting links.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+<!-- Ongoing Event Alert Banner -->
+@if($isOngoing && $isRegistered)
+    <div class="container mx-auto px-4 mb-8">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6 text-blue-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-base font-semibold text-blue-800">Event is Currently Ongoing</h3>
+                    <p class="mt-2 text-sm text-blue-700">
+                        This event is currently in progress. Registration cancellation is no longer available.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+<!-- Completed Event Alert Banner -->
+@if($isCompleted)
+    <div class="container mx-auto px-4 mb-8">
+        <div class="bg-gray-50 border-l-4 border-gray-500 p-6 rounded-r-lg">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="w-6 h-6 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-base font-semibold text-gray-800">Event Completed</h3>
+                    <p class="mt-2 text-sm text-gray-700">
+                        This event has ended. You are viewing the event details for reference only.
                     </p>
                 </div>
             </div>
@@ -70,10 +116,27 @@
                             Featured Event
                         </span>
                     @endif
-                    <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-green-600 shadow-lg w-fit">
-                        <span class="inline-block w-2 h-2 bg-green-600 rounded-full mr-2"></span>
-                        Upcoming
-                    </span>
+
+                    @if($isCompleted)
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-gray-600 shadow-lg w-fit">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            Completed
+                        </span>
+                    @elseif($isOngoing)
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-blue-600 shadow-lg w-fit animate-pulse">
+                            <span class="inline-block w-2 h-2 bg-blue-600 rounded-full mr-2 animate-ping"></span>
+                            <span class="inline-block w-2 h-2 bg-blue-600 rounded-full mr-2 absolute"></span>
+                            Ongoing Now
+                        </span>
+                    @else
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-green-600 shadow-lg w-fit">
+                            <span class="inline-block w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                            Upcoming
+                        </span>
+                    @endif
+
                     <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-white text-blue-600 shadow-lg w-fit">
                         @if($event->event_format === 'inperson')
                             In-Person
@@ -89,22 +152,38 @@
     </div>
 </div>
 
-<!-- Action Buttons -->
-<div class="container mx-auto px-4 mb-8 flex justify-end">
-    <div class="flex space-x-4">
-        @if($isRegistered)
-            <button
-                type="button"
-                onclick="openCancelModal('{{ $event->id }}', '{{ addslashes($event->title) }}')"
-                class="px-8 py-3 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg font-medium flex items-center text-base transition-colors">
-                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-                Cancel Registration
-            </button>
-        @endif
+<!-- Action Buttons - Only show if event is not completed -->
+@if(!$isCompleted)
+    <div class="container mx-auto px-4 mb-8 flex justify-end">
+        <div class="flex space-x-4">
+            @if($isRegistered)
+                @if($isOngoing)
+                    <!-- Disabled Cancel Button for Ongoing Events -->
+                    <button
+                        type="button"
+                        disabled
+                        class="px-8 py-3 border border-gray-300 text-gray-400 bg-gray-100 rounded-lg font-medium flex items-center text-base cursor-not-allowed opacity-60">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Cannot Cancel (Ongoing)
+                    </button>
+                @else
+                    <!-- Active Cancel Button -->
+                    <button
+                        type="button"
+                        onclick="openCancelModal('{{ $event->id }}', '{{ addslashes($event->title) }}')"
+                        class="px-8 py-3 border border-red-300 text-red-600 hover:bg-red-50 rounded-lg font-medium flex items-center text-base transition-colors">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancel Registration
+                    </button>
+                @endif
+            @endif
+        </div>
     </div>
-</div>
+@endif
 
 <!-- Main Content Grid -->
 <div class="container mx-auto px-4 mb-12 grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -227,35 +306,37 @@
                 @endif
             </div>
 
-            <!-- Meeting Link Info -->
-            @if($isRegistered && in_array($event->event_format, ['virtual', 'hybrid']))
-                <div class="mt-8 pt-8 border-t border-gray-200">
-                    <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div class="flex items-start">
-                            <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div>
-                                <p class="font-semibold text-blue-900">Meeting Link</p>
-                                <p class="text-sm text-blue-800 mt-1">The event organizer will send you the meeting link and any access details via email before the event starts.</p>
+            <!-- Meeting Link Info - Only for non-completed events -->
+            @if(!$isCompleted)
+                @if($isRegistered && in_array($event->event_format, ['virtual', 'hybrid']))
+                    <div class="mt-8 pt-8 border-t border-gray-200">
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <p class="font-semibold text-blue-900">Meeting Link</p>
+                                    <p class="text-sm text-blue-800 mt-1">The event organizer will send you the meeting link and any access details via email before the event starts.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            @elseif(!$isRegistered && in_array($event->event_format, ['virtual', 'hybrid']))
-                <div class="mt-8 pt-8 border-t border-gray-200">
-                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                        <div class="flex items-start">
-                            <svg class="w-5 h-5 text-amber-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                            </svg>
-                            <div>
-                                <p class="font-semibold text-amber-900">Register to Get Meeting Link</p>
-                                <p class="text-sm text-amber-800 mt-1">Register for this event to receive the meeting link and connection details via email.</p>
+                @elseif(!$isRegistered && in_array($event->event_format, ['virtual', 'hybrid']))
+                    <div class="mt-8 pt-8 border-t border-gray-200">
+                        <div class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-amber-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <p class="font-semibold text-amber-900">Register to Get Meeting Link</p>
+                                    <p class="text-sm text-amber-800 mt-1">Register for this event to receive the meeting link and connection details via email.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                @endif
             @endif
         </div>
     </div>
@@ -266,7 +347,16 @@
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
             <h3 class="text-xl font-bold text-gray-900 mb-6">Event Registration</h3>
 
-            @if($isRegistered)
+            @if($isCompleted)
+                <!-- Event Completed Message -->
+                <div class="p-4 bg-gray-50 border-2 border-gray-300 rounded-lg text-center">
+                    <svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    <p class="text-gray-800 font-bold text-base">Event Completed</p>
+                    <p class="text-sm text-gray-700 mt-1">This event has ended. Registration is no longer available.</p>
+                </div>
+            @elseif($isRegistered)
                 <!-- Already Registered -->
                 <div class="mb-6 p-4 bg-green-50 border-2 border-green-300 rounded-lg">
                     <div class="flex items-center mb-3">
@@ -278,8 +368,16 @@
                     <p class="text-sm text-green-700">Registered on {{ $registration->created_at->format('M d, Y') }}</p>
                 </div>
             @else
-                <!-- Registration Form or Full Message -->
-                @if($event->max_attendees && $registrationCount >= $event->max_attendees)
+                <!-- Registration Form or Messages -->
+                @if($isOngoing)
+                    <div class="p-4 bg-blue-50 border-2 border-blue-300 rounded-lg text-center">
+                        <svg class="w-12 h-12 text-blue-600 mx-auto mb-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                        </svg>
+                        <p class="text-blue-800 font-bold text-base">Event is Ongoing</p>
+                        <p class="text-sm text-blue-700 mt-1">This event is currently in progress and registration is closed.</p>
+                    </div>
+                @elseif($event->max_attendees && $registrationCount >= $event->max_attendees)
                     <div class="p-4 bg-red-50 border-2 border-red-300 rounded-lg text-center">
                         <p class="text-red-800 font-bold text-base">Event Full</p>
                         <p class="text-sm text-red-700 mt-1">This event has reached maximum capacity and is no longer accepting registrations.</p>
@@ -310,13 +408,34 @@
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
             <h3 class="font-bold text-gray-900 text-xl mb-6">Event Status</h3>
             <div class="space-y-4">
-                <div class="p-4 bg-green-50 rounded-lg border border-green-200">
-                    <p class="text-sm text-gray-500 mb-1 font-medium uppercase">Status</p>
-                    <div class="flex items-center">
-                        <span class="inline-block w-2.5 h-2.5 bg-green-600 rounded-full mr-2"></span>
-                        <p class="font-semibold text-green-700 text-base">Upcoming Event</p>
+                @if($isCompleted)
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-300">
+                        <p class="text-sm text-gray-500 mb-1 font-medium uppercase">Status</p>
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 text-gray-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <p class="font-semibold text-gray-700 text-base">Event Completed</p>
+                        </div>
                     </div>
-                </div>
+                @elseif($isOngoing)
+                    <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <p class="text-sm text-gray-500 mb-1 font-medium uppercase">Status</p>
+                        <div class="flex items-center">
+                            <span class="inline-block w-2.5 h-2.5 bg-blue-600 rounded-full mr-2 animate-pulse"></span>
+                            <p class="font-semibold text-blue-700 text-base">Event is Ongoing</p>
+                        </div>
+                    </div>
+                @else
+                    <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                        <p class="text-sm text-gray-500 mb-1 font-medium uppercase">Status</p>
+                        <div class="flex items-center">
+                            <span class="inline-block w-2.5 h-2.5 bg-green-600 rounded-full mr-2"></span>
+                            <p class="font-semibold text-green-700 text-base">Upcoming Event</p>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <p class="text-sm text-gray-500 mb-2 font-medium uppercase">Registrations</p>
                     <p class="font-semibold text-gray-900 text-base">{{ $registrationCount }}/{{ $event->max_attendees ?? 'Unlimited' }}</p>
@@ -376,69 +495,71 @@
     </div>
 </div>
 
-<!-- Cancel Registration Modal -->
-<div id="cancelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
-        <!-- Modal Header -->
-        <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 rounded-t-xl">
-            <div class="flex items-start justify-between">
-                <div class="flex items-center">
-                    <svg class="w-6 h-6 text-white mr-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    <h2 class="text-xl font-bold text-white">Cancel Registration</h2>
+<!-- Cancel Registration Modal - Only show if event is not completed -->
+@if(!$isCompleted)
+    <div id="cancelModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-red-600 to-red-700 px-6 py-4 rounded-t-xl">
+                <div class="flex items-start justify-between">
+                    <div class="flex items-center">
+                        <svg class="w-6 h-6 text-white mr-3" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <h2 class="text-xl font-bold text-white">Cancel Registration</h2>
+                    </div>
+                    <button onclick="closeCancelModal()" class="text-red-100 hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
                 </div>
-                <button onclick="closeCancelModal()" class="text-red-100 hover:text-white transition-colors">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
             </div>
-        </div>
 
-        <!-- Modal Body -->
-        <div class="px-6 py-6">
-            <div class="mb-4">
-                <p class="text-gray-900 font-semibold text-lg">Confirm Cancellation</p>
-            </div>
-            <p class="text-gray-600 mb-4">
-                You are about to cancel your registration for <span class="font-bold text-gray-900" id="eventTitle"></span>
-            </p>
+            <!-- Modal Body -->
+            <div class="px-6 py-6">
+                <div class="mb-4">
+                    <p class="text-gray-900 font-semibold text-lg">Confirm Cancellation</p>
+                </div>
+                <p class="text-gray-600 mb-4">
+                    You are about to cancel your registration for <span class="font-bold text-gray-900" id="eventTitle"></span>
+                </p>
 
-            <!-- Warning Alert -->
-            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                <div class="flex">
-                    <svg class="w-5 h-5 text-amber-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
-                    </svg>
-                    <div>
-                        <p class="text-sm font-medium text-amber-800">
-                            This action cannot be undone. You may need to register again if spots are still available.
-                        </p>
+                <!-- Warning Alert -->
+                <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+                    <div class="flex">
+                        <svg class="w-5 h-5 text-amber-600 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <p class="text-sm font-medium text-amber-800">
+                                This action cannot be undone. You may need to register again if spots are still available.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Modal Footer -->
-        <div class="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end gap-3 border-t border-gray-200">
-            <button
-                onclick="closeCancelModal()"
-                class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition-colors">
-                Keep Registration
-            </button>
-            <form id="cancelForm" method="POST" style="display: inline;">
-                @csrf
-                @method('DELETE')
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end gap-3 border-t border-gray-200">
                 <button
-                    type="submit"
-                    class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
-                    Cancel Registration
+                    onclick="closeCancelModal()"
+                    class="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-100 font-medium transition-colors">
+                    Keep Registration
                 </button>
-            </form>
+                <form id="cancelForm" method="POST" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button
+                        type="submit"
+                        class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors">
+                        Cancel Registration
+                    </button>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+@endif
 
 <!-- Error Messages -->
 @if ($errors->any())
@@ -454,31 +575,33 @@
 @endif
 
 <!-- JavaScript for Modal -->
-<script>
-    function openCancelModal(eventId, eventTitle) {
-        document.getElementById('eventTitle').textContent = eventTitle;
-        const actionUrl = `{{ route('events.unregister', ':eventId') }}`.replace(':eventId', eventId);
-        document.getElementById('cancelForm').action = actionUrl;
-        document.getElementById('cancelModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeCancelModal() {
-        document.getElementById('cancelModal').classList.add('hidden');
-        document.body.style.overflow = 'auto';
-    }
-
-    document.getElementById('cancelModal')?.addEventListener('click', function(event) {
-        if (event.target === this) {
-            closeCancelModal();
+@if(!$isCompleted)
+    <script>
+        function openCancelModal(eventId, eventTitle) {
+            document.getElementById('eventTitle').textContent = eventTitle;
+            const actionUrl = `{{ route('events.unregister', ':eventId') }}`.replace(':eventId', eventId);
+            document.getElementById('cancelForm').action = actionUrl;
+            document.getElementById('cancelModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
-    });
 
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && !document.getElementById('cancelModal').classList.contains('hidden')) {
-            closeCancelModal();
+        function closeCancelModal() {
+            document.getElementById('cancelModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
-    });
-</script>
+
+        document.getElementById('cancelModal')?.addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeCancelModal();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && !document.getElementById('cancelModal').classList.contains('hidden')) {
+                closeCancelModal();
+            }
+        });
+    </script>
+@endif
 
 @endsection
