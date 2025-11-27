@@ -648,13 +648,6 @@
                 </button>
                 <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
                     <button
-                        type="button"
-                        onclick="previewEvent()"
-                        class="px-6 py-2.5 border border-primary text-primary rounded-lg hover:bg-blue-50 font-medium transition-colors duration-200"
-                    >
-                        Preview Event
-                    </button>
-                    <button
                         type="submit"
                         name="action"
                         value="submit"
