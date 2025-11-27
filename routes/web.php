@@ -347,9 +347,30 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
 
     Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
 
-        // ===== DASHBOARD =====
-        Route::get('/dashboard', [PartnerDashboardController::class, 'index'])
+         Route::get('/dashboard', [PartnerDashboardController::class, 'index'])
             ->name('dashboard');
+        // ===== DASHBOARD =====
+        Route::prefix('dashboard')->name('dashboard.')->group(function () {
+
+
+            // Export endpoints - Dashboard reports
+            Route::get('/export', [PartnerDashboardController::class, 'exportExcel'])
+                ->name('export');
+            Route::get('/export/jobs', [PartnerDashboardController::class, 'exportJobs'])
+                ->name('export-jobs');
+            Route::get('/export/partnerships', [PartnerDashboardController::class, 'exportPartnerships'])
+                ->name('export-partnerships');
+            Route::get('/export/applications', [PartnerDashboardController::class, 'exportApplications'])
+                ->name('export-applications');
+
+            // AJAX endpoints - Statistics
+            Route::get('/stats/jobs', [PartnerDashboardController::class, 'jobStats'])
+                ->name('stats.jobs');
+            Route::get('/stats/applications', [PartnerDashboardController::class, 'applicationStats'])
+                ->name('stats.applications');
+            Route::get('/activity-feed', [PartnerDashboardController::class, 'activityFeed'])
+                ->name('activity-feed');
+        });
 
         // ===== PROFILE & SETTINGS (ALWAYS ACCESSIBLE - NO MIDDLEWARE) =====
         Route::prefix('profile')->name('profile.')->group(function () {
@@ -387,34 +408,27 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])
                     ->name('close');
 
-                // ✅ APPLICATION ROUTES (Nested under job-postings for organization)
+                // ✅ APPLICATION ROUTES (Nested under job-postings)
                 Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])
                     ->name('applications');
 
-                // ✅ NEW: Export applications to Excel
+                // ✅ Export applications to Excel by job posting
                 Route::get('/{jobPosting}/applications/export', [ApplicationController::class, 'exportExcel'])
                     ->name('applications.export');
             });
 
             // ===== JOB APPLICATIONS =====
             Route::prefix('applications')->name('applications.')->group(function () {
-                // Application detail view
                 Route::get('/{application}', [ApplicationController::class, 'show'])
                     ->name('show');
-
-                // Application actions
                 Route::post('/{application}/approve', [ApplicationController::class, 'approve'])
                     ->name('approve');
                 Route::post('/{application}/reject', [ApplicationController::class, 'reject'])
                     ->name('reject');
                 Route::post('/{application}/contact', [ApplicationController::class, 'contact'])
                     ->name('contact');
-
-                // Resume download
                 Route::get('/{application}/download-resume', [ApplicationController::class, 'downloadResume'])
                     ->name('download-resume');
-
-                // Status update (optional - for AJAX updates)
                 Route::patch('/{application}/update-status', [ApplicationController::class, 'updateStatus'])
                     ->name('update-status');
             });
@@ -440,6 +454,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             });
         });
     });
+
 
 
     // =====================================================

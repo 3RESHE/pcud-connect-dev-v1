@@ -8,6 +8,11 @@ use App\Models\JobApplication;
 use App\Models\Partnership;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
 class PartnerDashboardController extends Controller
 {
@@ -40,6 +45,10 @@ class PartnerDashboardController extends Controller
         $rejectedApplications = JobApplication::whereHas('jobPosting', fn($q) =>
             $q->where('partner_id', $partner->id)
         )->where('status', 'rejected')->count();
+
+        $contactedApplications = JobApplication::whereHas('jobPosting', fn($q) =>
+            $q->where('partner_id', $partner->id)
+        )->where('status', 'contacted')->count();
 
         // ✅ SECTION 2: APPLICATION METRICS
         $approvalRate = $totalApplications > 0
@@ -78,8 +87,24 @@ class PartnerDashboardController extends Controller
             ->where('status', 'pending')
             ->count();
 
+        $jobsRejected = JobPosting::where('partner_id', $partner->id)
+            ->where('status', 'rejected')
+            ->count();
+
+        $jobsCompleted = JobPosting::where('partner_id', $partner->id)
+            ->where('status', 'completed')
+            ->count();
+
         $partnershipsPendingApproval = Partnership::where('partner_id', $partner->id)
             ->whereIn('status', ['submitted', 'under_review'])
+            ->count();
+
+        $partnershipsApproved = Partnership::where('partner_id', $partner->id)
+            ->where('status', 'approved')
+            ->count();
+
+        $partnershipsCompleted = Partnership::where('partner_id', $partner->id)
+            ->where('status', 'completed')
             ->count();
 
         $applicationsPendingReview = JobApplication::whereHas('jobPosting', fn($q) =>
@@ -134,12 +159,35 @@ class PartnerDashboardController extends Controller
         // ✅ SECTION 8: ALERTS & NOTIFICATIONS
         $alerts = [
             'jobs_pending_approval' => $jobsPendingApproval,
+            'jobs_rejected' => $jobsRejected,
             'partnerships_pending_approval' => $partnershipsPendingApproval,
             'applications_pending_review' => $applicationsPendingReview,
             'applications_nearing_deadline' => JobPosting::where('partner_id', $partner->id)
                 ->where('application_deadline', '<=', now()->addDays(7))
                 ->where('application_deadline', '>', now())
                 ->count(),
+        ];
+
+        // ✅ SECTION 9: JOB STATUS BREAKDOWN
+        $jobStatusStats = [
+            'pending' => $jobsPendingApproval,
+            'approved' => JobPosting::where('partner_id', $partner->id)
+                ->where('status', 'approved')
+                ->count(),
+            'rejected' => $jobsRejected,
+            'completed' => $jobsCompleted,
+        ];
+
+        // ✅ SECTION 10: PARTNERSHIP STATUS BREAKDOWN
+        $partnershipStatusStats = [
+            'submitted' => Partnership::where('partner_id', $partner->id)
+                ->where('status', 'submitted')
+                ->count(),
+            'under_review' => Partnership::where('partner_id', $partner->id)
+                ->where('status', 'under_review')
+                ->count(),
+            'approved' => $partnershipsApproved,
+            'completed' => $partnershipsCompleted,
         ];
 
         return view('users.partner.dashboard', [
@@ -150,6 +198,7 @@ class PartnerDashboardController extends Controller
             'total_applications' => $totalApplications,
             'approved_applications' => $approvedApplications,
             'pending_applications' => $pendingApplications,
+            'contacted_applications' => $contactedApplications,
             'rejected_applications' => $rejectedApplications,
             'approval_rate' => $approvalRate,
 
@@ -162,6 +211,10 @@ class PartnerDashboardController extends Controller
             'partnerships_pending_approval' => $partnershipsPendingApproval,
             'applications_pending_review' => $applicationsPendingReview,
 
+            // Status Breakdowns
+            'job_status_stats' => $jobStatusStats,
+            'partnership_status_stats' => $partnershipStatusStats,
+
             // Recent Activity
             'recent_applications' => $recentApplications,
             'recent_approvals' => $recentApprovals,
@@ -172,6 +225,91 @@ class PartnerDashboardController extends Controller
             // Alerts
             'alerts' => $alerts,
         ]);
+    }
+
+    /**
+     * Export dashboard report to Excel
+     * Supports multiple report types: comprehensive, jobs, partnerships, applications
+     */
+    public function exportExcel(Request $request)
+    {
+        try {
+            $partner = auth()->user();
+            $reportType = $request->query('type', 'comprehensive');
+
+            $fileName = "partner-report-{$reportType}-" . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new PartnerDashboardExport($partner->id, $reportType),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            \Log::error('Partner Excel export failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export report: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export job postings to Excel with detailed statistics
+     */
+    public function exportJobs(Request $request)
+    {
+        try {
+            $partner = auth()->user();
+            $status = $request->query('status', 'all');
+
+            $fileName = "jobs-" . ($status !== 'all' ? $status . '-' : '') . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new JobPostingsExport($partner->id, $status),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            \Log::error('Jobs Excel export failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export jobs: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export partnerships to Excel
+     */
+    public function exportPartnerships(Request $request)
+    {
+        try {
+            $partner = auth()->user();
+            $status = $request->query('status', 'all');
+
+            $fileName = "partnerships-" . ($status !== 'all' ? $status . '-' : '') . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new PartnershipsExport($partner->id, $status),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            \Log::error('Partnerships Excel export failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export partnerships: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export applications to Excel with detailed status breakdown
+     */
+    public function exportApplications(Request $request)
+    {
+        try {
+            $partner = auth()->user();
+            $status = $request->query('status', 'all');
+
+            $fileName = "applications-" . ($status !== 'all' ? $status . '-' : '') . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new ApplicationsExport($partner->id, $status),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            \Log::error('Applications Excel export failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export applications: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -190,6 +328,7 @@ class PartnerDashboardController extends Controller
                 (SELECT COUNT(*) FROM job_applications WHERE job_posting_id = job_postings.id) as total_applications,
                 (SELECT COUNT(*) FROM job_applications WHERE job_posting_id = job_postings.id AND status = "approved") as approved,
                 (SELECT COUNT(*) FROM job_applications WHERE job_posting_id = job_postings.id AND status = "pending") as pending,
+                (SELECT COUNT(*) FROM job_applications WHERE job_posting_id = job_postings.id AND status = "contacted") as contacted,
                 (SELECT COUNT(*) FROM job_applications WHERE job_posting_id = job_postings.id AND status = "rejected") as rejected
             ')
             ->get()
@@ -201,6 +340,7 @@ class PartnerDashboardController extends Controller
                     'applications' => $total,
                     'approved' => $job->approved ?? 0,
                     'pending' => $job->pending ?? 0,
+                    'contacted' => $job->contacted ?? 0,
                     'rejected' => $job->rejected ?? 0,
                     'approval_rate' => $total > 0 ? round(($job->approved / $total) * 100, 1) : 0,
                 ];
@@ -285,5 +425,305 @@ class PartnerDashboardController extends Controller
             'pending' => '⏱️',
             default => '•',
         };
+    }
+}
+
+/**
+ * Partner Dashboard Comprehensive Excel Export
+ */
+class PartnerDashboardExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    private $partnerId;
+    private $reportType;
+
+    public function __construct($partnerId, $reportType = 'comprehensive')
+    {
+        $this->partnerId = $partnerId;
+        $this->reportType = $reportType;
+    }
+
+    public function array(): array
+    {
+        return match ($this->reportType) {
+            'comprehensive' => $this->getComprehensiveData(),
+            'jobs' => $this->getJobsData(),
+            'partnerships' => $this->getPartnershipsData(),
+            'applications' => $this->getApplicationsData(),
+            default => $this->getComprehensiveData(),
+        };
+    }
+
+    public function headings(): array
+    {
+        return match ($this->reportType) {
+            'jobs' => ['Job Title', 'Status', 'Featured', 'Applications', 'Approved', 'Pending', 'Contacted', 'Rejected', 'Approval Rate', 'Created At'],
+            'partnerships' => ['Activity Title', 'Organization', 'Status', 'Activity Date', 'Contact Person', 'Created At'],
+            'applications' => ['Applicant Name', 'Job Title', 'Status', 'Applied Date', 'Reviewed Date', 'Last Contacted'],
+            default => ['Category', 'Count'],
+        };
+    }
+
+    private function getComprehensiveData(): array
+    {
+        $data = [];
+
+        // JOB STATISTICS
+        $data[] = ['JOB POSTINGS STATISTICS'];
+        $data[] = ['Total Job Postings', JobPosting::where('partner_id', $this->partnerId)->count() ?? 0];
+        $data[] = ['Active Postings', JobPosting::where('partner_id', $this->partnerId)->where('status', 'approved')->where('sub_status', 'active')->count() ?? 0];
+        $data[] = ['Pending Approval', JobPosting::where('partner_id', $this->partnerId)->where('status', 'pending')->count() ?? 0];
+        $data[] = ['Rejected', JobPosting::where('partner_id', $this->partnerId)->where('status', 'rejected')->count() ?? 0];
+        $data[] = ['Completed', JobPosting::where('partner_id', $this->partnerId)->where('status', 'completed')->count() ?? 0];
+        $data[] = ['Featured', JobPosting::where('partner_id', $this->partnerId)->where('is_featured', true)->count() ?? 0];
+        $data[] = [];
+
+        // APPLICATION STATISTICS
+        $data[] = ['APPLICATION STATISTICS'];
+        $data[] = ['Total Applications', JobApplication::whereHas('jobPosting', fn($q) => $q->where('partner_id', $this->partnerId))->count() ?? 0];
+        $data[] = ['Pending Review', JobApplication::whereHas('jobPosting', fn($q) => $q->where('partner_id', $this->partnerId))->where('status', 'pending')->count() ?? 0];
+        $data[] = ['Contacted', JobApplication::whereHas('jobPosting', fn($q) => $q->where('partner_id', $this->partnerId))->where('status', 'contacted')->count() ?? 0];
+        $data[] = ['Approved', JobApplication::whereHas('jobPosting', fn($q) => $q->where('partner_id', $this->partnerId))->where('status', 'approved')->count() ?? 0];
+        $data[] = ['Rejected', JobApplication::whereHas('jobPosting', fn($q) => $q->where('partner_id', $this->partnerId))->where('status', 'rejected')->count() ?? 0];
+        $data[] = [];
+
+        // PARTNERSHIP STATISTICS
+        $data[] = ['PARTNERSHIP STATISTICS'];
+        $data[] = ['Total Partnerships', Partnership::where('partner_id', $this->partnerId)->count() ?? 0];
+        $data[] = ['Submitted', Partnership::where('partner_id', $this->partnerId)->where('status', 'submitted')->count() ?? 0];
+        $data[] = ['Under Review', Partnership::where('partner_id', $this->partnerId)->where('status', 'under_review')->count() ?? 0];
+        $data[] = ['Approved', Partnership::where('partner_id', $this->partnerId)->where('status', 'approved')->count() ?? 0];
+        $data[] = ['Completed', Partnership::where('partner_id', $this->partnerId)->where('status', 'completed')->count() ?? 0];
+        $data[] = [];
+
+        return $data;
+    }
+
+    private function getJobsData(): array
+    {
+        $data = [];
+        $jobs = JobPosting::where('partner_id', $this->partnerId)
+            ->with('applications')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        foreach ($jobs as $job) {
+            $applications = $job->applications;
+            $totalApps = $applications->count();
+            $approvalRate = $totalApps > 0
+                ? round(($applications->where('status', 'approved')->count() / $totalApps) * 100, 1)
+                : 0;
+
+            $data[] = [
+                $job->title,
+                ucfirst($job->status),
+                $job->is_featured ? 'Yes' : 'No',
+                $totalApps,
+                $applications->where('status', 'approved')->count(),
+                $applications->where('status', 'pending')->count(),
+                $applications->where('status', 'contacted')->count(),
+                $applications->where('status', 'rejected')->count(),
+                $approvalRate . '%',
+                $job->created_at->format('M d, Y H:i'),
+            ];
+        }
+
+        return $data;
+    }
+
+    private function getPartnershipsData(): array
+    {
+        $data = [];
+        $partnerships = Partnership::where('partner_id', $this->partnerId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        foreach ($partnerships as $partnership) {
+            $data[] = [
+                $partnership->activity_title,
+                $partnership->organization_name,
+                ucfirst(str_replace('_', ' ', $partnership->status)),
+                $partnership->activity_date->format('M d, Y'),
+                $partnership->contact_name,
+                $partnership->created_at->format('M d, Y H:i'),
+            ];
+        }
+
+        return $data;
+    }
+
+    private function getApplicationsData(): array
+    {
+        $data = [];
+        $applications = JobApplication::whereHas('jobPosting', fn($q) =>
+            $q->where('partner_id', $this->partnerId)
+        )
+            ->with(['applicant', 'jobPosting'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        foreach ($applications as $app) {
+            $data[] = [
+                $app->applicant->name,
+                $app->jobPosting->title,
+                ucfirst(str_replace('_', ' ', $app->status)),
+                $app->created_at->format('M d, Y H:i'),
+                $app->reviewed_at?->format('M d, Y H:i') ?? 'Pending',
+                $app->last_contacted_at?->format('M d, Y H:i') ?? 'Not contacted',
+            ];
+        }
+
+        return $data;
+    }
+}
+
+/**
+ * Job Postings Excel Export
+ */
+class JobPostingsExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    private $partnerId;
+    private $status;
+
+    public function __construct($partnerId, $status = 'all')
+    {
+        $this->partnerId = $partnerId;
+        $this->status = $status;
+    }
+
+    public function array(): array
+    {
+        $data = [];
+        $query = JobPosting::where('partner_id', $this->partnerId)
+            ->with('applications')
+            ->orderBy('created_at', 'desc');
+
+        if ($this->status !== 'all') {
+            $query->where('status', $this->status);
+        }
+
+        $jobs = $query->get();
+
+        foreach ($jobs as $job) {
+            $applications = $job->applications;
+            $totalApps = $applications->count();
+            $approvalRate = $totalApps > 0
+                ? round(($applications->where('status', 'approved')->count() / $totalApps) * 100, 1)
+                : 0;
+
+            $data[] = [
+                $job->title,
+                ucfirst($job->status),
+                $job->is_featured ? 'Yes' : 'No',
+                $totalApps,
+                $applications->where('status', 'approved')->count(),
+                $applications->where('status', 'pending')->count(),
+                $applications->where('status', 'contacted')->count(),
+                $applications->where('status', 'rejected')->count(),
+                $approvalRate . '%',
+                $job->created_at->format('M d, Y H:i'),
+            ];
+        }
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return ['Job Title', 'Status', 'Featured', 'Applications', 'Approved', 'Pending', 'Contacted', 'Rejected', 'Approval Rate', 'Created At'];
+    }
+}
+
+/**
+ * Partnerships Excel Export
+ */
+class PartnershipsExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    private $partnerId;
+    private $status;
+
+    public function __construct($partnerId, $status = 'all')
+    {
+        $this->partnerId = $partnerId;
+        $this->status = $status;
+    }
+
+    public function array(): array
+    {
+        $data = [];
+        $query = Partnership::where('partner_id', $this->partnerId)
+            ->orderBy('created_at', 'desc');
+
+        if ($this->status !== 'all') {
+            $query->where('status', $this->status);
+        }
+
+        $partnerships = $query->get();
+
+        foreach ($partnerships as $partnership) {
+            $data[] = [
+                $partnership->activity_title,
+                $partnership->organization_name,
+                ucfirst(str_replace('_', ' ', $partnership->status)),
+                $partnership->activity_date->format('M d, Y'),
+                $partnership->contact_name,
+                $partnership->created_at->format('M d, Y H:i'),
+            ];
+        }
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return ['Activity Title', 'Organization', 'Status', 'Activity Date', 'Contact Person', 'Created At'];
+    }
+}
+
+/**
+ * Applications Excel Export
+ */
+class ApplicationsExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    private $partnerId;
+    private $status;
+
+    public function __construct($partnerId, $status = 'all')
+    {
+        $this->partnerId = $partnerId;
+        $this->status = $status;
+    }
+
+    public function array(): array
+    {
+        $data = [];
+        $query = JobApplication::whereHas('jobPosting', fn($q) =>
+            $q->where('partner_id', $this->partnerId)
+        )
+            ->with(['applicant', 'jobPosting'])
+            ->orderBy('created_at', 'desc');
+
+        if ($this->status !== 'all') {
+            $query->where('status', $this->status);
+        }
+
+        $applications = $query->get();
+
+        foreach ($applications as $app) {
+            $data[] = [
+                $app->applicant->name,
+                $app->jobPosting->title,
+                ucfirst(str_replace('_', ' ', $app->status)),
+                $app->created_at->format('M d, Y H:i'),
+                $app->reviewed_at?->format('M d, Y H:i') ?? 'Pending',
+                $app->last_contacted_at?->format('M d, Y H:i') ?? 'Not contacted',
+            ];
+        }
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return ['Applicant Name', 'Job Title', 'Status', 'Applied Date', 'Reviewed Date', 'Last Contacted'];
     }
 }

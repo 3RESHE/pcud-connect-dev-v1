@@ -64,10 +64,104 @@
         </a>
     </div>
 
-    <!-- SECTION 2: KEY STATISTICS CARDS -->
+    <!-- ✅ SECTION 2: EXPORT REPORTS SECTION -->
+    <div class="mb-8 bg-white rounded-lg shadow p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"></path>
+                    <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h6v6H4a1 1 0 01-1-1v-4zm8-1v6h4a1 1 0 001-1v-4a1 1 0 00-1-1h-4z" clip-rule="evenodd"></path>
+                </svg>
+                📊 Export Reports
+            </h2>
+            <span class="text-xs text-gray-500">Download your data as Excel files</span>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <!-- Comprehensive Dashboard -->
+            <a href="{{ route('partner.dashboard.export', ['type' => 'comprehensive']) }}"
+               class="inline-flex flex-col items-center justify-center px-4 py-3 bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 rounded-lg hover:from-blue-100 hover:to-blue-200 transition border border-blue-200 transform hover:scale-105">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z"></path>
+                    <path fill-rule="evenodd" d="M3 10a1 1 0 011-1h6v6H4a1 1 0 01-1-1v-4zm8-1v6h4a1 1 0 001-1v-4a1 1 0 00-1-1h-4z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-xs font-semibold text-center">Dashboard</span>
+                <span class="text-xs text-blue-600">Summary</span>
+            </a>
+
+            <!-- Job Status -->
+            <a href="{{ route('partner.dashboard.export-jobs') }}"
+               class="inline-flex flex-col items-center justify-center px-4 py-3 bg-gradient-to-br from-green-50 to-green-100 text-green-700 rounded-lg hover:from-green-100 hover:to-green-200 transition border border-green-200 transform hover:scale-105">
+                <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5 4a2 2 0 012-2h6a2 2 0 012 2v12a1 1 0 110 2h-6a1 1 0 110-2h5V4H7a1 1 0 000 2v10a1 1 0 110 2V4z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="text-xs font-semibold text-center">Job Status</span>
+                <span class="text-xs text-green-600">All Jobs</span>
+            </a>
+
+            <!-- Applications by Status Dropdown -->
+            <div class="relative group inline-flex flex-col items-center justify-center px-4 py-3 bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-700 rounded-lg hover:from-yellow-100 hover:to-yellow-200 transition border border-yellow-200">
+                <button type="button" onclick="toggleAppsMenu()" class="w-full flex flex-col items-center">
+                    <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path>
+                        <path fill-rule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000-2A4 4 0 000 5v10a4 4 0 004 4h12a4 4 0 004-4V5a4 4 0 00-8 0v10H4V5z" clip-rule="evenodd"></path>
+                    </svg>
+                    <span class="text-xs font-semibold text-center">Applications</span>
+                    <span class="text-xs text-yellow-600">By Status</span>
+                </button>
+                <div id="appsMenu" class="hidden absolute top-full mt-2 w-48 bg-white border border-yellow-200 rounded-lg shadow-lg z-10">
+                    <a href="{{ route('partner.dashboard.export-applications') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50 first:rounded-t-lg">All Applications</a>
+                    <a href="{{ route('partner.dashboard.export-applications', ['status' => 'pending']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50">Pending Review</a>
+                    <a href="{{ route('partner.dashboard.export-applications', ['status' => 'contacted']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50">Contacted</a>
+                    <a href="{{ route('partner.dashboard.export-applications', ['status' => 'approved']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50">Approved</a>
+                    <a href="{{ route('partner.dashboard.export-applications', ['status' => 'rejected']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-yellow-50 last:rounded-b-lg">Rejected</a>
+                </div>
+            </div>
+
+            <!-- Partnerships by Status Dropdown -->
+            <div class="relative group inline-flex flex-col items-center justify-center px-4 py-3 bg-gradient-to-br from-purple-50 to-purple-100 text-purple-700 rounded-lg hover:from-purple-100 hover:to-purple-200 transition border border-purple-200">
+                <button type="button" onclick="togglePartMenu()" class="w-full flex flex-col items-center">
+                    <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 7H7v6h6V7z"></path>
+                    </svg>
+                    <span class="text-xs font-semibold text-center">Partnerships</span>
+                    <span class="text-xs text-purple-600">By Status</span>
+                </button>
+                <div id="partMenu" class="hidden absolute top-full mt-2 w-48 bg-white border border-purple-200 rounded-lg shadow-lg z-10">
+                    <a href="{{ route('partner.dashboard.export-partnerships') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 first:rounded-t-lg">All Partnerships</a>
+                    <a href="{{ route('partner.dashboard.export-partnerships', ['status' => 'submitted']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50">Submitted</a>
+                    <a href="{{ route('partner.dashboard.export-partnerships', ['status' => 'under_review']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50">Under Review</a>
+                    <a href="{{ route('partner.dashboard.export-partnerships', ['status' => 'approved']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50">Approved</a>
+                    <a href="{{ route('partner.dashboard.export-partnerships', ['status' => 'completed']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-purple-50 last:rounded-b-lg">Completed</a>
+                </div>
+            </div>
+
+            <!-- Jobs by Status Dropdown -->
+            <div class="relative group inline-flex flex-col items-center justify-center px-4 py-3 bg-gradient-to-br from-red-50 to-red-100 text-red-700 rounded-lg hover:from-red-100 hover:to-red-200 transition border border-red-200">
+                <button type="button" onclick="toggleJobsMenu()" class="w-full flex flex-col items-center">
+                    <svg class="w-5 h-5 mb-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path>
+                    </svg>
+                    <span class="text-xs font-semibold text-center">Job Posts</span>
+                    <span class="text-xs text-red-600">By Status</span>
+                </button>
+                <div id="jobsMenu" class="hidden absolute top-full mt-2 w-48 bg-white border border-red-200 rounded-lg shadow-lg z-10">
+                    <a href="{{ route('partner.dashboard.export-jobs') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 first:rounded-t-lg">All Jobs</a>
+                    <a href="{{ route('partner.dashboard.export-jobs', ['status' => 'pending']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50">Pending Approval</a>
+                    <a href="{{ route('partner.dashboard.export-jobs', ['status' => 'approved']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50">Approved</a>
+                    <a href="{{ route('partner.dashboard.export-jobs', ['status' => 'rejected']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50">Rejected</a>
+                    <a href="{{ route('partner.dashboard.export-jobs', ['status' => 'completed']) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-red-50 last:rounded-b-lg">Completed</a>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-4">💡 Click any button above to download reports. All exports include timestamps and detailed data.</p>
+    </div>
+
+    <!-- SECTION 3: KEY STATISTICS CARDS -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         <!-- Active Jobs -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
             <div class="flex items-start justify-between">
                 <div>
                     <p class="text-gray-600 text-sm font-medium">Active Jobs</p>
@@ -85,7 +179,7 @@
         </div>
 
         <!-- Total Applications -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
             <div class="flex items-start justify-between">
                 <div>
                     <p class="text-gray-600 text-sm font-medium">Total Applications</p>
@@ -104,7 +198,7 @@
         </div>
 
         <!-- Approved Applications -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
             <div class="flex items-start justify-between">
                 <div>
                     <p class="text-gray-600 text-sm font-medium">Approved</p>
@@ -121,8 +215,27 @@
             </p>
         </div>
 
+        <!-- Contacted Applications -->
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-gray-600 text-sm font-medium">Contacted</p>
+                    <p class="text-3xl font-bold text-blue-600 mt-1">{{ $contacted_applications ?? 0 }}</p>
+                </div>
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-xs text-gray-500 mt-3">
+                Awaiting decision
+            </p>
+        </div>
+
         <!-- Rejected Applications -->
-        <div class="bg-white rounded-lg shadow p-6">
+        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition">
             <div class="flex items-start justify-between">
                 <div>
                     <p class="text-gray-600 text-sm font-medium">Rejected</p>
@@ -138,28 +251,75 @@
                 Need follow-up
             </p>
         </div>
+    </div>
 
-        <!-- Active Partnerships -->
+    <!-- SECTION 4: JOB & PARTNERSHIP STATUS BREAKDOWN -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <!-- Job Status Breakdown -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-gray-600 text-sm font-medium">Partnerships</p>
-                    <p class="text-3xl font-bold text-purple-600 mt-1">{{ $active_partnerships }}</p>
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Job Posting Status</h2>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b">
+                    <span class="text-sm text-gray-600">Pending Approval</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        {{ $job_status_stats['pending'] ?? 0 }}
+                    </span>
                 </div>
-                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                    <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M13 7H7v6h6V7z"></path>
-                    </svg>
+                <div class="flex items-center justify-between pb-2 border-b">
+                    <span class="text-sm text-gray-600">Approved</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        {{ $job_status_stats['approved'] ?? 0 }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between pb-2 border-b">
+                    <span class="text-sm text-gray-600">Rejected</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        {{ $job_status_stats['rejected'] ?? 0 }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Completed</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                        {{ $job_status_stats['completed'] ?? 0 }}
+                    </span>
                 </div>
             </div>
-            <p class="text-xs text-gray-500 mt-3">
-                {{ $partnerships_pending_approval }} under review
-            </p>
+        </div>
+
+        <!-- Partnership Status Breakdown -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-4">Partnership Status</h2>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between pb-2 border-b">
+                    <span class="text-sm text-gray-600">Submitted</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        {{ $partnership_status_stats['submitted'] ?? 0 }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between pb-2 border-b">
+                    <span class="text-sm text-gray-600">Under Review</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        {{ $partnership_status_stats['under_review'] ?? 0 }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between pb-2 border-b">
+                    <span class="text-sm text-gray-600">Approved</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        {{ $partnership_status_stats['approved'] ?? 0 }}
+                    </span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600">Completed</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        {{ $partnership_status_stats['completed'] ?? 0 }}
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- SECTION 3: ALERTS & NOTIFICATIONS -->
-    @if ($alerts['jobs_pending_approval'] > 0 || $alerts['partnerships_pending_approval'] > 0 || $alerts['applications_pending_review'] > 0)
+    <!-- SECTION 5: ALERTS & NOTIFICATIONS -->
+    @if ($alerts['jobs_pending_approval'] > 0 || $alerts['partnerships_pending_approval'] > 0 || $alerts['applications_pending_review'] > 0 || $alerts['applications_nearing_deadline'] > 0)
         <div class="mb-8">
             <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
                 <div class="flex items-start">
@@ -171,6 +331,9 @@
                         <div class="mt-2 text-sm text-yellow-700 space-y-1">
                             @if ($alerts['jobs_pending_approval'] > 0)
                                 <p>📋 <strong>{{ $alerts['jobs_pending_approval'] }}</strong> job posting(s) pending admin approval</p>
+                            @endif
+                            @if ($alerts['jobs_rejected'] > 0)
+                                <p>⚠️ <strong>{{ $alerts['jobs_rejected'] }}</strong> job posting(s) rejected - requires revision</p>
                             @endif
                             @if ($alerts['partnerships_pending_approval'] > 0)
                                 <p>🤝 <strong>{{ $alerts['partnerships_pending_approval'] }}</strong> partnership proposal(s) under review</p>
@@ -188,20 +351,23 @@
         </div>
     @endif
 
-    <!-- SECTION 4: JOB PERFORMANCE ANALYTICS -->
+    <!-- SECTION 6: JOB PERFORMANCE ANALYTICS -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         <!-- Top Performing Jobs -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-900">Top Job Postings</h2>
-                <a href="{{ route('partner.job-postings.index') }}" class="text-sm text-blue-600 hover:text-blue-800">View all</a>
+                <a href="{{ route('partner.job-postings.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all →</a>
             </div>
 
             <div class="space-y-4">
                 @forelse ($job_performance as $job)
                     <div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition">
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-medium text-gray-900">{{ $job['title'] }}</h3>
+                            <div>
+                                <h3 class="font-medium text-gray-900">{{ $job['title'] }}</h3>
+                                <p class="text-xs text-gray-500 mt-1">{{ $job['views_count'] }} views</p>
+                            </div>
                             <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded">
                                 {{ $job['approval_rate'] }}% approval
                             </span>
@@ -209,19 +375,19 @@
 
                         <div class="grid grid-cols-4 gap-2 mb-3 text-sm">
                             <div class="text-center">
-                                <p class="text-gray-600">Applications</p>
+                                <p class="text-gray-600 text-xs">Applications</p>
                                 <p class="text-lg font-bold text-gray-900">{{ $job['total_applications'] }}</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-gray-600">Approved</p>
+                                <p class="text-gray-600 text-xs">Approved</p>
                                 <p class="text-lg font-bold text-green-600">{{ $job['approved'] }}</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-gray-600">Pending</p>
+                                <p class="text-gray-600 text-xs">Pending</p>
                                 <p class="text-lg font-bold text-yellow-600">{{ $job['pending'] }}</p>
                             </div>
                             <div class="text-center">
-                                <p class="text-gray-600">Rejected</p>
+                                <p class="text-gray-600 text-xs">Rejected</p>
                                 <p class="text-lg font-bold text-red-600">{{ $job['rejected'] }}</p>
                             </div>
                         </div>
@@ -241,7 +407,7 @@
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-900">Recent Approvals</h2>
-                <a href="{{ route('partner.job-postings.index') }}" class="text-sm text-blue-600 hover:text-blue-800">View all</a>
+                <a href="{{ route('partner.job-postings.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all →</a>
             </div>
 
             <div class="space-y-3">
@@ -265,13 +431,13 @@
         </div>
     </div>
 
-    <!-- SECTION 5: RECENT ACTIVITY & PARTNERSHIPS -->
+    <!-- SECTION 7: RECENT ACTIVITY & PARTNERSHIPS -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Recent Applications -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-900">Recent Applications</h2>
-                <a href="{{ route('partner.job-postings.index') }}" class="text-sm text-blue-600 hover:text-blue-800">View all</a>
+                <a href="{{ route('partner.job-postings.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all →</a>
             </div>
 
             <div class="space-y-3">
@@ -287,6 +453,7 @@
                                 <span class="text-xs px-2 py-0.5 rounded-full
                                     @if($app->status === 'approved') bg-green-100 text-green-800
                                     @elseif($app->status === 'pending') bg-yellow-100 text-yellow-800
+                                    @elseif($app->status === 'contacted') bg-blue-100 text-blue-800
                                     @elseif($app->status === 'rejected') bg-red-100 text-red-800
                                     @else bg-purple-100 text-purple-800 @endif">
                                     {{ ucfirst(str_replace('_', ' ', $app->status)) }}
@@ -307,25 +474,26 @@
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-lg font-semibold text-gray-900">Active Partnerships</h2>
-                <a href="{{ route('partner.partnerships.index') }}" class="text-sm text-blue-600 hover:text-blue-800">View all</a>
+                <a href="{{ route('partner.partnerships.index') }}" class="text-sm text-blue-600 hover:text-blue-800 font-medium">View all →</a>
             </div>
 
             <div class="space-y-3">
                 @forelse ($recent_partnerships as $partnership)
                     <div class="border border-gray-200 rounded-lg p-4 hover:border-green-300 transition">
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-medium text-gray-900">{{ $partnership->activity_title }}</h3>
-                            <span class="text-xs px-2 py-1 rounded-full
+                            <h3 class="font-medium text-gray-900 pr-2">{{ $partnership->activity_title }}</h3>
+                            <span class="text-xs px-2 py-1 rounded-full flex-shrink-0
                                 @if($partnership->status === 'approved') bg-green-100 text-green-800
                                 @elseif($partnership->status === 'submitted') bg-yellow-100 text-yellow-800
                                 @elseif($partnership->status === 'under_review') bg-blue-100 text-blue-800
+                                @elseif($partnership->status === 'completed') bg-purple-100 text-purple-800
                                 @elseif($partnership->status === 'rejected') bg-red-100 text-red-800
                                 @else bg-gray-100 text-gray-800 @endif">
                                 {{ ucfirst(str_replace('_', ' ', $partnership->status)) }}
                             </span>
                         </div>
                         <p class="text-sm text-gray-600">{{ $partnership->organization_name }}</p>
-                        <p class="text-xs text-gray-500 mt-2">{{ $partnership->activity_date->format('M d, Y') }}</p>
+                        <p class="text-xs text-gray-500 mt-2">📅 {{ $partnership->activity_date->format('M d, Y') }}</p>
                     </div>
                 @empty
                     <p class="text-gray-500 text-center py-8">No partnerships yet</p>
@@ -334,5 +502,36 @@
         </div>
     </div>
 </div>
+
+<!-- Dropdown Menu Scripts -->
+<script>
+    function toggleAppsMenu() {
+        const menu = document.getElementById('appsMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    function togglePartMenu() {
+        const menu = document.getElementById('partMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    function toggleJobsMenu() {
+        const menu = document.getElementById('jobsMenu');
+        menu.classList.toggle('hidden');
+    }
+
+    // Close menus when clicking outside
+    document.addEventListener('click', function(event) {
+        const appsMenu = document.getElementById('appsMenu');
+        const partMenu = document.getElementById('partMenu');
+        const jobsMenu = document.getElementById('jobsMenu');
+
+        if (!event.target.closest('.relative')) {
+            appsMenu.classList.add('hidden');
+            partMenu.classList.add('hidden');
+            jobsMenu.classList.add('hidden');
+        }
+    });
+</script>
 
 @endsection
