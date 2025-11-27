@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\JobPosting;
 use App\Models\JobApplication;
 use App\Models\ActivityLog;
+use App\Mail\JobApplicationConfirmation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 
@@ -133,7 +135,7 @@ class StudentJobController extends Controller
 
     /**
      * Apply for a job posting
-     * ✅ FIXED: Updated route name to use student.applications
+     * ✅ UPDATED: Now sends confirmation email
      */
     public function apply(JobPosting $job, Request $request): RedirectResponse
     {
@@ -209,18 +211,24 @@ class StudentJobController extends Controller
                 // Don't fail the application if logging fails
             }
 
+            // ✅ NEW: SEND CONFIRMATION EMAIL
+            try {
+                Mail::to(auth()->user()->email)->send(new JobApplicationConfirmation($application));
+                \Log::info('Confirmation email sent for application: ' . $application->id);
+            } catch (\Exception $e) {
+                \Log::warning('Email sending failed: ' . $e->getMessage());
+                // Don't fail the application if email fails
+            }
+
             // ✅ FIXED: Using correct route name for outside applications group
             return redirect()->route('student.applications.show', $application->id)
-                ->with('success', 'Application submitted!');
+                ->with('success', 'Application submitted! Check your email for confirmation.');
         } catch (\Exception $e) {
             \Log::error('Apply error: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
         }
     }
 
-    /**
-     * View student's job applications
-     */
     /**
      * View student's job applications with search
      */
@@ -273,7 +281,6 @@ class StudentJobController extends Controller
         }
     }
 
-
     /**
      * View single job application details
      * Redirects to job posting instead of separate page
@@ -295,7 +302,6 @@ class StudentJobController extends Controller
                 ->with('error', 'Unable to redirect to job posting.');
         }
     }
-
 
     /**
      * Withdraw a job application
