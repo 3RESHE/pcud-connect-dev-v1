@@ -8,6 +8,7 @@ use App\Helpers\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use Maatwebsite\Excel\Facades\Excel;
 
 class DepartmentController extends Controller
 {
@@ -25,7 +26,8 @@ class DepartmentController extends Controller
     public function getAll(): JsonResponse
     {
         try {
-            $departments = Department::orderBy('created_at', 'desc')
+            $departments = Department::withCount('students')
+                ->orderBy('created_at', 'desc')
                 ->paginate(10);
 
             return response()->json([
@@ -98,7 +100,7 @@ class DepartmentController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $department = Department::findOrFail($id);
+            $department = Department::withCount('students')->findOrFail($id);
 
             return response()->json([
                 'success' => true,
@@ -245,6 +247,7 @@ class DepartmentController extends Controller
                 ->orWhere('code', 'like', "%{$query}%")
                 ->orderBy('title')
                 ->limit(20)
+                ->withCount('students')
                 ->get();
 
             return response()->json([
@@ -257,5 +260,164 @@ class DepartmentController extends Controller
                 'message' => 'Failed to search departments: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * ✅ NEW: Export students by department
+     */
+    public function exportStudents(Request $request, $departmentId)
+    {
+        try {
+            $department = Department::with(['students' => function ($query) {
+                $query->with('studentProfile');
+            }])->findOrFail($departmentId);
+
+            $fileName = "students-{$department->code}-" . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new DepartmentStudentsExport($department),
+                $fileName
+            );
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->back()->with('error', 'Department not found');
+        } catch (\Exception $e) {
+            \Log::error('Export students failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export students: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * ✅ NEW: Export all departments with student count summary
+     */
+    public function exportAll(Request $request)
+    {
+        try {
+            $fileName = "departments-summary-" . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new DepartmentsSummaryExport(),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            \Log::error('Export departments failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export departments: ' . $e->getMessage());
+        }
+    }
+}
+
+/**
+ * ✅ NEW: Export class for students in a specific department
+ */
+use Maatwebsite\Excel\Concerns\FromArray;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+
+class DepartmentStudentsExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    private $department;
+
+    public function __construct($department)
+    {
+        $this->department = $department;
+    }
+
+    public function array(): array
+    {
+        $data = [];
+
+        // Add department header
+        $data[] = ['DEPARTMENT: ' . $this->department->title . ' (' . $this->department->code . ')'];
+        $data[] = [];
+        $data[] = ['Total Students: ' . $this->department->students()->count()];
+        $data[] = ['Export Date: ' . now()->format('M d, Y H:i A')];
+        $data[] = [];
+
+        // Add student data
+        foreach ($this->department->students as $student) {
+            $profile = $student->studentProfile;
+
+            $data[] = [
+                $student->first_name,
+                $student->last_name,
+                $student->email,
+                $profile?->student_id ?? 'N/A',
+                $profile?->headline ?? 'N/A',
+                $profile?->phone ?? 'N/A',
+                $profile?->personal_email ?? 'N/A',
+                $student->is_active ? 'Active' : 'Inactive',
+                $student->created_at->format('M d, Y'),
+            ];
+        }
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return [
+            'First Name',
+            'Last Name',
+            'Email',
+            'Student ID',
+            'Headline',
+            'Phone',
+            'Personal Email',
+            'Status',
+            'Created At',
+        ];
+    }
+}
+
+/**
+ * ✅ NEW: Export class for all departments with student count summary
+ */
+class DepartmentsSummaryExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    public function array(): array
+    {
+        $data = [];
+
+        // Add header section
+        $data[] = ['DEPARTMENTS SUMMARY REPORT'];
+        $data[] = ['Export Date: ' . now()->format('M d, Y H:i A')];
+        $data[] = [];
+
+        // Get departments with student count
+        $departments = Department::withCount('students')
+            ->orderBy('title', 'asc')
+            ->get();
+
+        $totalStudents = 0;
+
+        // Add department data
+        foreach ($departments as $dept) {
+            $studentCount = $dept->students_count ?? 0;
+            $totalStudents += $studentCount;
+
+            $data[] = [
+                $dept->code,
+                $dept->title,
+                $studentCount,
+                $studentCount > 0 ? 'Active' : 'No Students',
+                $dept->created_at->format('M d, Y'),
+            ];
+        }
+
+        // Add summary row
+        $data[] = [];
+        $data[] = ['TOTAL', '', $totalStudents, '', ''];
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return [
+            'Department Code',
+            'Department Name',
+            'Student Count',
+            'Status',
+            'Created At',
+        ];
     }
 }

@@ -10,7 +10,7 @@
         <h1 class="text-3xl font-bold text-gray-900">Department Management</h1>
         <p class="text-gray-600">Manage all departments in the system</p>
     </div>
-    <div>
+    <div class="flex gap-2">
         <button
             onclick="openAddDepartmentModal()"
             class="px-4 py-2 bg-primary text-white text-sm rounded-md hover:bg-blue-700 flex items-center"
@@ -27,6 +27,12 @@
 @if(session('success'))
     <div id="successMessage" class="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
         {{ session('success') }}
+    </div>
+@endif
+
+@if(session('error'))
+    <div id="errorMessage" class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+        {{ session('error') }}
     </div>
 @endif
 

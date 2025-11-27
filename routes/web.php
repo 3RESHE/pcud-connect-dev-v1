@@ -181,6 +181,13 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('destroy');
             Route::get('/search', [DepartmentController::class, 'search'])
                 ->name('search');
+
+
+            // ✅ NEW: Export routes
+            Route::get('/{department}/export-students', [DepartmentController::class, 'exportStudents'])
+                ->name('export-students');
+            Route::get('/export-all-summary', [DepartmentController::class, 'exportAll'])
+                ->name('export-all');
         });
 
         // ===== JOB POSTINGS APPROVALS =====

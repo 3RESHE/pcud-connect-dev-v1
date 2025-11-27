@@ -100,6 +100,12 @@ function displayDepartments(departments) {
                 >
                     Edit
                 </button>
+                <!-- ✅ NEW: Export Students Button -->
+                <a href="/admin/departments/${dept.id}/export-students"
+                   class="text-green-600 hover:text-green-700 font-medium inline-block"
+                   title="Export students from this department">
+                    Export
+                </a>
                 <button
                     onclick="openDeleteConfirmModal(${dept.id}, '${escapeHtml(
                 dept.title
@@ -442,7 +448,7 @@ function escapeHtml(text) {
         "<": "&lt;",
         ">": "&gt;",
         '"': "&quot;",
-        "'": "&#039;",
+        "'": "'",
     };
     return text.replace(/[&<>"']/g, (m) => map[m]);
 }
