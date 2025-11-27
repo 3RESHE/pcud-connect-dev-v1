@@ -710,7 +710,7 @@ class ApplicationsExport implements FromArray, WithHeadings, ShouldAutoSize
 
         foreach ($applications as $app) {
             $data[] = [
-                $app->applicant->name,
+                $app->applicant->first_name . ' ' . $app->applicant->last_name,
                 $app->jobPosting->title,
                 ucfirst(str_replace('_', ' ', $app->status)),
                 $app->created_at->format('M d, Y H:i'),
