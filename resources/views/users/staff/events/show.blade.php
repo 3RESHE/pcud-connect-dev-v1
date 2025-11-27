@@ -16,6 +16,7 @@
 <!-- STATUS ALERTS -->
 @php
     $statusConfig = [
+        'draft' => ['bg' => 'gray', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'title' => 'Event Saved as Draft', 'message' => 'This event is still in draft mode. You can continue editing it or submit it for admin review when ready.'],
         'pending' => ['bg' => 'yellow', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'title' => 'Event Submitted for Review', 'message' => 'This event was submitted on ' . $event->created_at->format('F j, Y') . ' and is currently under administrator review.'],
         'approved' => ['bg' => 'green', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'title' => 'Event Approved - Ready to Publish', 'message' => 'This event was approved by the administrator. You can now publish this event to make it visible to students and start accepting registrations.'],
         'rejected' => ['bg' => 'red', 'icon' => 'M6 18L18 6M6 6l12 12', 'title' => 'Event Rejected', 'message' => $event->rejection_reason ?? 'This event has been rejected. Please review the feedback and make necessary changes.'],
@@ -44,15 +45,16 @@
 </div>
 
 <!-- Event Banner -->
-<div class="relative bg-gradient-to-r @switch($event->status) @case('pending') from-yellow-600 to-amber-600 @break @case('approved') from-green-600 to-teal-600 @break @case('rejected') from-red-600 to-pink-600 @break @case('published') from-blue-600 to-purple-600 @break @case('ongoing') from-purple-600 to-indigo-600 @break @default from-gray-600 to-slate-600 @endswitch rounded-xl overflow-hidden mb-8 shadow-lg">
+<div class="relative bg-gradient-to-r @switch($event->status) @case('draft') from-gray-600 to-slate-600 @break @case('pending') from-yellow-600 to-amber-600 @break @case('approved') from-green-600 to-teal-600 @break @case('rejected') from-red-600 to-pink-600 @break @case('published') from-blue-600 to-purple-600 @break @case('ongoing') from-purple-600 to-indigo-600 @break @default from-gray-600 to-slate-600 @endswitch rounded-xl overflow-hidden mb-8 shadow-lg">
     @if($event->event_image)
         <img src="{{ asset($event->event_image) }}" alt="{{ $event->title }}" class="w-full h-80 object-cover absolute inset-0">
     @endif
     <div class="absolute inset-0 bg-black opacity-40"></div>
     <div class="relative px-8 py-16 text-center">
         <div class="flex justify-center mb-4 space-x-3 flex-wrap">
-            <span class="@switch($event->status) @case('pending') bg-yellow-100 text-yellow-800 @break @case('approved') bg-green-100 text-green-800 @break @case('rejected') bg-red-100 text-red-800 @break @case('published') bg-blue-100 text-blue-800 @break @case('ongoing') bg-purple-100 text-purple-800 @break @default bg-gray-100 text-gray-800 @endswitch px-4 py-1 rounded-full text-base font-medium">
+            <span class="@switch($event->status) @case('draft') bg-gray-100 text-gray-800 @break @case('pending') bg-yellow-100 text-yellow-800 @break @case('approved') bg-green-100 text-green-800 @break @case('rejected') bg-red-100 text-red-800 @break @case('published') bg-blue-100 text-blue-800 @break @case('ongoing') bg-purple-100 text-purple-800 @break @default bg-gray-100 text-gray-800 @endswitch px-4 py-1 rounded-full text-base font-medium">
                 @switch($event->status)
+                    @case('draft') Draft @break
                     @case('pending') Under Review @break
                     @case('approved') Approved @break
                     @case('published') Published @break
@@ -76,7 +78,25 @@
 
 <!-- Action Buttons -->
 <div class="mb-8 flex justify-end gap-4 flex-wrap">
-    @if($event->status === 'pending')
+    @if($event->status === 'draft')
+        <form action="{{ route('staff.events.destroy', $event->id) }}" method="POST" style="display:inline;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" onclick="return confirm('Are you sure?')" class="px-8 py-3 border border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 flex items-center text-base transition-colors">
+                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                Delete
+            </button>
+        </form>
+        <a href="{{ route('staff.events.edit', $event->id) }}" class="px-8 py-3 bg-primary text-white rounded-lg font-medium hover:bg-blue-700 flex items-center text-base transition-colors">
+            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+            Edit Event
+        </a>
+
+    @elseif($event->status === 'pending')
         <form action="{{ route('staff.events.destroy', $event->id) }}" method="POST" style="display:inline;">
             @csrf
             @method('DELETE')
@@ -361,9 +381,10 @@
         <div class="bg-white rounded-xl shadow-sm p-8 border border-gray-100">
             <h3 class="font-bold text-gray-900 text-xl mb-6">Event Status</h3>
             <div class="space-y-6">
-                <div class="p-4 @switch($event->status) @case('pending') bg-yellow-50 border border-yellow-200 @break @case('approved') bg-green-50 border border-green-200 @break @case('rejected') bg-red-50 border border-red-200 @break @case('published') bg-blue-50 border border-blue-200 @break @case('ongoing') bg-purple-50 border border-purple-200 @break @default bg-gray-50 @endswitch rounded-lg">
-                    <p class="text-lg font-bold @switch($event->status) @case('pending') text-yellow-800 @break @case('approved') text-green-800 @break @case('rejected') text-red-800 @break @case('published') text-blue-800 @break @case('ongoing') text-purple-800 @break @default text-gray-800 @endswitch">
+                <div class="p-4 @switch($event->status) @case('draft') bg-gray-50 border border-gray-200 @break @case('pending') bg-yellow-50 border border-yellow-200 @break @case('approved') bg-green-50 border border-green-200 @break @case('rejected') bg-red-50 border border-red-200 @break @case('published') bg-blue-50 border border-blue-200 @break @case('ongoing') bg-purple-50 border border-purple-200 @break @default bg-gray-50 @endswitch rounded-lg">
+                    <p class="text-lg font-bold @switch($event->status) @case('draft') text-gray-800 @break @case('pending') text-yellow-800 @break @case('approved') text-green-800 @break @case('rejected') text-red-800 @break @case('published') text-blue-800 @break @case('ongoing') text-purple-800 @break @default text-gray-800 @endswitch">
                         @switch($event->status)
+                            @case('draft') 📝 Draft @break
                             @case('pending') 🕐 Under Review @break
                             @case('approved') ✓ Approved @break
                             @case('published') 🚀 Published @break
