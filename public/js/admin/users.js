@@ -172,7 +172,7 @@ function displayUsers(users) {
                 user.first_name
             } ${
                 user.last_name
-            }')" class="text-red-600 hover:text-red-700 font-medium">
+            }')" class="text-red-600 hidden hover:text-red-700 font-medium">
                         Delete
                     </button>
                 </td>
