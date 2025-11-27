@@ -27,6 +27,7 @@ use App\Http\Controllers\Shared\EventController as SharedEventController;
 use App\Http\Controllers\Staff\Events\EventAttendanceController;
 use App\Http\Controllers\Staff\Events\EventController;
 use App\Http\Controllers\Staff\Events\EventRegistrationController;
+use App\Http\Controllers\Staff\Jobs\StaffJobController;
 use App\Http\Controllers\Staff\News\NewsController as StaffNewsController;
 use App\Http\Controllers\Staff\ProfileController;
 use App\Http\Controllers\Student\DashboardController;
@@ -36,6 +37,7 @@ use App\Http\Controllers\Student\StudentJobController;
 use App\Http\Controllers\Student\StudentProfileController;
 use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -277,10 +279,17 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
 
     Route::middleware('role:staff')->prefix('staff')->name('staff.')->group(function () {
         // DASHBOARD
+
+
         Route::get('/dashboard', [StaffDashboardController::class, 'dashboard'])->name('dashboard');
         Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
         Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+        // JOBS ROUTES (index only - no show, details are inline)
+        Route::prefix('jobs')->name('jobs.')->group(function () {
+            Route::get('/', [StaffJobController::class, 'index'])->name('index');
+        });
 
         // EVENT MANAGEMENT
         Route::prefix('events')->name('events.')->group(function () {
@@ -347,7 +356,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
 
     Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
 
-         Route::get('/dashboard', [PartnerDashboardController::class, 'index'])
+        Route::get('/dashboard', [PartnerDashboardController::class, 'index'])
             ->name('dashboard');
         // ===== DASHBOARD =====
         Route::prefix('dashboard')->name('dashboard.')->group(function () {

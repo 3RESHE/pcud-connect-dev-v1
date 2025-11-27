@@ -21,6 +21,12 @@
                         Events
                     </a>
                     <a
+                        href="{{ route('staff.jobs.index') }}"
+                        class="@if(str_contains(Route::currentRouteName(), 'staff.jobs')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary border-b-2 border-transparent @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200"
+                    >
+                        Jobs
+                    </a>
+                    <a
                         href="{{ route('staff.news.index') }}"
                         class="@if(str_contains(Route::currentRouteName(), 'staff.news')) text-primary border-b-2 border-primary @else text-gray-700 hover:text-primary border-b-2 border-transparent @endif px-1 pt-1 pb-4 text-sm font-medium transition-colors duration-200"
                     >
@@ -28,6 +34,7 @@
                     </a>
                 </div>
             </div>
+
 
             <!-- Desktop User Menu -->
             <div class="hidden md:flex items-center space-x-4">
@@ -98,6 +105,7 @@
                 </div>
             </div>
 
+
             <!-- Mobile Menu Button -->
             <div class="md:hidden flex items-center">
                 <button
@@ -140,6 +148,7 @@
             </div>
         </div>
 
+
         <!-- Mobile Menu -->
         <div
             id="mobileMenu"
@@ -157,6 +166,12 @@
                     class="@if(str_contains(Route::currentRouteName(), 'staff.events')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
                 >
                     Events
+                </a>
+                <a
+                    href="{{ route('staff.jobs.index') }}"
+                    class="@if(str_contains(Route::currentRouteName(), 'staff.jobs')) text-primary bg-primary bg-opacity-10 @else text-gray-700 hover:text-primary hover:bg-gray-100 @endif block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+                >
+                    Jobs
                 </a>
                 <a
                     href="{{ route('staff.news.index') }}"
@@ -191,7 +206,7 @@
                         Staff Profile
                     </a>
                     <a
-                        href=""
+                        href="{{ url('/profile') }}"
                         class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-primary hover:bg-gray-100 transition-colors duration-200"
                     >
                         Settings
