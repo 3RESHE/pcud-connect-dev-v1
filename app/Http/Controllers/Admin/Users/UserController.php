@@ -8,6 +8,8 @@ use App\Models\Department;
 use App\Models\StudentProfile;
 use App\Helpers\ActivityLogger;
 use App\Mail\UserCredentialsMail;
+use App\Mail\UserAccountDeactivatedMail;
+use App\Mail\UserAccountActivatedMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -16,6 +18,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\UsersImport;
+
 
 class UserController extends Controller
 {
@@ -202,6 +205,9 @@ class UserController extends Controller
     /**
      * Update a user
      */
+    /**
+     * Update a user
+     */
     public function update(Request $request, $id): JsonResponse
     {
         try {
@@ -228,6 +234,10 @@ class UserController extends Controller
             // Store old values for logging
             $oldValues = $user->only(['first_name', 'last_name', 'email', 'role', 'is_active']);
 
+            // Check if status changed
+            $statusChanged = $user->is_active != $validated['is_active'];
+            $wasActive = $user->is_active;
+
             // Update user
             $user->update([
                 'first_name' => $validated['first_name'],
@@ -242,6 +252,30 @@ class UserController extends Controller
 
             // Log activity
             ActivityLogger::logUpdate($user, $oldValues, "Updated user: {$user->full_name}");
+
+            // Send status change email if is_active changed
+            if ($statusChanged) {
+                try {
+                    if ($validated['is_active']) {
+                        // Account was reactivated
+                        Mail::to($user->email)->send(new UserAccountActivatedMail($user));
+                        $statusMessage = 'User reactivated successfully. Notification email sent.';
+                    } else {
+                        // Account was deactivated
+                        Mail::to($user->email)->send(new UserAccountDeactivatedMail($user));
+                        $statusMessage = 'User deactivated successfully. Notification email sent.';
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Failed to send status change email: ' . $e->getMessage());
+                    $statusMessage = 'User updated successfully, but email notification failed.';
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'message' => $statusMessage,
+                    'data' => $user,
+                ]);
+            }
 
             return response()->json([
                 'success' => true,
@@ -261,6 +295,7 @@ class UserController extends Controller
             ], 500);
         }
     }
+
 
     /**
      * Delete a user
@@ -447,4 +482,75 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+
+    /**
+ * Bulk update user status
+ */
+public function bulkUpdateStatus(Request $request): JsonResponse
+{
+    try {
+        $validated = $request->validate([
+            'user_ids' => 'required|array|min:1',
+            'user_ids.*' => 'integer|exists:users,id',
+            'is_active' => 'required|boolean',
+        ]);
+
+        $userIds = $validated['user_ids'];
+        $isActive = $validated['is_active'];
+
+        // Prevent deactivating yourself
+        if (!$isActive && in_array(auth()->id(), $userIds)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot deactivate your own account.',
+            ], 400);
+        }
+
+        $users = User::whereIn('id', $userIds)->get();
+
+        foreach ($users as $user) {
+            $oldActive = $user->is_active;
+
+            $user->update(['is_active' => $isActive]);
+
+            // Send status change email
+            try {
+                if ($isActive && !$oldActive) {
+                    // Account was reactivated
+                    Mail::to($user->email)->send(new UserAccountActivatedMail($user));
+                } elseif (!$isActive && $oldActive) {
+                    // Account was deactivated
+                    Mail::to($user->email)->send(new UserAccountDeactivatedMail($user));
+                }
+            } catch (\Exception $e) {
+                \Log::error("Failed to send status email to {$user->email}: " . $e->getMessage());
+            }
+
+            // Log activity
+            ActivityLogger::logUpdate(
+                $user,
+                ['is_active' => $oldActive],
+                "Bulk status update: " . ($isActive ? 'Activated' : 'Deactivated') . " user {$user->full_name}"
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => count($users) . ' user' . (count($users) !== 1 ? 's' : '') . ' ' . ($isActive ? 'activated' : 'deactivated') . ' successfully. Notification emails sent.',
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Validation failed',
+            'errors' => $e->errors(),
+        ], 422);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Failed to update users: ' . $e->getMessage(),
+        ], 500);
+    }
+}
+
 }

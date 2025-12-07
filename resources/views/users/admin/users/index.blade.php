@@ -88,6 +88,32 @@
     </div>
 </div>
 
+<!-- Bulk Actions -->
+<div id="bulkActionsBar" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <span id="selectedCount" class="font-medium text-gray-900">0 users selected</span>
+        </div>
+        <div class="flex space-x-2">
+            <button onclick="bulkActivate()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Activate Selected
+            </button>
+            <button onclick="bulkDeactivate()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Deactivate Selected
+            </button>
+            <button onclick="clearSelection()" class="px-4 py-2 bg-gray-400 text-white rounded-md hover:bg-gray-500 text-sm font-medium">
+                Clear
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- Users Table -->
 <div class="bg-white shadow-sm rounded-lg overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-200">
@@ -98,6 +124,9 @@
         <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" class="w-4 h-4 rounded">
+                    </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
@@ -109,7 +138,7 @@
             </thead>
             <tbody id="userTableBody" class="bg-white divide-y divide-gray-200">
                 <tr>
-                    <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                    <td colspan="8" class="px-6 py-8 text-center text-gray-500">
                         <div class="flex items-center justify-center">
                             <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -162,6 +191,32 @@
                     </button>
                     <button type="button" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
                         Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Status Change Modal -->
+<div id="bulkStatusModal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        <div class="relative bg-white rounded-lg max-w-md w-full shadow-xl">
+            <div class="p-6">
+                <div class="flex items-center justify-center w-12 h-12 mx-auto bg-blue-100 rounded-full mb-4">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2 text-center" id="bulkStatusTitle">Activate Users?</h3>
+                <p id="bulkStatusMessage" class="text-gray-600 text-center mb-6">You are about to change the status of <strong id="bulkStatusCount">0</strong> users.</p>
+                <div class="flex justify-center space-x-3">
+                    <button type="button" onclick="closeBulkStatusModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="confirmBulkStatusChange()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-700">
+                        Confirm
                     </button>
                 </div>
             </div>

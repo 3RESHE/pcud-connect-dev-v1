@@ -1,5 +1,8 @@
 let currentPage = 1;
 let currentDeleteId = null;
+let selectedUsers = new Set(); // Track selected user IDs
+let bulkAction = null; // Track which bulk action to perform
+let isProcessing = false; // Prevent duplicate submissions
 
 // Initialize
 document.addEventListener("DOMContentLoaded", function () {
@@ -47,7 +50,7 @@ function loadDepartments() {
         });
 }
 
-// Load statistics
+// Load statistics with loading skeleton
 function loadStats() {
     fetch("/admin/users/stats", {
         headers: {
@@ -58,23 +61,20 @@ function loadStats() {
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
-                document.getElementById("statTotal").textContent =
-                    data.data.total;
-                document.getElementById("statAdmin").textContent =
-                    data.data.admin;
-                document.getElementById("statStaff").textContent =
-                    data.data.staff;
-                document.getElementById("statPartner").textContent =
-                    data.data.partner;
-                document.getElementById("statStudent").textContent =
-                    data.data.student;
-                document.getElementById("statAlumni").textContent =
-                    data.data.alumni;
+                document.getElementById("statTotal").textContent = data.data.total;
+                document.getElementById("statAdmin").textContent = data.data.admin;
+                document.getElementById("statStaff").textContent = data.data.staff;
+                document.getElementById("statPartner").textContent = data.data.partner;
+                document.getElementById("statStudent").textContent = data.data.student;
+                document.getElementById("statAlumni").textContent = data.data.alumni;
             }
+        })
+        .catch((error) => {
+            console.error("Error loading stats:", error);
         });
 }
 
-// Load users
+// Load users with loading spinner
 function loadUsers(page = 1) {
     const search = document.getElementById("searchInput").value;
     const role = document.getElementById("roleFilter").value;
@@ -87,6 +87,9 @@ function loadUsers(page = 1) {
     if (status) url += `&status=${status}`;
     if (search) url += `&search=${search}`;
 
+    // Show loading state
+    showTableLoading();
+
     fetch(url, {
         headers: {
             Accept: "application/json",
@@ -98,6 +101,7 @@ function loadUsers(page = 1) {
             if (data.success) {
                 displayUsers(data.data);
                 updatePagination(data.pagination);
+                clearSelection(); // Clear selections when loading new page
             }
         })
         .catch((error) => {
@@ -106,15 +110,37 @@ function loadUsers(page = 1) {
         });
 }
 
-// Display users
+// Show table loading spinner
+function showTableLoading() {
+    const tbody = document.getElementById("userTableBody");
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="8" class="px-6 py-12 text-center">
+                <div class="flex flex-col items-center justify-center">
+                    <div class="relative w-12 h-12 mb-4">
+                        <div class="animate-spin absolute inset-0">
+                            <div class="h-full w-full border-4 border-blue-200 border-t-primary rounded-full"></div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 font-medium">Loading users...</p>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// Display users with checkboxes
 function displayUsers(users) {
     const tbody = document.getElementById("userTableBody");
 
     if (users.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                    No users found
+                <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium">No users found</p>
                 </td>
             </tr>
         `;
@@ -133,7 +159,10 @@ function displayUsers(users) {
             }
 
             return `
-            <tr>
+            <tr class="user-row-${user.id} hover:bg-gray-50 transition">
+                <td class="px-6 py-4 whitespace-nowrap">
+                    <input type="checkbox" value="${user.id}" onchange="updateSelection()" class="user-checkbox w-4 h-4 rounded accent-primary cursor-pointer">
+                </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">${nameDisplay}</div>
                 </td>
@@ -143,7 +172,7 @@ function displayUsers(users) {
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(
                         user.role
-                    )} ">
+                    )}">
                         ${capitalizeFirst(user.role)}
                     </span>
                 </td>
@@ -165,21 +194,170 @@ function displayUsers(users) {
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
                     <button onclick="openEditUserModal(${
                         user.id
-                    })" class="text-primary hover:text-blue-700 font-medium">
+                    })" class="text-primary hover:text-blue-700 font-medium transition">
                         Edit
-                    </button>
-                    <button onclick="openDeleteConfirmModal(${user.id}, '${
-                user.first_name
-            } ${
-                user.last_name
-            }')" class="text-red-600 hidden hover:text-red-700 font-medium">
-                        Delete
                     </button>
                 </td>
             </tr>
         `;
         })
         .join("");
+}
+
+// ===== CHECKBOX & SELECTION MANAGEMENT =====
+
+function updateSelection() {
+    selectedUsers.clear();
+    document.querySelectorAll(".user-checkbox:checked").forEach((checkbox) => {
+        selectedUsers.add(parseInt(checkbox.value));
+    });
+
+    updateBulkActionBar();
+}
+
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById("selectAllCheckbox");
+    const allCheckboxes = document.querySelectorAll(".user-checkbox");
+
+    allCheckboxes.forEach((checkbox) => {
+        checkbox.checked = selectAllCheckbox.checked;
+    });
+
+    updateSelection();
+}
+
+function clearSelection() {
+    selectedUsers.clear();
+    document.getElementById("selectAllCheckbox").checked = false;
+    document.querySelectorAll(".user-checkbox").forEach((checkbox) => {
+        checkbox.checked = false;
+    });
+    updateBulkActionBar();
+}
+
+function updateBulkActionBar() {
+    const count = selectedUsers.size;
+    const bar = document.getElementById("bulkActionsBar");
+    const countDisplay = document.getElementById("selectedCount");
+
+    if (count > 0) {
+        bar.classList.remove("hidden");
+        countDisplay.textContent = `${count} user${count !== 1 ? "s" : ""} selected`;
+    } else {
+        bar.classList.add("hidden");
+    }
+}
+
+// ===== BULK ACTIONS =====
+
+function bulkActivate() {
+    if (selectedUsers.size === 0) {
+        showToast("Please select users first", "warning");
+        return;
+    }
+
+    bulkAction = "activate";
+    document.getElementById("bulkStatusTitle").textContent = "🟢 Activate Users?";
+    document.getElementById("bulkStatusMessage").innerHTML = `You are about to activate <strong id="bulkStatusCount">${selectedUsers.size}</strong> user${selectedUsers.size !== 1 ? "s" : ""}. They will receive an email notification.`;
+    document.getElementById("bulkStatusCount").textContent = selectedUsers.size;
+    document.getElementById("bulkStatusModal").classList.remove("hidden");
+}
+
+function bulkDeactivate() {
+    if (selectedUsers.size === 0) {
+        showToast("Please select users first", "warning");
+        return;
+    }
+
+    bulkAction = "deactivate";
+    document.getElementById("bulkStatusTitle").textContent = "🔴 Deactivate Users?";
+    document.getElementById("bulkStatusMessage").innerHTML = `You are about to deactivate <strong id="bulkStatusCount">${selectedUsers.size}</strong> user${selectedUsers.size !== 1 ? "s" : ""}. They will receive an email notification.`;
+    document.getElementById("bulkStatusCount").textContent = selectedUsers.size;
+    document.getElementById("bulkStatusModal").classList.remove("hidden");
+}
+
+function closeBulkStatusModal() {
+    document.getElementById("bulkStatusModal").classList.add("hidden");
+    bulkAction = null;
+}
+
+function confirmBulkStatusChange() {
+    if (selectedUsers.size === 0 || isProcessing) {
+        showToast("No users selected", "warning");
+        closeBulkStatusModal();
+        return;
+    }
+
+    isProcessing = true;
+    const isActive = bulkAction === "activate" ? 1 : 0;
+    const userIds = Array.from(selectedUsers);
+
+    const btn = document.querySelector(
+        '#bulkStatusModal button[onclick="confirmBulkStatusChange()"]'
+    );
+    const confirmModal = document.getElementById("bulkStatusModal");
+
+    // Show loading spinner in modal
+    const modalContent = confirmModal.querySelector(".relative");
+    const originalButtons = modalContent.querySelector(".flex.justify-center");
+
+    originalButtons.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-6">
+            <div class="relative w-10 h-10 mb-3">
+                <div class="animate-spin absolute inset-0">
+                    <div class="h-full w-full border-3 border-blue-200 border-t-primary rounded-full"></div>
+                </div>
+            </div>
+            <p class="text-gray-600 text-sm font-medium">Processing...</p>
+        </div>
+    `;
+
+    btn.disabled = true;
+
+    fetch("/admin/users/bulk-update-status", {
+        method: "POST",
+        headers: {
+            "X-CSRF-TOKEN":
+                document.querySelector('meta[name="csrf-token"]')?.content || "",
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({
+            user_ids: userIds,
+            is_active: isActive,
+        }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                showToast(data.message, "success");
+                closeBulkStatusModal();
+                clearSelection();
+                loadStats();
+                loadUsers(currentPage);
+            } else {
+                showToast(data.message || "Failed to update users", "error");
+                // Restore buttons
+                originalButtons.innerHTML = `
+                    <button type="button" onclick="closeBulkStatusModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                        Cancel
+                    </button>
+                    <button type="button" onclick="confirmBulkStatusChange()" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-blue-700">
+                        Confirm
+                    </button>
+                `;
+            }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            showToast("Failed to update users", "error");
+            closeBulkStatusModal();
+        })
+        .finally(() => {
+            btn.disabled = false;
+            isProcessing = false;
+        });
 }
 
 // Modal functions
@@ -194,6 +372,21 @@ function closeAddUserModal() {
 }
 
 function openEditUserModal(id) {
+    const modalLoadingSpinner = `
+        <div class="flex items-center justify-center py-8">
+            <div class="relative w-8 h-8">
+                <div class="animate-spin absolute inset-0">
+                    <div class="h-full w-full border-3 border-blue-200 border-t-primary rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const editModal = document.getElementById("editUserModal");
+    const formContainer = editModal.querySelector(".p-6");
+    formContainer.innerHTML = modalLoadingSpinner;
+    editModal.classList.remove("hidden");
+
     fetch(`/admin/users/${id}`, {
         headers: {
             Accept: "application/json",
@@ -205,8 +398,7 @@ function openEditUserModal(id) {
             if (data.success) {
                 const user = data.data;
                 document.getElementById("editId").value = user.id;
-                document.getElementById("editFirstName").value =
-                    user.first_name;
+                document.getElementById("editFirstName").value = user.first_name;
                 document.getElementById("editLastName").value = user.last_name;
                 document.getElementById("editMiddleName").value =
                     user.middle_name || "";
@@ -225,10 +417,12 @@ function openEditUserModal(id) {
 
                 toggleEditDepartmentField();
                 clearFormErrors("edit");
-                document
-                    .getElementById("editUserModal")
-                    .classList.remove("hidden");
             }
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            showToast("Failed to load user", "error");
+            closeEditUserModal();
         });
 }
 
@@ -236,13 +430,23 @@ function closeEditUserModal() {
     document.getElementById("editUserModal").classList.add("hidden");
 }
 
-// Handle form submissions
+// Handle form submissions with loading
 function handleAddUser(e) {
     e.preventDefault();
 
     const form = document.getElementById("addUserForm");
     const submitBtn = document.getElementById("addSubmitBtn");
+
+    // Show loading state
+    const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Creating...
+    `;
 
     const formData = new FormData(form);
 
@@ -250,8 +454,7 @@ function handleAddUser(e) {
         method: "POST",
         headers: {
             "X-CSRF-TOKEN":
-                document.querySelector('meta[name="csrf-token"]')?.content ||
-                "",
+                document.querySelector('meta[name="csrf-token"]')?.content || "",
             Accept: "application/json",
             "X-Requested-With": "XMLHttpRequest",
         },
@@ -280,6 +483,7 @@ function handleAddUser(e) {
         })
         .finally(() => {
             submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         });
 }
 
@@ -289,7 +493,17 @@ function handleEditUser(e) {
     const form = document.getElementById("editUserForm");
     const submitBtn = document.getElementById("editSubmitBtn");
     const id = document.getElementById("editId").value;
+
+    // Show loading state
+    const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
+    submitBtn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Saving...
+    `;
 
     const formData = new FormData(form);
 
@@ -297,8 +511,7 @@ function handleEditUser(e) {
         method: "POST",
         headers: {
             "X-CSRF-TOKEN":
-                document.querySelector('meta[name="csrf-token"]')?.content ||
-                "",
+                document.querySelector('meta[name="csrf-token"]')?.content || "",
             Accept: "application/json",
             "X-Requested-With": "XMLHttpRequest",
         },
@@ -307,7 +520,7 @@ function handleEditUser(e) {
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
-                showToast("User updated successfully", "success");
+                showToast(data.message, "success");
                 closeEditUserModal();
                 loadUsers(currentPage);
             } else if (data.errors) {
@@ -323,58 +536,7 @@ function handleEditUser(e) {
         })
         .finally(() => {
             submitBtn.disabled = false;
-        });
-}
-
-// Delete functions
-function openDeleteConfirmModal(id, name) {
-    currentDeleteId = id;
-    document.getElementById(
-        "deleteMessage"
-    ).textContent = `Are you sure you want to delete "${name}"? This action cannot be undone.`;
-    document.getElementById("deleteConfirmModal").classList.remove("hidden");
-}
-
-function closeDeleteConfirmModal() {
-    document.getElementById("deleteConfirmModal").classList.add("hidden");
-    currentDeleteId = null;
-}
-
-function confirmDelete() {
-    if (!currentDeleteId) return;
-
-    const deleteBtn = document.querySelector(
-        '#deleteConfirmModal button[onclick="confirmDelete()"]'
-    );
-    deleteBtn.disabled = true;
-
-    fetch(`/admin/users/${currentDeleteId}`, {
-        method: "DELETE",
-        headers: {
-            "X-CSRF-TOKEN":
-                document.querySelector('meta[name="csrf-token"]')?.content ||
-                "",
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-        },
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            if (data.success) {
-                showToast("User deleted successfully", "success");
-                closeDeleteConfirmModal();
-                loadStats();
-                loadUsers(currentPage);
-            } else {
-                showToast(data.message || "Failed to delete user", "error");
-            }
-        })
-        .catch((error) => {
-            console.error("Error:", error);
-            showToast("Failed to delete user", "error");
-        })
-        .finally(() => {
-            deleteBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
         });
 }
 
@@ -402,8 +564,8 @@ function updatePagination(pagination) {
         paginationHTML += `
             <button onclick="loadUsers(${
                 currentPage - 1
-            })" class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-                Previous
+            })" class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                ← Previous
             </button>
         `;
     }
@@ -415,13 +577,13 @@ function updatePagination(pagination) {
     ) {
         if (i === currentPage) {
             paginationHTML += `
-                <button class="px-3 py-1 text-sm bg-primary text-white rounded-md">
+                <button class="px-3 py-1 text-sm bg-primary text-white rounded-md font-medium">
                     ${i}
                 </button>
             `;
         } else {
             paginationHTML += `
-                <button onclick="loadUsers(${i})" class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
+                <button onclick="loadUsers(${i})" class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
                     ${i}
                 </button>
             `;
@@ -432,8 +594,8 @@ function updatePagination(pagination) {
         paginationHTML += `
             <button onclick="loadUsers(${
                 currentPage + 1
-            })" class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
-                Next
+            })" class="px-3 py-1 text-sm bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition">
+                Next →
             </button>
         `;
     }
@@ -442,27 +604,26 @@ function updatePagination(pagination) {
 }
 
 function toggleDepartmentField() {
-    const role = document.getElementById('addRole').value;
-    const deptDiv = document.getElementById('departmentFieldDiv');
-    const deptInput = document.getElementById('addDepartmentId');
-    const studentIdDiv = document.getElementById('studentIdFieldDiv');
-    const studentIdInput = document.getElementById('addStudentId');
+    const role = document.getElementById("addRole").value;
+    const deptDiv = document.getElementById("departmentFieldDiv");
+    const deptInput = document.getElementById("addDepartmentId");
+    const studentIdDiv = document.getElementById("studentIdFieldDiv");
+    const studentIdInput = document.getElementById("addStudentId");
 
-    if (role === 'student') {
-        deptDiv.classList.remove('hidden');
+    if (role === "student") {
+        deptDiv.classList.remove("hidden");
         deptInput.required = true;
-        studentIdDiv.classList.remove('hidden');
+        studentIdDiv.classList.remove("hidden");
         studentIdInput.required = true;
     } else {
-        deptDiv.classList.add('hidden');
+        deptDiv.classList.add("hidden");
         deptInput.required = false;
-        deptInput.value = '';
-        studentIdDiv.classList.add('hidden');
+        deptInput.value = "";
+        studentIdDiv.classList.add("hidden");
         studentIdInput.required = false;
-        studentIdInput.value = '';
+        studentIdInput.value = "";
     }
 }
-
 
 function toggleEditDepartmentField() {
     const role = document.getElementById("editRole").value;
@@ -495,14 +656,13 @@ function capitalizeFirst(str) {
 }
 
 function clearFormErrors(type) {
-    document.querySelectorAll(`#${type}UserForm .text-red-500`).forEach(el => {
-        el.classList.add('hidden');
-        el.textContent = '';
+    document.querySelectorAll(`#${type}UserForm .text-red-500`).forEach((el) => {
+        el.classList.add("hidden");
+        el.textContent = "";
     });
 
-    // Also clear any input/select error states
-    document.querySelectorAll(`#${type}UserForm input, #${type}UserForm select`).forEach(el => {
-        el.classList.remove('border-red-500');
+    document.querySelectorAll(`#${type}UserForm input, #${type}UserForm select`).forEach((el) => {
+        el.classList.remove("border-red-500");
     });
 }
 
@@ -511,9 +671,7 @@ function displayFormErrors(type, errors) {
 
     Object.keys(errors).forEach((field) => {
         const errorElement = document.getElementById(
-            `${type}${
-                field.replace("_", "").charAt(0).toUpperCase() + field.slice(1)
-            }Error`
+            `${type}${field.replace(/_/g, "").charAt(0).toUpperCase() + field.slice(1)}Error`
         );
         if (errorElement) {
             errorElement.textContent = errors[field][0];
@@ -525,19 +683,29 @@ function displayFormErrors(type, errors) {
 function showToast(message, type = "info") {
     const toastContainer = document.getElementById("toastContainer");
 
-    const toastClass =
-        {
-            success: "bg-green-500",
-            error: "bg-red-500",
-            info: "bg-blue-500",
-        }[type] || "bg-blue-500";
+    const toastClass = {
+        success: "bg-green-500",
+        error: "bg-red-500",
+        warning: "bg-yellow-500",
+        info: "bg-blue-500",
+    }[type] || "bg-blue-500";
+
+    const icons = {
+        success: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>',
+        error: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>',
+        warning: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>',
+        info: '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>',
+    };
 
     const toast = document.createElement("div");
-    toast.className = `${toastClass} text-white px-6 py-3 rounded-lg shadow-lg mb-2 flex items-center justify-between`;
+    toast.className = `${toastClass} text-white px-6 py-4 rounded-lg shadow-lg mb-3 flex items-center justify-between animate-pulse`;
     toast.innerHTML = `
-        <span>${message}</span>
-        <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex items-center space-x-3">
+            ${icons[type] || icons.info}
+            <span class="font-medium">${message}</span>
+        </div>
+        <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
         </button>
@@ -546,6 +714,9 @@ function showToast(message, type = "info") {
     toastContainer.appendChild(toast);
 
     setTimeout(() => {
-        toast.remove();
+        toast.classList.remove("animate-pulse");
+        toast.style.opacity = "0";
+        toast.style.transition = "opacity 0.3s ease";
+        setTimeout(() => toast.remove(), 300);
     }, 5000);
 }

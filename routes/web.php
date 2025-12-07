@@ -161,6 +161,8 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::get('/{user}', [UserController::class, 'show'])->name('show');
             Route::put('/{user}', [UserController::class, 'update'])->name('update');
             Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
+            // In the admin users routes section
+            Route::post('/bulk-update-status', [UserController::class, 'bulkUpdateStatus'])->name('bulk-update-status');
         });
 
 
