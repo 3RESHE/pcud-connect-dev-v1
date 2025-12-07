@@ -3,6 +3,17 @@
 @section('title', 'Edit My Profile - PCU-DASMA Connect')
 
 @section('content')
+<!-- Store routes as data attributes for JavaScript -->
+<script>
+    window.routes = {
+        profileUpdate: '{{ route("alumni.profile.update") }}',
+        experiencesStore: '{{ route("alumni.experiences.store") }}',
+        projectsStore: '{{ route("alumni.projects.store") }}',
+        deleteResume: '{{ route("alumni.profile.delete-resume") }}',
+        deleteCertification: '{{ route("alumni.profile.delete-certification") }}',
+    };
+</script>
+
 <div class="w-full bg-gray-50 min-h-screen py-4 sm:py-6 lg:py-8">
     <div class="w-full max-w-5xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
 
@@ -11,7 +22,13 @@
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div class="min-w-0">
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 break-words">Edit My Profile</h1>
-                    <p class="text-sm sm:text-base text-gray-600 mt-1 break-words">Complete your alumni profile</p>
+                    <p class="text-sm sm:text-base text-gray-600 mt-1 break-words">
+                        @if ($profile->is_fresh_grad)
+                            <span class="text-green-600 font-medium">🎓 Fresh Graduate Profile</span>
+                        @else
+                            <span class="text-blue-600 font-medium">💼 Experienced Professional Profile</span>
+                        @endif
+                    </p>
                 </div>
                 <a href="{{ route('alumni.profile.show') }}"
                     class="px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm sm:text-base whitespace-nowrap text-center">
@@ -64,17 +81,8 @@
                         </div>
                     </div>
 
-                    <!-- Headline & Personal Email -->
+                    <!-- Personal Email -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div class="min-w-0">
-                            <label for="headline" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                                Professional Headline *
-                            </label>
-                            <input type="text" id="headline" name="headline" value="{{ $profile?->headline ?? '' }}" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                placeholder="e.g., Senior Software Engineer at Google">
-                            <span id="headlineError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
-                        </div>
                         <div class="min-w-0">
                             <label for="personal_email" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
                                 Personal Email *
@@ -84,10 +92,6 @@
                                 placeholder="your.email@example.com">
                             <span id="personal_emailError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
-                    </div>
-
-                    <!-- Phone & Location -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div class="min-w-0">
                             <label for="phone" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
                                 Phone Number *
@@ -97,15 +101,17 @@
                                 placeholder="+63 9XX-XXXX-XXXX">
                             <span id="phoneError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
-                        <div class="min-w-0">
-                            <label for="current_location" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                                Current Location *
-                            </label>
-                            <input type="text" id="current_location" name="current_location" value="{{ $profile?->current_location ?? '' }}" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                placeholder="City, Country">
-                            <span id="current_locationError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
-                        </div>
+                    </div>
+
+                    <!-- Current Location -->
+                    <div class="min-w-0">
+                        <label for="current_location" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
+                            Current Location *
+                        </label>
+                        <input type="text" id="current_location" name="current_location" value="{{ $profile?->current_location ?? '' }}" required
+                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="City, Country">
+                        <span id="current_locationError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                     </div>
                 </div>
             </div>
@@ -179,13 +185,25 @@
                 </div>
             </div>
 
-            <!-- Professional Information -->
-            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+            <!-- Professional Information (HIDDEN FOR FRESH GRADS) -->
+            @if (!$profile->is_fresh_grad)
+            <div id="professionalSection" class="bg-white shadow-sm rounded-lg overflow-hidden">
                 <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
                     <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">Professional Information</h3>
                     <p class="text-xs sm:text-sm text-gray-600 mt-1 break-words">Your career and employment details</p>
                 </div>
                 <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+
+                    <!-- Professional Headline -->
+                    <div class="min-w-0" id="headlineSection">
+                        <label for="headline" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
+                            Professional Headline *
+                        </label>
+                        <input type="text" id="headline" name="headline" value="{{ $profile?->headline ?? '' }}"
+                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                            placeholder="e.g., Senior Software Engineer at Google">
+                        <span id="headlineError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                    </div>
 
                     <!-- Current Organization & Position -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -193,7 +211,7 @@
                             <label for="current_organization" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
                                 Current Organization *
                             </label>
-                            <input type="text" id="current_organization" name="current_organization" value="{{ $profile?->current_organization ?? '' }}" required
+                            <input type="text" id="current_organization" name="current_organization" value="{{ $profile?->current_organization ?? '' }}"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                 placeholder="Company Name">
                             <span id="current_organizationError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
@@ -202,7 +220,7 @@
                             <label for="current_position" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
                                 Current Position *
                             </label>
-                            <input type="text" id="current_position" name="current_position" value="{{ $profile?->current_position ?? '' }}" required
+                            <input type="text" id="current_position" name="current_position" value="{{ $profile?->current_position ?? '' }}"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                 placeholder="Job Title">
                             <span id="current_positionError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
@@ -239,12 +257,103 @@
                         <label for="professional_summary" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
                             Professional Summary *
                         </label>
-                        <textarea id="professional_summary" name="professional_summary" rows="5" required
+                        <textarea id="professional_summary" name="professional_summary" rows="5"
                             class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                             placeholder="Tell us about your career journey, achievements, and professional goals...">{{ $profile?->professional_summary ?? '' }}</textarea>
                         <p class="text-xs text-gray-500 mt-1">Min. 20 characters</p>
                         <span id="professional_summaryError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                     </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Resumes Section -->
+            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">📄 Resumes</h3>
+                    <p class="text-xs sm:text-sm text-gray-600 mt-1 break-words">Upload your resume(s) - PDF, DOC, DOCX (Max 5MB each)</p>
+                </div>
+                <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4">
+
+                    <!-- Drag & Drop Area -->
+                    <div id="resumeDropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-12l-3.172-3.172a4 4 0 00-5.656 0L28 12M9 20l3.172-3.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        <p class="mt-2 text-sm font-medium text-gray-900">Drop your resume here or click to browse</p>
+                        <p class="text-xs text-gray-500 mt-1">PDF, DOC, DOCX up to 5MB</p>
+                        <input type="file" id="resumeInput" name="resumes[]" class="hidden" accept=".pdf,.doc,.docx" multiple onchange="handleResumeUpload(event)">
+                    </div>
+
+                    <!-- Uploaded Resumes List -->
+                    <div id="resumesList" class="space-y-2">
+                        @if($profile->resumes && is_array($profile->resumes))
+                            @foreach($profile->resumes as $index => $resume)
+                                <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg" data-index="{{ $index }}">
+                                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                                        <svg class="w-5 h-5 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M8 16.5a1 1 0 11-2 0 1 1 0 012 0zM15 7H4V5h11v2zM15 11H4V9h11v2z"></path>
+                                        </svg>
+                                        <a href="{{ asset('storage/' . $resume) }}" target="_blank" class="text-xs sm:text-sm text-blue-600 hover:text-blue-800 break-all">
+                                            {{ basename($resume) }}
+                                        </a>
+                                    </div>
+                                    <button type="button" onclick="deleteExistingResume('{{ $resume }}', this)" class="text-red-600 hover:text-red-800 text-sm font-medium flex-shrink-0 ml-2">
+                                        Delete
+                                    </button>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+
+                    <!-- New Resumes Preview -->
+                    <div id="newResumesList" class="space-y-2"></div>
+                    <span id="resumesError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                </div>
+            </div>
+
+            <!-- Certifications Section -->
+            <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                    <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">🏆 Certifications</h3>
+                    <p class="text-xs sm:text-sm text-gray-600 mt-1 break-words">Upload your certification(s) - PDF, JPG, PNG (Max 5MB each)</p>
+                </div>
+                <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4">
+
+                    <!-- Drag & Drop Area -->
+                    <div id="certificationDropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-green-500 hover:bg-green-50 transition">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                            <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-12l-3.172-3.172a4 4 0 00-5.656 0L28 12M9 20l3.172-3.172a4 4 0 015.656 0L28 28" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                        </svg>
+                        <p class="mt-2 text-sm font-medium text-gray-900">Drop your certification here or click to browse</p>
+                        <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG up to 5MB</p>
+                        <input type="file" id="certificationInput" name="certifications[]" class="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple onchange="handleCertificationUpload(event)">
+                    </div>
+
+                    <!-- Uploaded Certifications List -->
+                    <div id="certificationsList" class="space-y-2">
+                        @if($profile->certifications && is_array($profile->certifications))
+                            @foreach($profile->certifications as $index => $cert)
+                                <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg" data-index="{{ $index }}">
+                                    <div class="flex items-center gap-2 min-w-0 flex-1">
+                                        <svg class="w-5 h-5 text-green-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                                        </svg>
+                                        <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="text-xs sm:text-sm text-green-600 hover:text-green-800 break-all">
+                                            {{ basename($cert) }}
+                                        </a>
+                                    </div>
+                                    <button type="button" onclick="deleteExistingCertification('{{ $cert }}', this)" class="text-red-600 hover:text-red-800 text-sm font-medium flex-shrink-0 ml-2">
+                                        Delete
+                                    </button>
+                                </div>
+                            @endforeach
+                        @endif
+                    </div>
+
+                    <!-- New Certifications Preview -->
+                    <div id="newCertificationsList" class="space-y-2"></div>
+                    <span id="certificationsError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                 </div>
             </div>
 
@@ -276,17 +385,6 @@
                             class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                             placeholder="e.g., Communication, Leadership, Problem Solving, Teamwork...">{{ $profile?->soft_skills ?? '' }}</textarea>
                         <span id="soft_skillsError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
-                    </div>
-
-                    <!-- Certifications -->
-                    <div class="min-w-0">
-                        <label for="certifications" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                            Certifications
-                        </label>
-                        <textarea id="certifications" name="certifications" rows="3"
-                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                            placeholder="e.g., AWS Certified Solutions Architect, Google Cloud Professional...">{{ $profile?->certifications ?? '' }}</textarea>
-                        <span id="certificationsError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                     </div>
 
                     <!-- Languages -->

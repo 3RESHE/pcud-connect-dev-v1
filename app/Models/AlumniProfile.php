@@ -12,6 +12,7 @@ class AlumniProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'is_fresh_grad',
         'profile_photo',
         'headline',
         'personal_email',
@@ -20,7 +21,8 @@ class AlumniProfile extends Model
         'linkedin_url',
         'github_url',
         'portfolio_url',
-        'resume_path',
+        'resumes',
+        'certifications',
         'degree_program',
         'graduation_year',
         'gwa',
@@ -34,7 +36,6 @@ class AlumniProfile extends Model
         'organizations',
         'technical_skills',
         'soft_skills',
-        'certifications',
         'languages',
         'profile_complete',
         'profile_completed_at',
@@ -42,12 +43,18 @@ class AlumniProfile extends Model
     ];
 
     protected $casts = [
+        'is_fresh_grad' => 'boolean',
         'graduation_year' => 'integer',
         'gwa' => 'decimal:2',
         'willing_to_relocate' => 'boolean',
         'profile_complete' => 'boolean',
         'is_public' => 'boolean',
         'profile_completed_at' => 'datetime',
+        'resumes' => 'array',
+        'certifications' => 'array',
+        'technical_skills' => 'array',
+        'soft_skills' => 'array',
+        'languages' => 'array',
     ];
 
     // ===== RELATIONSHIPS =====
@@ -77,6 +84,22 @@ class AlumniProfile extends Model
     }
 
     // ===== SCOPES =====
+
+    /**
+     * Scope: Get only fresh graduates.
+     */
+    public function scopeFreshGraduates($query)
+    {
+        return $query->where('is_fresh_grad', true);
+    }
+
+    /**
+     * Scope: Get only experienced alumni.
+     */
+    public function scopeExperienced($query)
+    {
+        return $query->where('is_fresh_grad', false);
+    }
 
     /**
      * Scope: Get only public profiles.
@@ -118,8 +141,8 @@ class AlumniProfile extends Model
         return $query->whereHas('user', function ($q) use ($keyword) {
             $q->whereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%$keyword%"]);
         })->orWhere('current_organization', 'LIKE', "%$keyword%")
-         ->orWhere('technical_skills', 'LIKE', "%$keyword%")
-         ->orWhere('headline', 'LIKE', "%$keyword%");
+          ->orWhere('technical_skills', 'LIKE', "%$keyword%")
+          ->orWhere('headline', 'LIKE', "%$keyword%");
     }
 
     // ===== HELPER METHODS =====
@@ -141,17 +164,46 @@ class AlumniProfile extends Model
     }
 
     /**
-     * Check if profile is complete (all required fields filled).
+     * Check if alumni is fresh graduate.
+     */
+    public function isFreshGraduate(): bool
+    {
+        return $this->is_fresh_grad === true;
+    }
+
+    /**
+     * Get fresh grad status display.
+     */
+    public function getFreshGradStatusDisplay(): string
+    {
+        return $this->is_fresh_grad ? 'Fresh Graduate' : 'Experienced Professional';
+    }
+
+    /**
+     * Check if profile is complete based on employment status.
+     * Fresh grads: Only require academic info
+     * Experienced: Require professional info too
      */
     public function isProfileComplete(): bool
     {
-        return !empty($this->headline) &&
-               !empty($this->personal_email) &&
-               !empty($this->phone) &&
-               !empty($this->current_location) &&
-               !empty($this->degree_program) &&
-               !empty($this->graduation_year) &&
-               !empty($this->professional_summary);
+        // Required for both fresh grad and experienced
+        $basicRequired = !empty($this->personal_email) &&
+                         !empty($this->phone) &&
+                         !empty($this->current_location) &&
+                         !empty($this->degree_program) &&
+                         !empty($this->graduation_year);
+
+        // Fresh graduates - only basic info required
+        if ($this->is_fresh_grad) {
+            return $basicRequired;
+        }
+
+        // Experienced professionals - also need professional info
+        return $basicRequired &&
+               !empty($this->headline) &&
+               !empty($this->professional_summary) &&
+               !empty($this->current_organization) &&
+               !empty($this->current_position);
     }
 
     /**
@@ -210,6 +262,22 @@ class AlumniProfile extends Model
     }
 
     /**
+     * Check if alumni has resumes uploaded.
+     */
+    public function hasResumes(): bool
+    {
+        return !empty($this->resumes) && is_array($this->resumes) && count($this->resumes) > 0;
+    }
+
+    /**
+     * Check if alumni has certifications uploaded.
+     */
+    public function hasCertifications(): bool
+    {
+        return !empty($this->certifications) && is_array($this->certifications) && count($this->certifications) > 0;
+    }
+
+    /**
      * Get current/latest work experience.
      */
     public function getCurrentExperience()
@@ -221,47 +289,84 @@ class AlumniProfile extends Model
     }
 
     /**
-     * Get formatted skills array.
+     * Get technical skills array.
      */
     public function getTechnicalSkillsArray(): array
     {
         if (!$this->technical_skills) {
             return [];
         }
-        return array_map('trim', explode(',', $this->technical_skills));
+
+        // Handle both JSON array and comma-separated string
+        if (is_array($this->technical_skills)) {
+            return $this->technical_skills;
+        }
+
+        return array_filter(array_map('trim', explode(',', $this->technical_skills)));
     }
 
     /**
-     * Get formatted soft skills array.
+     * Get soft skills array.
      */
     public function getSoftSkillsArray(): array
     {
         if (!$this->soft_skills) {
             return [];
         }
-        return array_map('trim', explode(',', $this->soft_skills));
+
+        // Handle both JSON array and comma-separated string
+        if (is_array($this->soft_skills)) {
+            return $this->soft_skills;
+        }
+
+        return array_filter(array_map('trim', explode(',', $this->soft_skills)));
     }
 
     /**
-     * Get formatted certifications array.
+     * Get certifications array.
      */
     public function getCertificationsArray(): array
     {
+        // Handle JSON array format
+        if (is_array($this->certifications)) {
+            return $this->certifications;
+        }
+
         if (!$this->certifications) {
             return [];
         }
-        return array_map('trim', explode(',', $this->certifications));
+
+        // Handle comma-separated string format (legacy)
+        return array_filter(array_map('trim', explode(',', $this->certifications)));
     }
 
     /**
-     * Get formatted languages array.
+     * Get resumes array.
+     */
+    public function getResumesArray(): array
+    {
+        if (!$this->resumes) {
+            return [];
+        }
+
+        return is_array($this->resumes) ? $this->resumes : [];
+    }
+
+    /**
+     * Get languages array.
      */
     public function getLanguagesArray(): array
     {
         if (!$this->languages) {
             return [];
         }
-        return array_map('trim', explode(',', $this->languages));
+
+        // Handle both JSON array and comma-separated string
+        if (is_array($this->languages)) {
+            return $this->languages;
+        }
+
+        return array_filter(array_map('trim', explode(',', $this->languages)));
     }
 
     /**
@@ -269,20 +374,35 @@ class AlumniProfile extends Model
      */
     public function getProfileCompletionPercentage(): int
     {
-        $fields = [
-            'profile_photo',
-            'headline',
-            'personal_email',
-            'phone',
-            'current_location',
-            'linkedin_url',
-            'degree_program',
-            'graduation_year',
-            'professional_summary',
-            'current_organization',
-            'current_position',
-            'technical_skills',
-        ];
+        if ($this->is_fresh_grad) {
+            // Fresh grad fields (8 fields)
+            $fields = [
+                'profile_photo',
+                'personal_email',
+                'phone',
+                'current_location',
+                'degree_program',
+                'graduation_year',
+                'technical_skills',
+                'resumes',
+            ];
+        } else {
+            // Experienced fields (12 fields)
+            $fields = [
+                'profile_photo',
+                'headline',
+                'personal_email',
+                'phone',
+                'current_location',
+                'linkedin_url',
+                'degree_program',
+                'graduation_year',
+                'professional_summary',
+                'current_organization',
+                'current_position',
+                'technical_skills',
+            ];
+        }
 
         $filledCount = 0;
         foreach ($fields as $field) {

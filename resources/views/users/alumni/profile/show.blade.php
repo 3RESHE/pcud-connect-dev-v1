@@ -78,6 +78,11 @@
                                         {{ $profile->current_position }}
                                     </span>
                                 @endif
+                                @if ($profile->is_fresh_grad)
+                                    <span class="inline-block px-3 py-1 bg-purple-500 rounded-full text-xs sm:text-sm">
+                                        🎓 Fresh Graduate
+                                    </span>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -141,8 +146,56 @@
                 </div>
             @endif
 
+            <!-- Resumes Section -->
+            @if ($profile->resumes && is_array($profile->resumes) && count($profile->resumes) > 0)
+                <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6 sm:mb-8">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">📄 Resumes</h3>
+                    </div>
+                    <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-2">
+                        @foreach ($profile->resumes as $resume)
+                            <div class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition">
+                                <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M8 16.5a1 1 0 11-2 0 1 1 0 012 0zM15 7H4V5h11v2zM15 11H4V9h11v2z"></path>
+                                </svg>
+                                <a href="{{ asset('storage/' . $resume) }}" target="_blank" class="text-xs sm:text-sm text-blue-600 hover:text-blue-800 font-medium break-all flex-1">
+                                    {{ basename($resume) }}
+                                </a>
+                                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
+            <!-- Certifications Section -->
+            @if ($profile->certifications && is_array($profile->certifications) && count($profile->certifications) > 0)
+                <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6 sm:mb-8">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">🏆 Certifications</h3>
+                    </div>
+                    <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-2">
+                        @foreach ($profile->certifications as $cert)
+                            <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition">
+                                <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                                </svg>
+                                <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="text-xs sm:text-sm text-green-600 hover:text-green-800 font-medium break-all flex-1">
+                                    {{ basename($cert) }}
+                                </a>
+                                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                </svg>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <!-- Skills Section -->
-            @if ($profile->technical_skills || $profile->soft_skills || $profile->certifications || $profile->languages)
+            @if ($profile->technical_skills || $profile->soft_skills || $profile->languages)
                 <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6 sm:mb-8">
                     <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
                         <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">Skills & Competencies</h3>
@@ -168,19 +221,6 @@
                                     @foreach ($profile->getSoftSkillsArray() as $skill)
                                         <span class="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs sm:text-sm">
                                             {{ $skill }}
-                                        </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($profile->certifications)
-                            <div class="min-w-0">
-                                <p class="text-xs sm:text-sm font-semibold text-gray-600 uppercase break-words">Certifications</p>
-                                <div class="flex flex-wrap gap-2 mt-2">
-                                    @foreach ($profile->getCertificationsArray() as $cert)
-                                        <span class="inline-block px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs sm:text-sm">
-                                            {{ $cert }}
                                         </span>
                                     @endforeach
                                 </div>

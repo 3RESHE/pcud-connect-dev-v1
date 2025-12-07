@@ -535,14 +535,27 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
         Route::get('/dashboard', [AlumniDashboardController::class, 'dashboard'])
             ->name('dashboard');
 
-        // ===== PROFILE & SETTINGS (ALWAYS ACCESSIBLE - NO MIDDLEWARE) =====
+        // ===== PROFILE & SETTINGS =====
         Route::prefix('profile')->name('profile.')->group(function () {
-            Route::get('/', [AlumniProfileController::class, 'show'])
+            // User Type Selection (First Step)
+            Route::get('/select-type', [AlumniProfileController::class, 'selectType'])
+                ->name('select-type');
+            Route::post('/set-type', [AlumniProfileController::class, 'setType'])
+                ->name('set-type');
+
+            // Profile Edit & Update (After Type Selection)
+            Route::get('/show', [AlumniProfileController::class, 'show'])
                 ->name('show');
             Route::get('/edit', [AlumniProfileController::class, 'edit'])
                 ->name('edit');
             Route::post('/update', [AlumniProfileController::class, 'update'])
                 ->name('update');
+
+            // ✅ NEW: File Deletion Routes
+            Route::delete('/delete-resume', [AlumniProfileController::class, 'deleteResume'])
+                ->name('delete-resume');
+            Route::delete('/delete-certification', [AlumniProfileController::class, 'deleteCertification'])
+                ->name('delete-certification');
         });
 
         // ===== ALUMNI EXPERIENCES =====
@@ -575,7 +588,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::post('/{job}/apply', [AlumniJobController::class, 'apply'])->name('apply');
             });
 
-            // APPLICATIONS ROUTES
+            // ===== APPLICATIONS ROUTES =====
             Route::prefix('applications')->name('applications.')->group(function () {
                 Route::get('/', [AlumniJobController::class, 'applications'])->name('index');
                 Route::get('/{application}', [AlumniJobController::class, 'viewApplication'])->name('show');
