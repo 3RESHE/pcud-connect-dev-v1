@@ -123,14 +123,6 @@
                                 Apply Now
                             </button>
                         @else
-                            @php
-                                $application = auth()
-                                    ->user()
-                                    ->jobApplications()
-                                    ->where('job_posting_id', $job->id)
-                                    ->first();
-                            @endphp
-
                             <!-- Status: Contacted -->
                             @if ($application && $application->status === 'contacted')
                                 <!-- Contacted Banner -->
@@ -221,18 +213,20 @@
                                             position</p>
                                     </div>
                                     <!-- Withdraw Button -->
-                                    <form
-                                        action="{{ route('student.applications.destroy', auth()->user()->jobApplications()->where('job_posting_id', $job->id)->first()->id ?? '') }}"
-                                        method="POST" class="inline"
-                                        data-application-id="{{ auth()->user()->jobApplications()->where('job_posting_id', $job->id)->first()->id ?? '' }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            onclick="openWithdrawModal(this.form.dataset.applicationId)"
-                                            class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors text-sm">
-                                            Withdraw Application
-                                        </button>
-                                    </form>
+                                    @if ($application)
+                                        <form
+                                            action="{{ route('student.applications.destroy', $application->id) }}"
+                                            method="POST" class="inline"
+                                            data-application-id="{{ $application->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button"
+                                                onclick="openWithdrawModal(this.form.dataset.applicationId)"
+                                                class="w-full sm:w-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-colors text-sm">
+                                                Withdraw Application
+                                            </button>
+                                        </form>
+                                    @endif
                                 </div>
                             @endif
                         @endif
@@ -391,30 +385,25 @@
                         </div>
                     </div>
 
-                    <!-- Application Timeline (Only if student already applied) - FULLY UPDATED -->
-                    @if ($alreadyApplied)
+                    <!-- Application Timeline (Only if student already applied) - FULLY UPDATED - ✅ FIXED -->
+                    @if ($alreadyApplied && $application)
                         <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">
                             <h3 class="text-lg font-semibold text-gray-900 mb-4">Your Application Status</h3>
 
                             <!-- Status Badge -->
                             <div class="mb-4">
                                 @php
-                                    $application = auth()
-                                        ->user()
-                                        ->jobApplications()
-                                        ->where('job_posting_id', $job->id)
-                                        ->first();
-                                    $statusDisplay = $application?->getStatusDisplay();
+                                    $statusDisplay = $application->getStatusDisplay();
                                 @endphp
 
                                 @if ($statusDisplay)
                                     <span
                                         class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
-                    @if ($statusDisplay['badge'] === 'warning') bg-yellow-100 text-yellow-800
-                    @elseif($statusDisplay['badge'] === 'success') bg-green-100 text-green-800
-                    @elseif($statusDisplay['badge'] === 'danger') bg-red-100 text-red-800
-                    @elseif($statusDisplay['badge'] === 'purple') bg-purple-100 text-purple-800
-                    @else bg-gray-100 text-gray-800 @endif">
+                        @if ($statusDisplay['badge'] === 'warning') bg-yellow-100 text-yellow-800
+                        @elseif($statusDisplay['badge'] === 'success') bg-green-100 text-green-800
+                        @elseif($statusDisplay['badge'] === 'danger') bg-red-100 text-red-800
+                        @elseif($statusDisplay['badge'] === 'purple') bg-purple-100 text-purple-800
+                        @else bg-gray-100 text-gray-800 @endif">
                                         {{ $statusDisplay['text'] }}
                                     </span>
                                 @endif
@@ -425,26 +414,24 @@
                                 <!-- Submitted -->
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0">
-                                        @if ($application)
-                                            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                                                <path fill-rule="evenodd"
-                                                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                                                    clip-rule="evenodd"></path>
-                                            </svg>
-                                        @endif
+                                        <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd"
+                                                d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
                                     </div>
                                     <div class="ml-3">
                                         <p class="font-medium text-gray-900 text-sm">Application Submitted</p>
                                         <p class="text-xs text-gray-600">
-                                            {{ $application?->created_at->format('M d, Y') ?? 'N/A' }}</p>
+                                            {{ $application->created_at->format('M d, Y') }}</p>
                                     </div>
                                 </div>
 
                                 <!-- Under Review (Only show if not rejected) -->
-                                @if ($application?->status !== 'rejected')
+                                @if ($application->status !== 'rejected')
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0">
-                                            @if ($application?->reviewed_at || $application?->status === 'contacted' || $application?->status === 'approved')
+                                            @if ($application->reviewed_at || $application->status === 'contacted' || $application->status === 'approved')
                                                 <svg class="w-6 h-6 text-green-600" fill="currentColor"
                                                     viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd"
@@ -459,7 +446,7 @@
                                         <div class="ml-3">
                                             <p class="font-medium text-gray-900 text-sm">Under Review</p>
                                             <p class="text-xs text-gray-600">
-                                                @if ($application?->reviewed_at || $application?->status === 'contacted' || $application?->status === 'approved')
+                                                @if ($application->reviewed_at || $application->status === 'contacted' || $application->status === 'approved')
                                                     {{ $application->reviewed_at?->format('M d, Y') ?? 'Reviewed' }}
                                                 @else
                                                     Waiting for review...
@@ -470,7 +457,7 @@
                                 @endif
 
                                 <!-- Contacted Step -->
-                                @if ($application?->status === 'contacted' || $application?->last_contacted_at)
+                                @if ($application->status === 'contacted' || $application->last_contacted_at)
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0">
                                             <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
@@ -490,7 +477,7 @@
                                 @endif
 
                                 <!-- Approved Step -->
-                                @if ($application?->status === 'approved')
+                                @if ($application->status === 'approved')
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0">
                                             <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
@@ -509,7 +496,7 @@
                                 @endif
 
                                 <!-- Rejected Step -->
-                                @if ($application?->status === 'rejected')
+                                @if ($application->status === 'rejected')
                                     <div class="flex items-start">
                                         <div class="flex-shrink-0">
                                             <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor"
@@ -533,25 +520,25 @@
                                         <div>
                                             <p class="text-gray-500 font-medium">Applied On</p>
                                             <p class="font-semibold text-gray-900">
-                                                {{ $application?->created_at->diffForHumans() ?? 'N/A' }}</p>
+                                                {{ $application->created_at->diffForHumans() }}</p>
                                         </div>
                                         <div>
                                             <p class="text-gray-500 font-medium">Status</p>
                                             <p
                                                 class="font-semibold
-                            @if ($application?->status === 'pending') text-yellow-600
-                            @elseif($application?->status === 'contacted') text-purple-600
-                            @elseif($application?->status === 'approved') text-green-600
-                            @elseif($application?->status === 'rejected') text-red-600
-                            @else text-gray-600 @endif">
-                                                {{ ucfirst($application?->status ?? 'N/A') }}
+                                @if ($application->status === 'pending') text-yellow-600
+                                @elseif($application->status === 'contacted') text-purple-600
+                                @elseif($application->status === 'approved') text-green-600
+                                @elseif($application->status === 'rejected') text-red-600
+                                @else text-gray-600 @endif">
+                                                {{ ucfirst($application->status ?? 'N/A') }}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 <!-- Show rejection reason if available -->
-                                @if ($application?->status === 'rejected' && $application->rejection_reason)
+                                @if ($application->status === 'rejected' && $application->rejection_reason)
                                     <div class="border-t border-gray-200 pt-4 mt-4">
                                         <p class="text-xs font-semibold text-gray-600 mb-2">Feedback from Employer:</p>
                                         <div class="bg-red-50 border border-red-200 rounded p-3">
@@ -562,8 +549,6 @@
                             </div>
                         </div>
                     @endif
-
-
 
                     <!-- Company Info Card -->
                     <div class="bg-white rounded-lg shadow-sm p-4 sm:p-6">

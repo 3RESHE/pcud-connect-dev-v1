@@ -86,6 +86,7 @@ class StudentJobController extends Controller
 
     /**
      * Display job posting details for students
+     * ✅ FIXED: Now passes $application and $applicationStatus to blade
      */
     public function show(JobPosting $job): View
     {
@@ -115,17 +116,29 @@ class StudentJobController extends Controller
             // Get job applicant count
             $applicantCount = $job->applications()->count();
 
-            // Check if current student already applied
-            $alreadyApplied = auth()->check() &&
-                $job->applications()
-                ->where('applicant_id', auth()->id())
-                ->exists();
+            // ✅ FIXED: Get the application if it exists
+            $application = null;
+            $alreadyApplied = false;
+            $applicationStatus = null;
+
+            if (auth()->check()) {
+                $application = $job->applications()
+                    ->where('applicant_id', auth()->id())
+                    ->first();
+
+                if ($application) {
+                    $alreadyApplied = true;
+                    $applicationStatus = $application->getStatusDisplay();
+                }
+            }
 
             return view('users.student.jobs.show', [
                 'job' => $job,
                 'relatedJobs' => $relatedJobs,
                 'applicantCount' => $applicantCount,
                 'alreadyApplied' => $alreadyApplied,
+                'application' => $application,              // ✅ ADDED
+                'applicationStatus' => $applicationStatus,  // ✅ ADDED
             ]);
         } catch (\Exception $e) {
             \Log::error('Student job show error: ' . $e->getMessage());
@@ -260,6 +273,10 @@ class StudentJobController extends Controller
                 'pending' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'student')
                     ->where('status', 'pending')
+                    ->count(),
+                'contacted' => JobApplication::where('applicant_id', auth()->id())
+                    ->where('applicant_type', 'student')
+                    ->where('status', 'contacted')
                     ->count(),
                 'approved' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'student')
