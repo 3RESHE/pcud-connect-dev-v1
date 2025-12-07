@@ -13,13 +13,89 @@
                     <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 break-words">My Alumni Profile</h1>
                     <p class="text-sm sm:text-base text-gray-600 mt-1 break-words">Connect with fellow alumni and showcase your career</p>
                 </div>
-                <a href="{{ route('alumni.profile.edit') }}"
-                    class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm sm:text-base whitespace-nowrap text-center flex items-center justify-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                    </svg>
-                    <span>Edit Profile</span>
-                </a>
+                <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                    <button onclick="openChangeTypeModal()"
+                        class="px-3 sm:px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition text-sm sm:text-base whitespace-nowrap text-center flex items-center justify-center gap-2 order-2 sm:order-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                        </svg>
+                        <span>Switch Type</span>
+                    </button>
+                    <a href="{{ route('alumni.profile.edit') }}"
+                        class="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm sm:text-base whitespace-nowrap text-center flex items-center justify-center gap-2 order-1 sm:order-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <span>Edit Profile</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="toastContainer" class="fixed bottom-4 right-4 z-50 max-w-xs mx-2 sm:max-w-sm"></div>
+
+        <!-- Change Type Modal -->
+        <div id="changeTypeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-lg max-w-md w-full mx-auto p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold text-gray-900">Switch Profile Type</h3>
+                    <button onclick="closeChangeTypeModal()" class="text-gray-500 hover:text-gray-700">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <p class="text-sm text-gray-600 mb-4">
+                    @if ($profile && $profile->is_fresh_grad)
+                        You're currently a <strong>Fresh Graduate</strong>. Switch to <strong>Experienced Professional</strong> to add detailed career information.
+                    @elseif ($profile)
+                        You're currently an <strong>Experienced Professional</strong>. Switch to <strong>Fresh Graduate</strong> to simplify your profile.
+                    @endif
+                </p>
+
+                <form id="changeTypeForm" class="space-y-4">
+                    @csrf
+                    <div class="space-y-3">
+                        @if ($profile && $profile->is_fresh_grad)
+                            <!-- Switch to Experienced -->
+                            <label class="flex items-center p-3 border border-blue-300 rounded-lg cursor-pointer hover:bg-blue-50">
+                                <input type="radio" name="user_type" value="experienced" checked class="mr-3">
+                                <div>
+                                    <p class="font-medium text-gray-900">💼 Experienced Professional</p>
+                                    <p class="text-xs text-gray-600">Full career details & achievements</p>
+                                </div>
+                            </label>
+                        @elseif ($profile)
+                            <!-- Switch to Fresh Grad -->
+                            <label class="flex items-center p-3 border border-green-300 rounded-lg cursor-pointer hover:bg-green-50">
+                                <input type="radio" name="user_type" value="fresh_grad" checked class="mr-3">
+                                <div>
+                                    <p class="font-medium text-gray-900">🎓 Fresh Graduate</p>
+                                    <p class="text-xs text-gray-600">Academic info only</p>
+                                </div>
+                            </label>
+                        @endif
+                    </div>
+
+                    <div class="bg-yellow-50 border border-yellow-200 rounded p-3">
+                        <p class="text-xs text-yellow-800">
+                            <strong>⚠️ Note:</strong> Switching types will require you to update your profile information accordingly.
+                        </p>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeChangeTypeModal()"
+                            class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                            Switch Type
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -359,4 +435,76 @@
         @endif
     </div>
 </div>
+
+<script>
+function openChangeTypeModal() {
+    document.getElementById('changeTypeModal').classList.remove('hidden');
+}
+
+function closeChangeTypeModal() {
+    document.getElementById('changeTypeModal').classList.add('hidden');
+}
+
+document.getElementById('changeTypeForm')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const userType = document.querySelector('input[name="user_type"]:checked').value;
+
+    try {
+        const response = await fetch('{{ route("alumni.profile.change-type") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ user_type: userType })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showToast('✅ ' + data.message, 'success');
+            closeChangeTypeModal();
+            setTimeout(() => {
+                window.location.href = data.redirect;
+            }, 1000);
+        } else {
+            showToast('❌ ' + (data.message || 'Failed to change type'), 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('❌ Network error: ' + error.message, 'error');
+    }
+});
+
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
+
+    const toast = document.createElement('div');
+    toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg mb-2 flex items-center justify-between gap-2 text-sm`;
+    toast.innerHTML = `
+        <span class="break-words">${message}</span>
+        <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200 flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    `;
+
+    if (container) {
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
+    }
+}
+
+// Close modal when clicking outside
+document.getElementById('changeTypeModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeChangeTypeModal();
+    }
+});
+</script>
+
 @endsection

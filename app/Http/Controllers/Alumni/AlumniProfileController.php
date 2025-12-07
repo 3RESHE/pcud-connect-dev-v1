@@ -47,7 +47,6 @@ class AlumniProfileController extends Controller
                 'message' => 'User type saved successfully',
                 'redirect' => route('alumni.profile.edit'),
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -213,7 +212,6 @@ class AlumniProfileController extends Controller
                 'message' => 'Profile updated successfully!',
                 'redirect' => route('alumni.profile.show'),
             ]);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
@@ -251,7 +249,6 @@ class AlumniProfileController extends Controller
                 'success' => true,
                 'message' => 'Resume deleted successfully!',
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -282,11 +279,45 @@ class AlumniProfileController extends Controller
                 'success' => true,
                 'message' => 'Certification deleted successfully!',
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to delete certification: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Change user type (Fresh Grad <-> Experienced)
+     */
+    public function changeType(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'user_type' => 'required|in:fresh_grad,experienced',
+            ]);
+
+            $user = auth()->user();
+            $profile = AlumniProfile::where('user_id', $user->id)->firstOrFail();
+
+            $isFreshGrad = $validated['user_type'] === 'fresh_grad';
+            $profile->update(['is_fresh_grad' => $isFreshGrad]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Profile type changed successfully!',
+                'redirect' => route('alumni.profile.edit'),
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to change type: ' . $e->getMessage(),
             ], 500);
         }
     }

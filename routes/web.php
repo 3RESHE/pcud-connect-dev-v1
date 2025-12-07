@@ -543,6 +543,10 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::post('/set-type', [AlumniProfileController::class, 'setType'])
                 ->name('set-type');
 
+            // ✅ NEW: Change Type Route
+            Route::post('/change-type', [AlumniProfileController::class, 'changeType'])
+                ->name('change-type');
+
             // Profile Edit & Update (After Type Selection)
             Route::get('/show', [AlumniProfileController::class, 'show'])
                 ->name('show');
