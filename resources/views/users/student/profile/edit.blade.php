@@ -27,7 +27,7 @@
             <div id="toastContainer" class="fixed bottom-4 right-4 z-50 max-w-xs mx-2 sm:max-w-sm"></div>
 
             <!-- Profile Form -->
-            <form id="profileForm" class="space-y-4 sm:space-y-6 md:space-y-8">
+            <form id="profileForm" class="space-y-4 sm:space-y-6 md:space-y-8" enctype="multipart/form-data">
                 @csrf
 
                 <!-- Personal Information -->
@@ -62,15 +62,13 @@
                                 <div class="flex-1 min-w-0">
                                     <label class="inline-block">
                                         <input type="file" name="profile_photo" id="profile_photo" class="hidden"
-                                            accept="image/*" onchange="previewPhoto(event)">
+                                            accept="image/*">
                                         <span
                                             class="inline-block bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-xs sm:text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 cursor-pointer transition whitespace-nowrap">
                                             Change Photo
                                         </span>
                                     </label>
                                     <p class="text-xs text-gray-500 mt-2 break-words">PNG, JPG up to 2MB</p>
-                                    <span id="profile_photoError"
-                                        class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +83,6 @@
                                 <input type="text" id="headline" name="headline" value="{{ $profile?->headline ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="e.g., BSIT Student | Full-Stack Developer">
-                                <span id="headlineError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                             <div class="min-w-0">
                                 <label for="personal_email"
@@ -96,8 +93,6 @@
                                     value="{{ $profile?->personal_email ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="your.email@example.com">
-                                <span id="personal_emailError"
-                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                         </div>
 
@@ -111,7 +106,6 @@
                                 <input type="tel" id="phone" name="phone" value="{{ $profile?->phone ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="+63 9XX-XXXX-XXXX">
-                                <span id="phoneError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                             <div class="min-w-0">
                                 <label for="date_of_birth"
@@ -121,8 +115,6 @@
                                 <input type="date" id="date_of_birth" name="date_of_birth"
                                     value="{{ $profile?->date_of_birth?->format('Y-m-d') ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
-                                <span id="date_of_birthError"
-                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                         </div>
 
@@ -142,7 +134,6 @@
                                     <option value="prefer_not_to_say" @selected($profile?->gender === 'prefer_not_to_say')>Prefer Not to Say
                                     </option>
                                 </select>
-                                <span id="genderError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                             <div class="min-w-0">
                                 <label for="emergency_contact"
@@ -153,8 +144,6 @@
                                     value="{{ $profile?->emergency_contact ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="Parent/Guardian name">
-                                <span id="emergency_contactError"
-                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                         </div>
 
@@ -167,7 +156,6 @@
                             <textarea id="address" name="address" rows="3"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                 placeholder="Your complete address...">{{ $profile?->address ?? '' }}</textarea>
-                            <span id="addressError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
                     </div>
                 </div>
@@ -189,8 +177,6 @@
                                     value="{{ $profile?->linkedin_url ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="https://linkedin.com/in/username">
-                                <span id="linkedin_urlError"
-                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                             <div class="min-w-0">
                                 <label for="github_url"
@@ -201,8 +187,6 @@
                                     value="{{ $profile?->github_url ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="https://github.com/username">
-                                <span id="github_urlError"
-                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                         </div>
                         <div class="min-w-0">
@@ -214,8 +198,6 @@
                                 value="{{ $profile?->portfolio_url ?? '' }}"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                 placeholder="https://yourportfolio.com">
-                            <span id="portfolio_urlError"
-                                class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
                     </div>
                 </div>
@@ -234,8 +216,6 @@
                             <textarea id="technical_skills" name="technical_skills" rows="3"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                 placeholder="e.g., HTML, CSS, JavaScript, Python, Java...">{{ $profile?->technical_skills ?? '' }}</textarea>
-                            <span id="technical_skillsError"
-                                class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
                         <div class="min-w-0">
                             <label for="soft_skills"
@@ -245,7 +225,6 @@
                             <textarea id="soft_skills" name="soft_skills" rows="3"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                 placeholder="e.g., Communication, Leadership, Problem Solving...">{{ $profile?->soft_skills ?? '' }}</textarea>
-                            <span id="soft_skillsError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div class="min-w-0">
@@ -256,8 +235,6 @@
                                 <textarea id="languages" name="languages" rows="3"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                     placeholder="e.g., English, Filipino, Mandarin...">{{ $profile?->languages ?? '' }}</textarea>
-                                <span id="languagesError"
-                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                             <div class="min-w-0">
                                 <label for="hobbies"
@@ -267,7 +244,6 @@
                                 <textarea id="hobbies" name="hobbies" rows="3"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                     placeholder="e.g., Gaming, Reading, Photography...">{{ $profile?->hobbies ?? '' }}</textarea>
-                                <span id="hobbiesError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                             </div>
                         </div>
                     </div>
@@ -280,17 +256,13 @@
                         <p class="text-xs sm:text-sm text-gray-600 mt-1 break-words">Upload multiple resume versions</p>
                     </div>
                     <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4">
-                        <!-- Upload Input -->
                         <div>
                             <label for="resumes" class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Upload
                                 Resumes</label>
                             <input type="file" id="resumes" name="resumes[]" multiple accept=".pdf,.doc,.docx"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
                             <p class="text-xs text-gray-500 mt-2">PDF, DOC, DOCX files only. Max 5MB each.</p>
-                            <span id="resumesError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
-
-                        <!-- Existing Resumes List -->
                         @if ($profile && $profile->resumes && is_array($profile->resumes) && count($profile->resumes) > 0)
                             <div class="mt-4">
                                 <p class="text-xs sm:text-sm font-medium text-gray-700 mb-3">Uploaded Resumes:</p>
@@ -303,9 +275,8 @@
                                                 <path d="M8 16.5a1 1 0 11-2 0 1 1 0 012 0zM15 7H4V5h11v2zM15 11H4V9h11v2z">
                                                 </path>
                                             </svg>
-                                            <span class="text-xs sm:text-sm text-blue-600 font-medium break-all flex-1">
-                                                {{ basename($resume) }}
-                                            </span>
+                                            <span
+                                                class="text-xs sm:text-sm text-blue-600 font-medium break-all flex-1">{{ basename($resume) }}</span>
                                             <button type="button" onclick="deleteResume('{{ $resume }}')"
                                                 class="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition">
                                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -330,7 +301,6 @@
                             images</p>
                     </div>
                     <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4">
-                        <!-- Upload Input -->
                         <div>
                             <label for="certifications"
                                 class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Upload
@@ -340,11 +310,7 @@
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
                             <p class="text-xs text-gray-500 mt-2">PDF, DOC, DOCX, JPG, PNG, GIF files only. Max 5MB each.
                             </p>
-                            <span id="certificationsError"
-                                class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
-
-                        <!-- Existing Certifications List -->
                         @if ($profile && $profile->certifications && is_array($profile->certifications) && count($profile->certifications) > 0)
                             <div class="mt-4">
                                 <p class="text-xs sm:text-sm font-medium text-gray-700 mb-3">Uploaded Certifications:</p>
@@ -358,9 +324,8 @@
                                                     d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z">
                                                 </path>
                                             </svg>
-                                            <span class="text-xs sm:text-sm text-green-600 font-medium break-all flex-1">
-                                                {{ basename($cert) }}
-                                            </span>
+                                            <span
+                                                class="text-xs sm:text-sm text-green-600 font-medium break-all flex-1">{{ basename($cert) }}</span>
                                             <button type="button" onclick="deleteCertification('{{ $cert }}')"
                                                 class="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition">
                                                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -396,47 +361,43 @@
                             @forelse ($experiences as $exp)
                                 <div class="experience-item border border-gray-200 rounded-lg p-4 sm:p-6"
                                     data-id="{{ $exp->id }}">
-                                    <input type="hidden" name="experience_id[]" value="{{ $exp->id }}">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                         <div class="min-w-0">
                                             <label
                                                 class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Role/Position</label>
-                                            <input type="text" name="experience_role[]"
-                                                value="{{ $exp->role_position }}" required
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                                            <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="text"
+                                                class="experience_role w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $exp->role_position }}" required>
                                         </div>
                                         <div class="min-w-0">
                                             <label
                                                 class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Organization</label>
-                                            <input type="text" name="experience_org[]"
-                                                value="{{ $exp->organization }}" required
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                                            <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="text"
+                                                class="experience_org w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $exp->organization }}" required>
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-4">
                                         <div class="min-w-0">
                                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start
                                                 Date</label>
-                                            <input type="date" name="experience_start[]"
-                                                value="{{ $exp->start_date?->format('Y-m-d') }}" required
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                                            <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="date"
+                                                class="experience_start w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $exp->start_date?->format('Y-m-d') }}" required>
                                         </div>
                                         <div class="min-w-0">
                                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End
                                                 Date</label>
-                                            <input type="date" name="experience_end[]"
-                                                value="{{ $exp->end_date?->format('Y-m-d') }}"
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                                            <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="date"
+                                                class="experience_end w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $exp->end_date?->format('Y-m-d') }}">
                                         </div>
                                         <div class="min-w-0">
                                             <label
                                                 class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Type</label>
-                                            <select name="experience_type[]" required
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                                            <select
+                                                class="experience_type w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                required>
                                                 <option value="">Select Type</option>
                                                 <option value="internship" @selected($exp->experience_type === 'internship')>Internship</option>
                                                 <option value="part_time" @selected($exp->experience_type === 'part_time')>Part-time</option>
@@ -444,25 +405,19 @@
                                                 <option value="full_time" @selected($exp->experience_type === 'full_time')>Full-time</option>
                                                 <option value="freelance" @selected($exp->experience_type === 'freelance')>Freelance</option>
                                             </select>
-                                            <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
                                         </div>
                                     </div>
                                     <div class="mt-4">
                                         <label
                                             class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
-                                        <textarea name="experience_desc[]" rows="3" required
-                                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none">{{ $exp->description }}</textarea>
-                                        <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
+                                        <textarea class="experience_desc w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"
+                                            rows="3" required>{{ $exp->description }}</textarea>
                                     </div>
                                     <div class="mt-4 flex justify-end gap-2">
                                         <button type="button" onclick="submitExperience(this)"
-                                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
-                                            Update
-                                        </button>
+                                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">Update</button>
                                         <button type="button" onclick="deleteExperience(this, {{ $exp->id }})"
-                                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
-                                            Delete
-                                        </button>
+                                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">Delete</button>
                                     </div>
                                 </div>
                             @empty
@@ -491,59 +446,49 @@
                             @forelse ($projects as $proj)
                                 <div class="project-item border border-gray-200 rounded-lg p-4 sm:p-6"
                                     data-id="{{ $proj->id }}">
-                                    <input type="hidden" name="project_id[]" value="{{ $proj->id }}">
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                         <div class="min-w-0">
                                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project
                                                 Title</label>
-                                            <input type="text" name="project_title[]" value="{{ $proj->title }}"
-                                                required
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                                            <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="text"
+                                                class="project_title w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $proj->title }}" required>
                                         </div>
                                         <div class="min-w-0">
                                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project
                                                 URL</label>
-                                            <input type="url" name="project_url[]" value="{{ $proj->url }}"
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                                placeholder="https://github.com/...">
-                                            <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="url"
+                                                class="project_url w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $proj->url }}" placeholder="https://github.com/...">
                                         </div>
                                     </div>
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4">
                                         <div class="min-w-0">
                                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start
                                                 Date</label>
-                                            <input type="date" name="project_start[]"
-                                                value="{{ $proj->start_date?->format('Y-m-d') }}" required
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                                            <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="date"
+                                                class="project_start w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $proj->start_date?->format('Y-m-d') }}" required>
                                         </div>
                                         <div class="min-w-0">
                                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End
                                                 Date</label>
-                                            <input type="date" name="project_end[]"
-                                                value="{{ $proj->end_date?->format('Y-m-d') }}"
-                                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                                            <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
+                                            <input type="date"
+                                                class="project_end w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                                value="{{ $proj->end_date?->format('Y-m-d') }}">
                                         </div>
                                     </div>
                                     <div class="mt-4">
                                         <label
                                             class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
-                                        <textarea name="project_desc[]" rows="3" required
-                                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none">{{ $proj->description }}</textarea>
-                                        <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
+                                        <textarea class="project_desc w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"
+                                            rows="3" required>{{ $proj->description }}</textarea>
                                     </div>
                                     <div class="mt-4 flex justify-end gap-2">
                                         <button type="button" onclick="submitProject(this)"
-                                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
-                                            Update
-                                        </button>
+                                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">Update</button>
                                         <button type="button" onclick="deleteProject(this, {{ $proj->id }})"
-                                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
-                                            Delete
-                                        </button>
+                                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">Delete</button>
                                     </div>
                                 </div>
                             @empty
@@ -571,22 +516,9 @@
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        // Preview photo
-        function previewPhoto(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.querySelector('.profile-photo-preview').src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // Submit form
+        // ===== PROFILE FORM SUBMISSION =====
         document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const form = e.target;
             const formData = new FormData(form);
             const submitBtn = document.getElementById('submitBtn');
@@ -603,23 +535,13 @@
                 });
 
                 const data = await response.json();
-
                 if (response.ok && data.success) {
                     showToast('✅ ' + data.message, 'success');
                     setTimeout(() => {
                         window.location.href = data.redirect;
                     }, 1500);
                 } else {
-                    if (data.errors) {
-                        Object.keys(data.errors).forEach(key => {
-                            const errorElement = document.getElementById(key + 'Error');
-                            if (errorElement) {
-                                errorElement.textContent = data.errors[key][0];
-                                errorElement.classList.remove('hidden');
-                            }
-                        });
-                    }
-                    showToast('❌ ' + (data.message || 'Failed to update profile'), 'error');
+                    showToast('❌ ' + (data.message || 'Failed'), 'error');
                 }
             } catch (error) {
                 showToast('❌ Error: ' + error.message, 'error');
@@ -628,84 +550,66 @@
             }
         });
 
-        // Show toast notification
+        // ===== TOAST NOTIFICATION =====
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
             const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
-
             const toast = document.createElement('div');
-            toast.className =
-                `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg mb-2 flex items-center justify-between gap-2 text-sm`;
-            toast.innerHTML = `
-                <span class="break-words">${message}</span>
-                <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200 flex-shrink-0">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                </button>
-            `;
-
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg mb-2 text-sm`;
+            toast.textContent = message;
             if (container) {
                 container.appendChild(toast);
                 setTimeout(() => toast.remove(), 4000);
             }
         }
 
-        // Delete Resume
+        // ===== DELETE RESUME =====
         function deleteResume(filePath) {
             if (!confirm('Delete this resume?')) return;
-
             fetch('{{ route('student.profile.delete-resume') }}', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        file: filePath
-                    })
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    file: filePath
                 })
-                .then(r => r.json())
-                .then(d => {
-                    if (d.success) {
-                        showToast('✅ Resume deleted!', 'success');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast('❌ ' + d.message, 'error');
-                    }
-                })
-                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    showToast('✅ Resume deleted!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('❌ ' + d.message, 'error');
+                }
+            }).catch(e => showToast('❌ Error: ' + e.message, 'error'));
         }
 
-        // Delete Certification
+        // ===== DELETE CERTIFICATION =====
         function deleteCertification(filePath) {
             if (!confirm('Delete this certification?')) return;
-
             fetch('{{ route('student.profile.delete-certification') }}', {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        file: filePath
-                    })
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    file: filePath
                 })
-                .then(r => r.json())
-                .then(d => {
-                    if (d.success) {
-                        showToast('✅ Certification deleted!', 'success');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast('❌ ' + d.message, 'error');
-                    }
-                })
-                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    showToast('✅ Certification deleted!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('❌ ' + d.message, 'error');
+                }
+            }).catch(e => showToast('❌ Error: ' + e.message, 'error'));
         }
 
-        // Add Experience
+        // ===== ADD EXPERIENCE =====
         function addExperience() {
             const list = document.getElementById('experiencesList');
             const template = `
@@ -713,30 +617,25 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Role/Position</label>
-                            <input type="text" name="experience_role[]" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" class="experience_role w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" required>
                         </div>
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Organization</label>
-                            <input type="text" name="experience_org[]" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" class="experience_org w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" required>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-4">
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                            <input type="date" name="experience_start[]" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="date" class="experience_start w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" required>
                         </div>
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End Date</label>
-                            <input type="date" name="experience_end[]"
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="date" class="experience_end w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Type</label>
-                            <select name="experience_type[]" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <select class="experience_type w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" required>
                                 <option value="">Select Type</option>
                                 <option value="internship">Internship</option>
                                 <option value="part_time">Part-time</option>
@@ -748,35 +647,27 @@
                     </div>
                     <div class="mt-4">
                         <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea name="experience_desc[]" rows="3" required
-                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"></textarea>
+                        <textarea class="experience_desc w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none" rows="3" required></textarea>
                     </div>
                     <div class="mt-4 flex justify-end gap-2">
-                        <button type="button" onclick="submitExperience(this)"
-                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
-                            Save
-                        </button>
-                        <button type="button" onclick="this.closest('.experience-item').remove()"
-                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
-                            Cancel
-                        </button>
+                        <button type="button" onclick="submitExperience(this)" class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">Save</button>
+                        <button type="button" onclick="this.closest('.experience-item').remove()" class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">Cancel</button>
                     </div>
                 </div>
             `;
             list.insertAdjacentHTML('beforeend', template);
         }
 
-        // Submit Experience
+        // ===== SUBMIT EXPERIENCE =====
         function submitExperience(btn) {
             const item = btn.closest('.experience-item');
             const id = item.dataset.id;
-
-            const role = item.querySelector('input[name="experience_role[]"]').value;
-            const org = item.querySelector('input[name="experience_org[]"]').value;
-            const start = item.querySelector('input[name="experience_start[]"]').value;
-            const end = item.querySelector('input[name="experience_end[]"]').value;
-            const type = item.querySelector('select[name="experience_type[]"]').value;
-            const desc = item.querySelector('textarea[name="experience_desc[]"]').value;
+            const role = item.querySelector('.experience_role').value;
+            const org = item.querySelector('.experience_org').value;
+            const start = item.querySelector('.experience_start').value;
+            const end = item.querySelector('.experience_end').value;
+            const type = item.querySelector('.experience_type').value;
+            const desc = item.querySelector('.experience_desc').value;
 
             if (!role || !org || !start || !type || !desc) {
                 showToast('Please fill all required fields', 'error');
@@ -788,57 +679,51 @@
             const method = id === 'new' ? 'POST' : 'PUT';
 
             fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        role_position: role,
-                        organization: org,
-                        start_date: start,
-                        end_date: end || null,
-                        experience_type: type,
-                        description: desc
-                    })
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    experience_role: role,
+                    experience_org: org,
+                    experience_start: start,
+                    experience_end: end || null,
+                    experience_type: type,
+                    experience_desc: desc
                 })
-                .then(r => r.json())
-                .then(d => {
-                    if (d.success) {
-                        showToast('✅ Experience saved!', 'success');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast('❌ Error: ' + (d.message || 'Failed to save'), 'error');
-                    }
-                })
-                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    showToast('✅ Experience saved!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('❌ Error: ' + (d.message || 'Failed'), 'error');
+                    if (d.errors) Object.keys(d.errors).forEach(key => showToast('  ' + d.errors[key][0], 'error'));
+                }
+            }).catch(e => showToast('❌ Error: ' + e.message, 'error'));
         }
 
-        // Delete Experience
+        // ===== DELETE EXPERIENCE =====
         function deleteExperience(btn, id) {
             if (!confirm('Delete this experience?')) return;
-
             fetch(`{{ route('student.experiences.destroy', ':id') }}`.replace(':id', id), {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(r => r.json())
-                .then(d => {
-                    if (d.success) {
-                        showToast('✅ Experience deleted!', 'success');
-                        btn.closest('.experience-item').remove();
-                    } else {
-                        showToast('❌ Error deleting experience', 'error');
-                    }
-                })
-                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    showToast('✅ Experience deleted!', 'success');
+                    btn.closest('.experience-item').remove();
+                } else {
+                    showToast('❌ Error deleting', 'error');
+                }
+            }).catch(e => showToast('❌ Error: ' + e.message, 'error'));
         }
 
-        // Add Project
+        // ===== ADD PROJECT =====
         function addProject() {
             const list = document.getElementById('projectsList');
             const template = `
@@ -846,58 +731,45 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project Title</label>
-                            <input type="text" name="project_title[]" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="text" class="project_title w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" required>
                         </div>
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project URL</label>
-                            <input type="url" name="project_url[]"
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                placeholder="https://github.com/...">
+                            <input type="url" class="project_url w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://github.com/...">
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4">
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                            <input type="date" name="project_start[]" required
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="date" class="project_start w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" required>
                         </div>
                         <div class="min-w-0">
                             <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End Date</label>
-                            <input type="date" name="project_end[]"
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <input type="date" class="project_end w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
                         </div>
                     </div>
                     <div class="mt-4">
                         <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea name="project_desc[]" rows="3" required
-                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"></textarea>
+                        <textarea class="project_desc w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none" rows="3" required></textarea>
                     </div>
                     <div class="mt-4 flex justify-end gap-2">
-                        <button type="button" onclick="submitProject(this)"
-                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
-                            Save
-                        </button>
-                        <button type="button" onclick="this.closest('.project-item').remove()"
-                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
-                            Cancel
-                        </button>
+                        <button type="button" onclick="submitProject(this)" class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">Save</button>
+                        <button type="button" onclick="this.closest('.project-item').remove()" class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">Cancel</button>
                     </div>
                 </div>
             `;
             list.insertAdjacentHTML('beforeend', template);
         }
 
-        // Submit Project
+        // ===== SUBMIT PROJECT =====
         function submitProject(btn) {
             const item = btn.closest('.project-item');
             const id = item.dataset.id;
-
-            const title = item.querySelector('input[name="project_title[]"]').value;
-            const url = item.querySelector('input[name="project_url[]"]').value;
-            const start = item.querySelector('input[name="project_start[]"]').value;
-            const end = item.querySelector('input[name="project_end[]"]').value;
-            const desc = item.querySelector('textarea[name="project_desc[]"]').value;
+            const title = item.querySelector('.project_title').value;
+            const url = item.querySelector('.project_url').value;
+            const start = item.querySelector('.project_start').value;
+            const end = item.querySelector('.project_end').value;
+            const desc = item.querySelector('.project_desc').value;
 
             if (!title || !start || !desc) {
                 showToast('Please fill all required fields', 'error');
@@ -909,53 +781,47 @@
             const method = id === 'new' ? 'POST' : 'PUT';
 
             fetch(endpoint, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        title: title,
-                        url: url || null,
-                        start_date: start,
-                        end_date: end || null,
-                        description: desc
-                    })
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    project_title: title,
+                    project_url: url || null,
+                    project_start: start,
+                    project_end: end || null,
+                    project_desc: desc
                 })
-                .then(r => r.json())
-                .then(d => {
-                    if (d.success) {
-                        showToast('✅ Project saved!', 'success');
-                        setTimeout(() => window.location.reload(), 1500);
-                    } else {
-                        showToast('❌ Error: ' + (d.message || 'Failed to save'), 'error');
-                    }
-                })
-                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    showToast('✅ Project saved!', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    showToast('❌ Error: ' + (d.message || 'Failed'), 'error');
+                    if (d.errors) Object.keys(d.errors).forEach(key => showToast('  ' + d.errors[key][0], 'error'));
+                }
+            }).catch(e => showToast('❌ Error: ' + e.message, 'error'));
         }
 
-        // Delete Project
+        // ===== DELETE PROJECT =====
         function deleteProject(btn, id) {
             if (!confirm('Delete this project?')) return;
-
             fetch(`{{ route('student.projects.destroy', ':id') }}`.replace(':id', id), {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(r => r.json())
-                .then(d => {
-                    if (d.success) {
-                        showToast('✅ Project deleted!', 'success');
-                        btn.closest('.project-item').remove();
-                    } else {
-                        showToast('❌ Error deleting project', 'error');
-                    }
-                })
-                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': csrfToken,
+                    'Accept': 'application/json'
+                }
+            }).then(r => r.json()).then(d => {
+                if (d.success) {
+                    showToast('✅ Project deleted!', 'success');
+                    btn.closest('.project-item').remove();
+                } else {
+                    showToast('❌ Error deleting', 'error');
+                }
+            }).catch(e => showToast('❌ Error: ' + e.message, 'error'));
         }
     </script>
 @endsection
