@@ -1,6 +1,5 @@
 @extends('layouts.partner')
 
-
 @section('content')
     <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
         <!-- Back Link -->
@@ -10,7 +9,6 @@
             </svg>
             Back
         </a>
-
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Main Content -->
@@ -36,7 +34,6 @@
                     </div>
                 </div>
 
-
                 <!-- Applicant Profile Card -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Applicant Profile</h2>
@@ -53,7 +50,6 @@
                                     {{ substr($applicant->name, 0, 1) }}
                                 </div>
                             @endif
-
 
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-lg font-bold text-gray-900 break-words">
@@ -76,7 +72,6 @@
                             </div>
                         </div>
 
-
                         <!-- Basic Information -->
                         @if ($applicantProfile)
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -86,7 +81,6 @@
                                         <p class="text-gray-900 break-words">{{ $applicant->department->title }}</p>
                                     </div>
                                 @endif
-
 
                                 @if ($application->applicant_type === 'student')
                                     @if ($applicantProfile->student_id)
@@ -124,7 +118,6 @@
                                 @endif
                             </div>
 
-
                             <!-- Contact Information -->
                             <div class="border-t pt-4">
                                 <h3 class="text-sm font-bold text-gray-900 mb-3">Contact Information</h3>
@@ -136,14 +129,12 @@
                                         </div>
                                     @endif
 
-
                                     @if ($applicantProfile->personal_email)
                                         <div>
                                             <p class="text-xs text-gray-500 uppercase tracking-wider">Personal Email</p>
                                             <p class="text-sm text-gray-900">{{ $applicantProfile->personal_email }}</p>
                                         </div>
                                     @endif
-
 
                                     @if ($application->applicant_type === 'student')
                                         @if ($applicantProfile->emergency_contact)
@@ -170,7 +161,6 @@
                                 </div>
                             </div>
 
-
                             <!-- Headline & Bio -->
                             <div class="border-t pt-4">
                                 @if ($applicantProfile->headline)
@@ -180,7 +170,6 @@
                                     </div>
                                 @endif
 
-
                                 @if ($application->applicant_type === 'alumni' && $applicantProfile->professional_summary)
                                     <div>
                                         <p class="text-sm font-medium text-gray-500 mb-2">Professional Summary</p>
@@ -189,7 +178,6 @@
                                     </div>
                                 @endif
                             </div>
-
 
                             <!-- Skills -->
                             @if ($applicantProfile->technical_skills)
@@ -207,7 +195,6 @@
                                 </div>
                             @endif
 
-
                             @if ($applicantProfile->soft_skills)
                                 <div class="border-t pt-4">
                                     <p class="text-sm font-medium text-gray-500 mb-3">Soft Skills</p>
@@ -223,8 +210,7 @@
                                 </div>
                             @endif
 
-
-                            <!-- Work Experience Section (Alumni & Students) -->
+                            <!-- Work Experience Section -->
                             @if ($experiences->count() > 0)
                                 <div class="border-t pt-4">
                                     <h3 class="text-sm font-bold text-gray-900 mb-4">Work Experience</h3>
@@ -256,8 +242,7 @@
                                 </div>
                             @endif
 
-
-                            <!-- Projects Section (Alumni & Students) -->
+                            <!-- Projects Section -->
                             @if ($projects->count() > 0)
                                 <div class="border-t pt-4">
                                     <h3 class="text-sm font-bold text-gray-900 mb-4">Projects</h3>
@@ -291,7 +276,6 @@
                                 </div>
                             @endif
 
-
                             <!-- Links -->
                             @if ($applicantProfile->linkedin_url || $applicantProfile->github_url || $applicantProfile->portfolio_url)
                                 <div class="border-t pt-4">
@@ -307,7 +291,6 @@
                                             </a>
                                         @endif
 
-
                                         @if ($applicantProfile->github_url)
                                             <a href="{{ $applicantProfile->github_url }}" target="_blank" rel="noopener"
                                                 class="flex items-center text-gray-800 hover:text-gray-600 text-sm break-words">
@@ -317,7 +300,6 @@
                                                 GitHub Profile
                                             </a>
                                         @endif
-
 
                                         @if ($applicantProfile->portfolio_url)
                                             <a href="{{ $applicantProfile->portfolio_url }}" target="_blank" rel="noopener"
@@ -335,74 +317,171 @@
                     </div>
                 </div>
 
-
-                <!-- Cover Letter Card - FIXED: Shows both written and uploaded cover letters -->
+                <!-- UPDATED: Cover Letter Display Card -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">Cover Letter</h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-900">Cover Letter</h2>
+                        <div class="flex gap-2">
+                            <button onclick="toggleCoverLetterView()" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
                     @if ($application->cover_letter)
                         <!-- Written Cover Letter Display -->
-                        <div class="bg-gray-50 p-4 rounded-lg overflow-auto max-h-96">
-                            <p class="text-gray-700 text-sm whitespace-pre-wrap break-words">
+                        <div class="space-y-3">
+                            <div class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded-full">
+                                📝 Text Format
+                            </div>
+                            <div class="bg-gray-50 border border-gray-200 p-6 rounded-lg overflow-auto max-h-96 text-gray-700 text-sm whitespace-pre-wrap break-words leading-relaxed">
                                 {{ $application->cover_letter }}
-                            </p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="copyToClipboard()" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">
+                                    📋 Copy Text
+                                </button>
+                            </div>
                         </div>
                     @elseif ($application->cover_letter_file)
-                        <!-- Uploaded Cover Letter Display with Download Link -->
-                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 4a2 2 0 012-2h6a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1H6a1 1 0 000 2h6v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path>
-                                    </svg>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-medium text-blue-900">Uploaded Cover Letter</p>
-                                        <p class="text-xs text-blue-700 break-all">{{ basename($application->cover_letter_file) }}</p>
+                        <!-- Uploaded Cover Letter PDF Display -->
+                        <div class="space-y-4">
+                            <!-- Tabs for View Options -->
+                            <div class="flex gap-2 border-b">
+                                <button onclick="switchCoverLetterTab('preview')"
+                                    class="coverLetterTab px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-medium text-sm active-tab"
+                                    data-tab="preview">
+                                    👁️ Preview
+                                </button>
+                                <button onclick="switchCoverLetterTab('details')"
+                                    class="coverLetterTab px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium text-sm hover:text-gray-700"
+                                    data-tab="details">
+                                    ℹ️ Details
+                                </button>
+                            </div>
+
+                            <!-- Preview Tab -->
+                            <div id="coverLetterPreview" class="coverLetterTabContent">
+                                <div class="bg-gray-900 rounded-lg overflow-hidden shadow-lg" style="height: 500px;">
+                                    <iframe id="coverLetterFrame" src="{{ asset('storage/' . $application->cover_letter_file) }}"
+                                        class="w-full h-full border-0"
+                                        style="background: white;"></iframe>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2 text-center">Scroll or use controls to navigate PDF</p>
+                            </div>
+
+                            <!-- Details Tab -->
+                            <div id="coverLetterDetails" class="coverLetterTabContent hidden">
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                                    <div>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wider">File Name</p>
+                                        <p class="text-sm font-medium text-gray-900">{{ basename($application->cover_letter_file) }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wider">File Type</p>
+                                        <p class="text-sm text-gray-900">PDF Document</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wider">Uploaded On</p>
+                                        <p class="text-sm text-gray-900">{{ $application->updated_at->format('M d, Y H:i A') }}</p>
                                     </div>
                                 </div>
-                                <a href="{{ route('partner.applications.download-cover-letter', $application) }}"
-                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex-shrink-0 whitespace-nowrap">
-                                    📥 Download
-                                </a>
+
+                                <div class="mt-4 flex gap-2">
+                                    <button onclick="openPDFFullscreen('{{ asset('storage/' . $application->cover_letter_file) }}', 'Cover Letter')"
+                                        class="px-4 py-2 bg-blue-100 text-blue-700 text-sm rounded-lg hover:bg-blue-200 transition">
+                                        🖥️ Fullscreen
+                                    </button>
+                                    <a href="{{ route('partner.applications.download-cover-letter', $application) }}"
+                                        class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition">
+                                        📥 Download
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @else
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <p class="text-sm text-yellow-800">No cover letter provided.</p>
+                            <p class="text-sm text-yellow-800">❌ No cover letter provided.</p>
                         </div>
                     @endif
                 </div>
 
-
-                <!-- Resume Card - FIXED: Shows resume details with download button -->
+                <!-- UPDATED: Resume/CV Display Card -->
                 <div class="bg-white rounded-lg shadow p-6">
-                    <h2 class="text-xl font-bold text-gray-900 mb-4">Resume / CV</h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-gray-900">Resume / CV</h2>
+                        <div class="flex gap-2">
+                            <button onclick="toggleResumeView()" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
 
                     @if ($application->resume_path)
-                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                            <div class="flex items-center justify-between gap-4">
-                                <div class="flex items-center gap-3 min-w-0">
-                                    <svg class="w-6 h-6 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                        <path d="M4 4a2 2 0 012-2h6a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1H6a1 1 0 000 2h6v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path>
-                                    </svg>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-medium text-green-900">Resume Attached</p>
-                                        <p class="text-xs text-green-700 break-all">{{ basename($application->resume_path) }}</p>
+                        <div class="space-y-4">
+                            <!-- Tabs for View Options -->
+                            <div class="flex gap-2 border-b">
+                                <button onclick="switchResumeTab('preview')"
+                                    class="resumeTab px-4 py-2 border-b-2 border-green-600 text-green-600 font-medium text-sm active-tab"
+                                    data-tab="preview">
+                                    👁️ Preview
+                                </button>
+                                <button onclick="switchResumeTab('details')"
+                                    class="resumeTab px-4 py-2 border-b-2 border-transparent text-gray-500 font-medium text-sm hover:text-gray-700"
+                                    data-tab="details">
+                                    ℹ️ Details
+                                </button>
+                            </div>
+
+                            <!-- Preview Tab -->
+                            <div id="resumePreview" class="resumeTabContent">
+                                <div class="bg-gray-900 rounded-lg overflow-hidden shadow-lg" style="height: 500px;">
+                                    <iframe id="resumeFrame" src="{{ asset('storage/' . $application->resume_path) }}"
+                                        class="w-full h-full border-0"
+                                        style="background: white;"></iframe>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-2 text-center">Scroll or use controls to navigate PDF</p>
+                            </div>
+
+                            <!-- Details Tab -->
+                            <div id="resumeDetails" class="resumeTabContent hidden">
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4 space-y-3">
+                                    <div>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wider">File Name</p>
+                                        <p class="text-sm font-medium text-gray-900">{{ basename($application->resume_path) }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wider">File Type</p>
+                                        <p class="text-sm text-gray-900">PDF Document</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 uppercase tracking-wider">Uploaded On</p>
+                                        <p class="text-sm text-gray-900">{{ $application->updated_at->format('M d, Y H:i A') }}</p>
                                     </div>
                                 </div>
-                                <a href="{{ route('partner.applications.download-resume', $application) }}"
-                                    class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition flex-shrink-0 whitespace-nowrap">
-                                    📥 Download
-                                </a>
+
+                                <div class="mt-4 flex gap-2">
+                                    <button onclick="openPDFFullscreen('{{ asset('storage/' . $application->resume_path) }}', 'Resume')"
+                                        class="px-4 py-2 bg-green-100 text-green-700 text-sm rounded-lg hover:bg-green-200 transition">
+                                        🖥️ Fullscreen
+                                    </button>
+                                    <a href="{{ route('partner.applications.download-resume', $application) }}"
+                                        class="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition">
+                                        📥 Download
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     @else
                         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                            <p class="text-sm text-yellow-800">No resume found.</p>
+                            <p class="text-sm text-yellow-800">❌ No resume found.</p>
                         </div>
                     @endif
                 </div>
-
 
                 <!-- Timeline Card -->
                 <div class="bg-white rounded-lg shadow p-6">
@@ -417,7 +496,6 @@
                             </div>
                         </div>
 
-
                         @if ($application->reviewed_at)
                             <div class="flex gap-4">
                                 <div class="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -428,7 +506,6 @@
                                 </div>
                             </div>
                         @endif
-
 
                         @if ($application->last_contacted_at)
                             <div class="flex gap-4">
@@ -444,13 +521,11 @@
                 </div>
             </div>
 
-
             <!-- Sidebar -->
             <div class="lg:col-span-1 space-y-6">
                 <!-- Status Card -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Status</h3>
-
 
                     <div class="mb-6 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg text-center">
                         <p
@@ -466,7 +541,6 @@
                         </p>
                     </div>
 
-
                     <!-- Action Buttons -->
                     <div class="space-y-2">
                         {{-- Approve Button - Only show if pending or contacted --}}
@@ -481,7 +555,6 @@
                                 Approve
                             </button>
 
-
                             <button type="button"
                                 class="w-full reject-btn px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
                                 data-application-id="{{ $application->id }}">
@@ -492,7 +565,6 @@
                                 Reject
                             </button>
                         @endif
-
 
                         {{-- Send Email Button - Only show if NOT approved or rejected --}}
                         @if ($application->status !== 'approved' && $application->status !== 'rejected')
@@ -508,23 +580,21 @@
                             </button>
                         @endif
 
-
                         {{-- Download Resume - Always visible --}}
                         <a href="{{ route('partner.applications.download-resume', $application) }}"
                             class="w-full block px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition text-center">
                             📥 Download Resume
                         </a>
 
-                        {{-- Download Cover Letter (if uploaded) - New button --}}
+                        {{-- Download Cover Letter - Only if uploaded --}}
                         @if ($application->cover_letter_file)
                             <a href="{{ route('partner.applications.download-cover-letter', $application) }}"
-                                class="w-full block px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition text-center">
+                                class="w-full block px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition text-center">
                                 📥 Download Cover Letter
                             </a>
                         @endif
                     </div>
                 </div>
-
 
                 <!-- Quick Info Card -->
                 <div class="bg-white rounded-lg shadow p-6">
@@ -558,24 +628,93 @@
         </div>
     </div>
 
+    <!-- PDF Fullscreen Modal -->
+    <div id="pdfFullscreenModal" class="hidden fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50 p-2">
+        <div class="relative w-full h-full flex flex-col">
+            <!-- Close Button -->
+            <div class="absolute top-4 right-4 z-10">
+                <button onclick="closePDFFullscreen()" class="text-white hover:text-gray-300 text-3xl">✕</button>
+            </div>
+            <!-- PDF Viewer -->
+            <iframe id="fullscreenPdfFrame" src="" class="flex-1 border-0" style="background: white;"></iframe>
+        </div>
+    </div>
 
     <!-- Contact Modal -->
     @include('users.partner.job-postings.contact-modal')
 
-
     <script>
+        // ============ TAB SWITCHING FUNCTIONS ============
+        function switchCoverLetterTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.coverLetterTabContent').forEach(el => el.classList.add('hidden'));
+            // Remove active state from all tabs
+            document.querySelectorAll('.coverLetterTab').forEach(el => el.classList.remove('border-b-2', 'border-blue-600', 'text-blue-600'));
+
+            // Show selected content
+            document.getElementById('coverLetter' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
+            // Add active state to clicked tab
+            event.target.classList.add('border-b-2', 'border-blue-600', 'text-blue-600');
+        }
+
+        function switchResumeTab(tabName) {
+            // Hide all content
+            document.querySelectorAll('.resumeTabContent').forEach(el => el.classList.add('hidden'));
+            // Remove active state from all tabs
+            document.querySelectorAll('.resumeTab').forEach(el => el.classList.remove('border-b-2', 'border-green-600', 'text-green-600'));
+
+            // Show selected content
+            document.getElementById('resume' + tabName.charAt(0).toUpperCase() + tabName.slice(1)).classList.remove('hidden');
+            // Add active state to clicked tab
+            event.target.classList.add('border-b-2', 'border-green-600', 'text-green-600');
+        }
+
+        // ============ FULLSCREEN PDF FUNCTIONS ============
+        function openPDFFullscreen(pdfUrl, docName) {
+            const modal = document.getElementById('pdfFullscreenModal');
+            const iframe = document.getElementById('fullscreenPdfFrame');
+
+            iframe.src = pdfUrl;
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePDFFullscreen() {
+            const modal = document.getElementById('pdfFullscreenModal');
+            const iframe = document.getElementById('fullscreenPdfFrame');
+
+            modal.classList.add('hidden');
+            iframe.src = '';
+            document.body.style.overflow = 'auto';
+        }
+
+        // ============ UTILITY FUNCTIONS ============
+        function toggleCoverLetterView() {
+            console.log('Toggle cover letter view');
+        }
+
+        function toggleResumeView() {
+            console.log('Toggle resume view');
+        }
+
+        function copyToClipboard() {
+            const text = document.querySelector('.bg-gray-50.border.border-gray-200').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('✓ Copied to clipboard!', 'success');
+            });
+        }
+
+        // ============ APPLICATION MANAGEMENT FUNCTIONS ============
         document.addEventListener('DOMContentLoaded', function() {
             // Contact button
             document.querySelector('.contact-btn')?.addEventListener('click', function() {
                 openContactModal(this.dataset.applicationId);
             });
 
-
             // Approve button
             document.querySelector('.approve-btn')?.addEventListener('click', function() {
                 approveApplication(this.dataset.applicationId);
             });
-
 
             // Reject button
             document.querySelector('.reject-btn')?.addEventListener('click', function() {
@@ -583,27 +722,19 @@
             });
         });
 
-
         function openContactModal(applicationId) {
             const modal = document.getElementById('contactModal');
             const applicationIdInput = document.getElementById('applicationId');
-
-
-            console.log('Opening modal for application:', applicationId);
-
 
             if (applicationIdInput) {
                 applicationIdInput.value = applicationId;
             }
 
-
             modal.classList.remove('hidden');
         }
 
-
         function approveApplication(applicationId) {
             if (!confirm('Approve this application?')) return;
-
 
             fetch(`/partner/applications/${applicationId}/approve`, {
                     method: 'POST',
@@ -627,11 +758,9 @@
                 });
         }
 
-
         function rejectApplication(applicationId) {
             const reason = prompt('Rejection reason (optional):');
             if (reason === null) return;
-
 
             fetch(`/partner/applications/${applicationId}/reject`, {
                     method: 'POST',
@@ -658,14 +787,12 @@
                 });
         }
 
-
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-50 shadow-lg animate-pulse
+            toast.className = `fixed bottom-4 right-4 px-4 sm:px-6 py-3 rounded-lg text-white z-50 shadow-lg animate-pulse max-w-xs sm:max-w-sm
             ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
             toast.textContent = message;
             document.body.appendChild(toast);
-
 
             setTimeout(() => {
                 toast.style.opacity = '0';
@@ -673,5 +800,15 @@
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
+
+        // Close fullscreen modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('pdfFullscreenModal');
+                if (!modal.classList.contains('hidden')) {
+                    closePDFFullscreen();
+                }
+            }
+        });
     </script>
 @endsection
