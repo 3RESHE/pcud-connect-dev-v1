@@ -13,6 +13,7 @@ class JobApplication extends Model
         'applicant_id',
         'applicant_type',
         'cover_letter',
+        'cover_letter_file',
         'resume_path',
         'additional_documents',
         'status',
@@ -140,6 +141,19 @@ class JobApplication extends Model
     public function isReviewed(): bool
     {
         return !is_null($this->reviewed_at);
+    }
+
+    /**
+     * ✅ Check if cover letter is uploaded or written
+     */
+    public function hasCoverLetterFile(): bool
+    {
+        return !is_null($this->cover_letter_file);
+    }
+
+    public function hasWrittenCoverLetter(): bool
+    {
+        return !is_null($this->cover_letter);
     }
 
     /**

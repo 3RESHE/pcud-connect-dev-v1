@@ -22,7 +22,8 @@ return new class extends Migration
             $table->enum('applicant_type', ['student', 'alumni']);
 
             // Application content
-            $table->text('cover_letter')->nullable();
+            $table->text('cover_letter')->nullable(); // Written cover letter
+            $table->string('cover_letter_file')->nullable(); // Uploaded PDF cover letter
             $table->string('resume_path')->nullable(); // File path to resume/CV
             $table->json('additional_documents')->nullable(); // Array of file paths
 

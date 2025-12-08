@@ -148,7 +148,7 @@ class StudentJobController extends Controller
 
     /**
      * Apply for a job posting
-     * ✅ UPDATED: Now sends confirmation email
+     * ✅ UPDATED: Now handles both cover letter options (upload/write) and resume selection
      */
     public function apply(JobPosting $job, Request $request): RedirectResponse
     {
@@ -167,32 +167,77 @@ class StudentJobController extends Controller
                 return redirect()->back()->with('warning', 'Already applied.');
             }
 
-            // Validate
-            $validated = $request->validate([
-                'cover_letter' => 'required|string|min:50|max:5000',
+            // ✅ UPDATED VALIDATION: Handle both cover letter options
+            $rules = [
+                'cover_letter_option' => 'required|in:write,upload',
+                'cover_letter_text' => 'nullable|string|min:50|max:5000',
+                'cover_letter_file' => 'nullable|mimes:pdf|max:5120',
                 'resume_option' => 'required|in:existing,upload',
+                'existing_resume' => 'nullable|string',
                 'resume_file' => 'nullable|mimes:pdf,doc,docx|max:5120',
                 'confirmApplication' => 'required|accepted',
-            ]);
+            ];
 
-            // Handle resume
+            $messages = [
+                'cover_letter_text.min' => 'Cover letter must be at least 50 characters.',
+                'cover_letter_text.max' => 'Cover letter cannot exceed 5000 characters.',
+                'cover_letter_file.mimes' => 'Cover letter file must be a PDF.',
+                'cover_letter_file.max' => 'Cover letter file must not exceed 5MB.',
+                'resume_file.mimes' => 'Resume must be PDF, DOC, or DOCX format.',
+                'resume_file.max' => 'Resume must not exceed 5MB.',
+            ];
+
+            $validated = $request->validate($rules, $messages);
+
+            // ✅ HANDLE COVER LETTER (write or upload)
+            $coverLetterContent = null;
+            $coverLetterPath = null;
+
+            if ($request->cover_letter_option === 'write') {
+                // Validate written cover letter
+                if (!$request->cover_letter_text) {
+                    return redirect()->back()
+                        ->with('error', 'Please write a cover letter (minimum 50 characters).')
+                        ->withInput();
+                }
+                $coverLetterContent = $request->cover_letter_text;
+            } elseif ($request->cover_letter_option === 'upload') {
+                // Validate uploaded cover letter
+                if (!$request->hasFile('cover_letter_file')) {
+                    return redirect()->back()
+                        ->with('error', 'Please upload a cover letter PDF.')
+                        ->withInput();
+                }
+                $file = $request->file('cover_letter_file');
+                $filename = auth()->id() . '_cover_letter_' . time() . '.' . $file->getClientOriginalExtension();
+                $coverLetterPath = $file->storeAs('cover-letters/job-applications/' . auth()->id(), $filename, 'public');
+            }
+
+            // ✅ HANDLE RESUME SELECTION
             $resumePath = null;
 
-            if ($request->resume_option === 'upload' && $request->hasFile('resume_file')) {
-                $file = $request->file('resume_file');
-                $filename = auth()->id() . '_' . time() . '_' . $file->getClientOriginalName();
-                $resumePath = $file->storeAs('resumes/job-applications/' . auth()->id(), $filename, 'public');
-            } else {
-                $studentProfile = auth()->user()->studentProfile;
-                if ($studentProfile && $studentProfile->resume_path) {
-                    $resumePath = $studentProfile->resume_path;
-                } else {
-                    return redirect()->back()->with('error', 'No resume found.')->withInput();
+            if ($request->resume_option === 'existing') {
+                // Use existing resume from profile
+                if (!$request->existing_resume) {
+                    return redirect()->back()
+                        ->with('error', 'Please select a resume from your profile.')
+                        ->withInput();
                 }
+                $resumePath = $request->existing_resume;
+            } elseif ($request->resume_option === 'upload') {
+                // Upload new resume
+                if (!$request->hasFile('resume_file')) {
+                    return redirect()->back()
+                        ->with('error', 'Please upload a resume.')
+                        ->withInput();
+                }
+                $file = $request->file('resume_file');
+                $filename = auth()->id() . '_resume_' . time() . '.' . $file->getClientOriginalExtension();
+                $resumePath = $file->storeAs('resumes/job-applications/' . auth()->id(), $filename, 'public');
             }
 
             if (!$resumePath) {
-                return redirect()->back()->with('error', 'Resume required.')->withInput();
+                return redirect()->back()->with('error', 'Resume is required.')->withInput();
             }
 
             // Create application
@@ -200,7 +245,8 @@ class StudentJobController extends Controller
                 'job_posting_id' => $job->id,
                 'applicant_id' => auth()->id(),
                 'applicant_type' => 'student',
-                'cover_letter' => $validated['cover_letter'],
+                'cover_letter' => $coverLetterContent,
+                'cover_letter_file' => $coverLetterPath,
                 'resume_path' => $resumePath,
                 'status' => 'pending',
             ]);
@@ -224,7 +270,7 @@ class StudentJobController extends Controller
                 // Don't fail the application if logging fails
             }
 
-            // ✅ NEW: SEND CONFIRMATION EMAIL
+            // ✅ SEND CONFIRMATION EMAIL
             try {
                 Mail::to(auth()->user()->email)->send(new JobApplicationConfirmation($application));
                 \Log::info('Confirmation email sent for application: ' . $application->id);
