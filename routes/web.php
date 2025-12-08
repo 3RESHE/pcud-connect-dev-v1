@@ -490,6 +490,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::get('/', [StudentProfileController::class, 'show'])->name('show');
             Route::get('/edit', [StudentProfileController::class, 'edit'])->name('edit');
             Route::post('/', [StudentProfileController::class, 'update'])->name('update');
+
+            // ✅ NEW: File Deletion Routes
+            Route::delete('/delete-resume', [StudentProfileController::class, 'deleteResume'])
+                ->name('delete-resume');
+            Route::delete('/delete-certification', [StudentProfileController::class, 'deleteCertification'])
+                ->name('delete-certification');
         });
 
         // Experiences

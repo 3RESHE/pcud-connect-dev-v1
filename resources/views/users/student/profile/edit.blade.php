@@ -75,12 +75,12 @@
                             </div>
                         </div>
 
-                        <!-- Headline & Contact (WITH ERRORS) -->
+                        <!-- Headline & Contact -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div class="min-w-0">
                                 <label for="headline"
                                     class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                                    Professional Headline
+                                    Brief Summary
                                 </label>
                                 <input type="text" id="headline" name="headline" value="{{ $profile?->headline ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
@@ -101,7 +101,7 @@
                             </div>
                         </div>
 
-                        <!-- Phone & DOB (WITH ERRORS) -->
+                        <!-- Phone & DOB -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div class="min-w-0">
                                 <label for="phone"
@@ -126,7 +126,7 @@
                             </div>
                         </div>
 
-                        <!-- Gender & Emergency Contact (WITH ERRORS) -->
+                        <!-- Gender & Emergency Contact -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div class="min-w-0">
                                 <label for="gender"
@@ -158,7 +158,7 @@
                             </div>
                         </div>
 
-                        <!-- Address (WITH ERROR) -->
+                        <!-- Address -->
                         <div class="min-w-0">
                             <label for="address"
                                 class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
@@ -169,97 +169,211 @@
                                 placeholder="Your complete address...">{{ $profile?->address ?? '' }}</textarea>
                             <span id="addressError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
-
-
                     </div>
                 </div>
 
-                <!-- Social & Professional Links (WITH ERRORS) -->
-                <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <!-- Social & Professional Links -->
+                <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">Social & Professional
+                            Links</h3>
+                    </div>
+                    <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                            <div class="min-w-0">
+                                <label for="linkedin_url"
+                                    class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
+                                    LinkedIn Profile
+                                </label>
+                                <input type="url" id="linkedin_url" name="linkedin_url"
+                                    value="{{ $profile?->linkedin_url ?? '' }}"
+                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    placeholder="https://linkedin.com/in/username">
+                                <span id="linkedin_urlError"
+                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                            </div>
+                            <div class="min-w-0">
+                                <label for="github_url"
+                                    class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
+                                    GitHub Profile
+                                </label>
+                                <input type="url" id="github_url" name="github_url"
+                                    value="{{ $profile?->github_url ?? '' }}"
+                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                                    placeholder="https://github.com/username">
+                                <span id="github_urlError"
+                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                            </div>
+                        </div>
                         <div class="min-w-0">
-                            <label for="linkedin_url"
+                            <label for="portfolio_url"
                                 class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                                LinkedIn Profile
+                                Portfolio/Website
                             </label>
-                            <input type="url" id="linkedin_url" name="linkedin_url"
-                                value="{{ $profile?->linkedin_url ?? '' }}"
+                            <input type="url" id="portfolio_url" name="portfolio_url"
+                                value="{{ $profile?->portfolio_url ?? '' }}"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                placeholder="https://linkedin.com/in/username">
-                            <span id="linkedin_urlError"
+                                placeholder="https://yourportfolio.com">
+                            <span id="portfolio_urlError"
+                                class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Skills & Competencies -->
+                <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">Skills & Competencies</h3>
+                    </div>
+                    <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+                        <div class="min-w-0">
+                            <label for="technical_skills"
+                                class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
+                                Technical Skills
+                            </label>
+                            <textarea id="technical_skills" name="technical_skills" rows="3"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                                placeholder="e.g., HTML, CSS, JavaScript, Python, Java...">{{ $profile?->technical_skills ?? '' }}</textarea>
+                            <span id="technical_skillsError"
                                 class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
                         <div class="min-w-0">
-                            <label for="github_url"
+                            <label for="soft_skills"
                                 class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                                GitHub Profile
+                                Soft Skills
                             </label>
-                            <input type="url" id="github_url" name="github_url"
-                                value="{{ $profile?->github_url ?? '' }}"
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                                placeholder="https://github.com/username">
-                            <span id="github_urlError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                            <textarea id="soft_skills" name="soft_skills" rows="3"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                                placeholder="e.g., Communication, Leadership, Problem Solving...">{{ $profile?->soft_skills ?? '' }}</textarea>
+                            <span id="soft_skillsError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
-                    </div>
-                    <div class="min-w-0">
-                        <label for="portfolio_url"
-                            class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                            Portfolio/Website
-                        </label>
-                        <input type="url" id="portfolio_url" name="portfolio_url"
-                            value="{{ $profile?->portfolio_url ?? '' }}"
-                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                            placeholder="https://yourportfolio.com">
-                        <span id="portfolio_urlError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                            <div class="min-w-0">
+                                <label for="languages"
+                                    class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
+                                    Languages
+                                </label>
+                                <textarea id="languages" name="languages" rows="3"
+                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                                    placeholder="e.g., English, Filipino, Mandarin...">{{ $profile?->languages ?? '' }}</textarea>
+                                <span id="languagesError"
+                                    class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                            </div>
+                            <div class="min-w-0">
+                                <label for="hobbies"
+                                    class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
+                                    Hobbies & Interests
+                                </label>
+                                <textarea id="hobbies" name="hobbies" rows="3"
+                                    class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
+                                    placeholder="e.g., Gaming, Reading, Photography...">{{ $profile?->hobbies ?? '' }}</textarea>
+                                <span id="hobbiesError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
+                <!-- Resumes Upload Section -->
+                <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">📄 Resumes</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-1 break-words">Upload multiple resume versions</p>
+                    </div>
+                    <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4">
+                        <!-- Upload Input -->
+                        <div>
+                            <label for="resumes" class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Upload
+                                Resumes</label>
+                            <input type="file" id="resumes" name="resumes[]" multiple accept=".pdf,.doc,.docx"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <p class="text-xs text-gray-500 mt-2">PDF, DOC, DOCX files only. Max 5MB each.</p>
+                            <span id="resumesError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                        </div>
 
-                <!-- Skills & Certifications (WITH ERRORS) -->
-                <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
-                    <div class="min-w-0">
-                        <label for="technical_skills"
-                            class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                            Technical Skills
-                        </label>
-                        <textarea id="technical_skills" name="technical_skills" rows="3"
-                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                            placeholder="e.g., HTML, CSS, JavaScript, Python, Java...">{{ $profile?->technical_skills ?? '' }}</textarea>
-                        <span id="technical_skillsError"
-                            class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                        <!-- Existing Resumes List -->
+                        @if ($profile && $profile->resumes && is_array($profile->resumes) && count($profile->resumes) > 0)
+                            <div class="mt-4">
+                                <p class="text-xs sm:text-sm font-medium text-gray-700 mb-3">Uploaded Resumes:</p>
+                                <div class="space-y-2">
+                                    @foreach ($profile->resumes as $resume)
+                                        <div
+                                            class="flex items-center gap-3 p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition group">
+                                            <svg class="w-5 h-5 text-blue-600 flex-shrink-0" fill="currentColor"
+                                                viewBox="0 0 20 20">
+                                                <path d="M8 16.5a1 1 0 11-2 0 1 1 0 012 0zM15 7H4V5h11v2zM15 11H4V9h11v2z">
+                                                </path>
+                                            </svg>
+                                            <span class="text-xs sm:text-sm text-blue-600 font-medium break-all flex-1">
+                                                {{ basename($resume) }}
+                                            </span>
+                                            <button type="button" onclick="deleteResume('{{ $resume }}')"
+                                                class="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
-                    <div class="min-w-0">
-                        <label for="soft_skills"
-                            class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                            Soft Skills
-                        </label>
-                        <textarea id="soft_skills" name="soft_skills" rows="3"
-                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                            placeholder="e.g., Communication, Leadership, Problem Solving...">{{ $profile?->soft_skills ?? '' }}</textarea>
-                        <span id="soft_skillsError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
+                </div>
+
+                <!-- Certifications Upload Section -->
+                <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+                    <div class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50">
+                        <h3 class="text-base sm:text-lg font-semibold text-gray-900 break-words">🏆 Certifications</h3>
+                        <p class="text-xs sm:text-sm text-gray-600 mt-1 break-words">Upload certification documents or
+                            images</p>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div class="min-w-0">
+                    <div class="px-3 sm:px-4 md:px-6 py-4 sm:py-6 space-y-4">
+                        <!-- Upload Input -->
+                        <div>
                             <label for="certifications"
-                                class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                                Certifications
-                            </label>
-                            <textarea id="certifications" name="certifications" rows="3"
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                                placeholder="e.g., Google Cloud Certification...">{{ $profile?->certifications ?? '' }}</textarea>
+                                class="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Upload
+                                Certifications</label>
+                            <input type="file" id="certifications" name="certifications[]" multiple
+                                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                            <p class="text-xs text-gray-500 mt-2">PDF, DOC, DOCX, JPG, PNG, GIF files only. Max 5MB each.
+                            </p>
                             <span id="certificationsError"
                                 class="text-red-500 text-xs mt-1 block break-words hidden"></span>
                         </div>
-                        <div class="min-w-0">
-                            <label for="languages"
-                                class="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-2 break-words">
-                                Languages
-                            </label>
-                            <textarea id="languages" name="languages" rows="3"
-                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
-                                placeholder="e.g., English, Filipino, Mandarin...">{{ $profile?->languages ?? '' }}</textarea>
-                            <span id="languagesError" class="text-red-500 text-xs mt-1 block break-words hidden"></span>
-                        </div>
+
+                        <!-- Existing Certifications List -->
+                        @if ($profile && $profile->certifications && is_array($profile->certifications) && count($profile->certifications) > 0)
+                            <div class="mt-4">
+                                <p class="text-xs sm:text-sm font-medium text-gray-700 mb-3">Uploaded Certifications:</p>
+                                <div class="space-y-2">
+                                    @foreach ($profile->certifications as $cert)
+                                        <div
+                                            class="flex items-center gap-3 p-3 bg-green-50 rounded-lg hover:bg-green-100 transition group">
+                                            <svg class="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor"
+                                                viewBox="0 0 20 20">
+                                                <path
+                                                    d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v1h8v-1zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z">
+                                                </path>
+                                            </svg>
+                                            <span class="text-xs sm:text-sm text-green-600 font-medium break-all flex-1">
+                                                {{ basename($cert) }}
+                                            </span>
+                                            <button type="button" onclick="deleteCertification('{{ $cert }}')"
+                                                class="text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition">
+                                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd"
+                                                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                                                        clip-rule="evenodd"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
                     </div>
                 </div>
 
@@ -358,7 +472,6 @@
                     </div>
                 </div>
 
-
                 <!-- Projects Section -->
                 <div class="bg-white shadow-sm rounded-lg overflow-hidden">
                     <div
@@ -393,7 +506,7 @@
                                                 URL</label>
                                             <input type="url" name="project_url[]" value="{{ $proj->url }}"
                                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                                placeholder="https://...">
+                                                placeholder="https://github.com/...">
                                             <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
                                         </div>
                                     </div>
@@ -440,431 +553,56 @@
                     </div>
                 </div>
 
-
-                <!-- Action Buttons -->
-                <div
-                    class="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center bg-white shadow-sm rounded-lg p-3 sm:p-4 md:p-6">
+                <!-- Form Actions -->
+                <div class="flex gap-3 justify-end">
                     <a href="{{ route('student.profile.show') }}"
-                        class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm text-center order-3 sm:order-1">
+                        class="px-4 sm:px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition text-sm sm:text-base font-medium">
                         Cancel
                     </a>
-                    <div class="flex flex-col sm:flex-row gap-3 order-2 sm:order-2">
-                        <button type="reset"
-                            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium text-sm whitespace-nowrap">
-                            Reset
-                        </button>
-                        <button type="submit" id="submitBtn"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap">
-                            Save Changes
-                        </button>
-                    </div>
+                    <button type="submit" id="submitBtn"
+                        class="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm sm:text-base font-medium">
+                        Save Changes
+                    </button>
                 </div>
             </form>
         </div>
     </div>
+
     <script>
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+
+        // Preview photo
         function previewPhoto(event) {
             const file = event.target.files[0];
-            if (!file) return;
-
-            if (file.size > 2 * 1024 * 1024) {
-                showError('profile_photoError', 'File must not exceed 2MB');
-                event.target.value = '';
-                return;
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.querySelector('.profile-photo-preview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
             }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const preview = document.querySelector('.w-20.h-20.sm\\:w-24.sm\\:h-24');
-                if (preview && preview.querySelector('svg')) {
-                    preview.innerHTML =
-                        `<img src="${e.target.result}" alt="Preview" class="w-full h-full rounded-full object-cover">`;
-                }
-            };
-            reader.readAsDataURL(file);
         }
 
-        function addExperience() {
-            const list = document.getElementById('experiencesList');
-            const item = document.createElement('div');
-            item.className = 'experience-item border border-gray-200 rounded-lg p-4 sm:p-6 new-item';
-            item.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Role/Position</label>
-                    <input type="text" name="experience_role[]" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                    <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Organization</label>
-                    <input type="text" name="experience_org[]" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                    <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-4">
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                    <input type="date" name="experience_start[]" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                    <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End Date</label>
-                    <input type="date" name="experience_end[]" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                    <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Type</label>
-                    <select name="experience_type[]" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                        <option value="">Select Type</option>
-                        <option value="internship">Internship</option>
-                        <option value="part_time">Part-time</option>
-                        <option value="volunteer">Volunteer</option>
-                        <option value="full_time">Full-time</option>
-                        <option value="freelance">Freelance</option>
-                    </select>
-                    <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-            </div>
-            <div class="mt-4">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea name="experience_desc[]" rows="3" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"></textarea>
-                <span class="experienceError text-red-500 text-xs mt-1 block hidden"></span>
-            </div>
-            <div class="mt-4 flex justify-end gap-2">
-                <button type="button" onclick="submitExperience(this)" class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
-                    Save
-                </button>
-                <button type="button" onclick="this.closest('.experience-item').remove()" class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
-                    Delete
-                </button>
-            </div>
-        `;
-            list.appendChild(item);
-        }
-
-        function submitExperience(btn) {
-            const item = btn.closest('.experience-item');
-            const isNew = item.classList.contains('new-item');
-            const id = item.dataset.id;
-
-            // Clear previous errors
-            item.querySelectorAll('.experienceError').forEach(e => {
-                e.classList.add('hidden');
-                e.textContent = '';
-            });
-            item.querySelectorAll('input, select, textarea').forEach(el => {
-                el.classList.remove('border-red-500');
-            });
-
-            const data = {
-                experience_role: item.querySelector('input[name="experience_role[]"]').value,
-                experience_org: item.querySelector('input[name="experience_org[]"]').value,
-                experience_type: item.querySelector('select[name="experience_type[]"]').value,
-                experience_start: item.querySelector('input[name="experience_start[]"]').value,
-                experience_end: item.querySelector('input[name="experience_end[]"]').value,
-                experience_desc: item.querySelector('textarea[name="experience_desc[]"]').value,
-            };
-
-            let url;
-            let method;
-
-            if (isNew || !id) {
-                url = '/student/experiences';
-                method = 'POST';
-            } else {
-                url = `/student/experiences/${id}`;
-                method = 'PUT';
-            }
-
-            console.log('Submit Experience:', {
-                url,
-                method,
-                data
-            });
-
-            fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(r => r.json())
-                .then(d => {
-                    console.log('Response:', d);
-                    if (d.success) {
-                        showToast('✅ ' + d.message, 'success');
-                        if (isNew) item.classList.remove('new-item');
-                        item.dataset.id = d.experience?.id;
-                    } else {
-                        showToast('❌ ' + (d.message || 'Failed to save'), 'error');
-
-                        if (d.errors) {
-                            console.log('Experience Errors:', d.errors);
-                            displayExperienceErrors(item, d.errors);
-                        }
-                    }
-                })
-                .catch(e => {
-                    console.error('Fetch Error:', e);
-                    showToast('❌ Error: ' + e.message, 'error');
-                });
-        }
-
-        function displayExperienceErrors(item, errors) {
-            const fieldMap = {
-                'experience_role': 'input[name="experience_role[]"]',
-                'experience_org': 'input[name="experience_org[]"]',
-                'experience_type': 'select[name="experience_type[]"]',
-                'experience_start': 'input[name="experience_start[]"]',
-                'experience_end': 'input[name="experience_end[]"]',
-                'experience_desc': 'textarea[name="experience_desc[]"]'
-            };
-
-            Object.keys(errors).forEach(field => {
-                const fieldSelector = fieldMap[field];
-                if (fieldSelector) {
-                    const input = item.querySelector(fieldSelector);
-                    if (input) {
-                        const errorEl = input.parentElement.querySelector('.experienceError');
-                        if (errorEl) {
-                            errorEl.textContent = errors[field][0];
-                            errorEl.classList.remove('hidden');
-                        }
-                        input.classList.add('border-red-500');
-
-                        input.addEventListener('input', function() {
-                            this.classList.remove('border-red-500');
-                            const err = this.parentElement.querySelector('.experienceError');
-                            if (err) err.classList.add('hidden');
-                        }, {
-                            once: true
-                        });
-                    }
-                }
-            });
-        }
-
-        function addProject() {
-            const list = document.getElementById('projectsList');
-            const item = document.createElement('div');
-            item.className = 'project-item border border-gray-200 rounded-lg p-4 sm:p-6 new-item';
-            item.innerHTML = `
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project Title</label>
-                    <input type="text" name="project_title[]" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                    <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project URL</label>
-                    <input type="url" name="project_url[]" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="https://...">
-                    <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4">
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date</label>
-                    <input type="date" name="project_start[]" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                    <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-                <div class="min-w-0">
-                    <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End Date</label>
-                    <input type="date" name="project_end[]" class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
-                    <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
-                </div>
-            </div>
-            <div class="mt-4">
-                <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea name="project_desc[]" rows="3" required class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"></textarea>
-                <span class="projectError text-red-500 text-xs mt-1 block hidden"></span>
-            </div>
-            <div class="mt-4 flex justify-end gap-2">
-                <button type="button" onclick="submitProject(this)" class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
-                    Save
-                </button>
-                <button type="button" onclick="this.closest('.project-item').remove()" class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
-                    Delete
-                </button>
-            </div>
-        `;
-            list.appendChild(item);
-        }
-
-        function submitProject(btn) {
-            const item = btn.closest('.project-item');
-            const isNew = item.classList.contains('new-item');
-            const id = item.dataset.id;
-
-            // Clear previous errors
-            item.querySelectorAll('.projectError').forEach(e => {
-                e.classList.add('hidden');
-                e.textContent = '';
-            });
-            item.querySelectorAll('input, select, textarea').forEach(el => {
-                el.classList.remove('border-red-500');
-            });
-
-            const data = {
-                project_title: item.querySelector('input[name="project_title[]"]').value,
-                project_url: item.querySelector('input[name="project_url[]"]').value,
-                project_start: item.querySelector('input[name="project_start[]"]').value,
-                project_end: item.querySelector('input[name="project_end[]"]').value,
-                project_desc: item.querySelector('textarea[name="project_desc[]"]').value,
-            };
-
-            let url;
-            let method;
-
-            if (isNew || !id) {
-                url = '/student/projects';
-                method = 'POST';
-            } else {
-                url = `/student/projects/${id}`;
-                method = 'PUT';
-            }
-
-            console.log('Submit Project:', {
-                url,
-                method,
-                data
-            });
-
-            fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(r => r.json())
-                .then(d => {
-                    console.log('Response:', d);
-                    if (d.success) {
-                        showToast('✅ ' + d.message, 'success');
-                        if (isNew) item.classList.remove('new-item');
-                        item.dataset.id = d.project?.id;
-                    } else {
-                        showToast('❌ ' + (d.message || 'Failed to save'), 'error');
-
-                        if (d.errors) {
-                            console.log('Project Errors:', d.errors);
-                            displayProjectErrors(item, d.errors);
-                        }
-                    }
-                })
-                .catch(e => {
-                    console.error('Fetch Error:', e);
-                    showToast('❌ Error: ' + e.message, 'error');
-                });
-        }
-
-        function displayProjectErrors(item, errors) {
-            const fieldMap = {
-                'project_title': 'input[name="project_title[]"]',
-                'project_url': 'input[name="project_url[]"]',
-                'project_start': 'input[name="project_start[]"]',
-                'project_end': 'input[name="project_end[]"]',
-                'project_desc': 'textarea[name="project_desc[]"]'
-            };
-
-            Object.keys(errors).forEach(field => {
-                const fieldSelector = fieldMap[field];
-                if (fieldSelector) {
-                    const input = item.querySelector(fieldSelector);
-                    if (input) {
-                        const errorEl = input.parentElement.querySelector('.projectError');
-                        if (errorEl) {
-                            errorEl.textContent = errors[field][0];
-                            errorEl.classList.remove('hidden');
-                        }
-                        input.classList.add('border-red-500');
-
-                        input.addEventListener('input', function() {
-                            this.classList.remove('border-red-500');
-                            const err = this.parentElement.querySelector('.projectError');
-                            if (err) err.classList.add('hidden');
-                        }, {
-                            once: true
-                        });
-                    }
-                }
-            });
-        }
-
-        function deleteExperience(btn, id) {
-            if (!confirm('Delete this experience?')) return;
-
-            fetch(`/student/experiences/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            }).then(r => r.json()).then(d => {
-                if (d.success) {
-                    btn.closest('.experience-item').remove();
-                    showToast('✅ Experience deleted!', 'success');
-                } else showToast('❌ ' + d.message, 'error');
-            });
-        }
-
-        function deleteProject(btn, id) {
-            if (!confirm('Delete this project?')) return;
-
-            fetch(`/student/projects/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                }
-            }).then(r => r.json()).then(d => {
-                if (d.success) {
-                    btn.closest('.project-item').remove();
-                    showToast('✅ Project deleted!', 'success');
-                } else showToast('❌ ' + d.message, 'error');
-            });
-        }
-
-        // Form Submission with Proper Error Handling
-        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        // Submit form
+        document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const form = e.target;
+            const formData = new FormData(form);
             const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
-
-            clearAllErrors();
-
-            const formData = new FormData(this);
 
             try {
                 const response = await fetch('{{ route('student.profile.update') }}', {
                     method: 'POST',
                     headers: {
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
                     },
                     body: formData
                 });
 
-                console.log('Response Status:', response.status);
-
-                const responseText = await response.text();
-                console.log('Response Text:', responseText);
-
-                let data;
-                try {
-                    data = JSON.parse(responseText);
-                } catch (e) {
-                    console.error('JSON Parse Error:', e);
-                    showErrorAlert('❌ Server returned invalid response: ' + responseText.substring(0, 200));
-                    submitBtn.disabled = false;
-                    return;
-                }
-
-                console.log('Parsed Data:', data);
+                const data = await response.json();
 
                 if (response.ok && data.success) {
                     showToast('✅ ' + data.message, 'success');
@@ -872,103 +610,352 @@
                         window.location.href = data.redirect;
                     }, 1500);
                 } else {
-                    showErrorAlert(data.message || 'Failed to update profile');
-
                     if (data.errors) {
-                        console.log('Validation Errors:', data.errors);
-                        displayErrors(data.errors);
+                        Object.keys(data.errors).forEach(key => {
+                            const errorElement = document.getElementById(key + 'Error');
+                            if (errorElement) {
+                                errorElement.textContent = data.errors[key][0];
+                                errorElement.classList.remove('hidden');
+                            }
+                        });
                     }
+                    showToast('❌ ' + (data.message || 'Failed to update profile'), 'error');
                 }
             } catch (error) {
-                console.error('Fetch Error:', error);
-                showErrorAlert('❌ Network error: ' + error.message);
+                showToast('❌ Error: ' + error.message, 'error');
             } finally {
                 submitBtn.disabled = false;
             }
         });
 
-        function showErrorAlert(message) {
-            const alertContainer = document.createElement('div');
-            alertContainer.className = 'mb-4 sm:mb-6 bg-red-50 border-l-4 border-red-400 p-3 sm:p-4 rounded-r';
-            alertContainer.id = 'errorAlert';
-            alertContainer.innerHTML = `
-            <div class="flex gap-3">
-                <svg class="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0-6a4 4 0 110 8 4 4 0 010-8zm0-2a6 6 0 11-1.5.15M12.5 3.5a.5.5 0 11-1 0 .5.5 0 011 0z"></path>
-                </svg>
-                <div class="flex-1 min-w-0">
-                    <p class="text-xs sm:text-sm text-red-800 break-words"><strong>Error:</strong> ${message}</p>
-                    <button onclick="document.getElementById('errorAlert').remove()" class="text-red-600 hover:text-red-800 text-xs mt-2 underline">Dismiss</button>
-                </div>
-            </div>
-        `;
-
-            document.getElementById('profileForm').parentElement.insertBefore(alertContainer, document.getElementById(
-                'profileForm'));
-
-            alertContainer.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
-
-        function clearAllErrors() {
-            const errorAlert = document.getElementById('errorAlert');
-            if (errorAlert) {
-                errorAlert.remove();
-            }
-
-            document.querySelectorAll('[id$="Error"]').forEach(el => {
-                el.classList.add('hidden');
-                el.textContent = '';
-            });
-        }
-
-        function displayErrors(errors) {
-            Object.keys(errors).forEach(field => {
-                const errorEl = document.getElementById(field + 'Error');
-                if (errorEl) {
-                    errorEl.textContent = errors[field][0];
-                    errorEl.classList.remove('hidden');
-
-                    if (!document.getElementById('errorAlert')) {
-                        errorEl.parentElement.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'center'
-                        });
-                    }
-                }
-            });
-        }
-
-        function showError(elementId, message) {
-            const element = document.getElementById(elementId);
-            if (element) {
-                element.textContent = message;
-                element.classList.remove('hidden');
-            }
-        }
-
+        // Show toast notification
         function showToast(message, type = 'info') {
             const container = document.getElementById('toastContainer');
-            const bgColor = type === 'success' ? 'bg-green-500' : 'bg-red-500';
+            const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
 
             const toast = document.createElement('div');
             toast.className =
                 `${bgColor} text-white px-4 py-3 rounded-lg shadow-lg mb-2 flex items-center justify-between gap-2 text-sm`;
             toast.innerHTML = `
-            <span class="break-words">${message}</span>
-            <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200 flex-shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-            </button>
-        `;
+                <span class="break-words">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-white hover:text-gray-200 flex-shrink-0">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            `;
 
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 5000);
+            if (container) {
+                container.appendChild(toast);
+                setTimeout(() => toast.remove(), 4000);
+            }
+        }
+
+        // Delete Resume
+        function deleteResume(filePath) {
+            if (!confirm('Delete this resume?')) return;
+
+            fetch('{{ route('student.profile.delete-resume') }}', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        file: filePath
+                    })
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('✅ Resume deleted!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('❌ ' + d.message, 'error');
+                    }
+                })
+                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+        }
+
+        // Delete Certification
+        function deleteCertification(filePath) {
+            if (!confirm('Delete this certification?')) return;
+
+            fetch('{{ route('student.profile.delete-certification') }}', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        file: filePath
+                    })
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('✅ Certification deleted!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('❌ ' + d.message, 'error');
+                    }
+                })
+                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+        }
+
+        // Add Experience
+        function addExperience() {
+            const list = document.getElementById('experiencesList');
+            const template = `
+                <div class="experience-item border border-gray-200 rounded-lg p-4 sm:p-6" data-id="new">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Role/Position</label>
+                            <input type="text" name="experience_role[]" required
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Organization</label>
+                            <input type="text" name="experience_org[]" required
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mt-4">
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" name="experience_start[]" required
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <input type="date" name="experience_end[]"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Type</label>
+                            <select name="experience_type[]" required
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                                <option value="">Select Type</option>
+                                <option value="internship">Internship</option>
+                                <option value="part_time">Part-time</option>
+                                <option value="volunteer">Volunteer</option>
+                                <option value="full_time">Full-time</option>
+                                <option value="freelance">Freelance</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea name="experience_desc[]" rows="3" required
+                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"></textarea>
+                    </div>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button type="button" onclick="submitExperience(this)"
+                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
+                            Save
+                        </button>
+                        <button type="button" onclick="this.closest('.experience-item').remove()"
+                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+            list.insertAdjacentHTML('beforeend', template);
+        }
+
+        // Submit Experience
+        function submitExperience(btn) {
+            const item = btn.closest('.experience-item');
+            const id = item.dataset.id;
+
+            const role = item.querySelector('input[name="experience_role[]"]').value;
+            const org = item.querySelector('input[name="experience_org[]"]').value;
+            const start = item.querySelector('input[name="experience_start[]"]').value;
+            const end = item.querySelector('input[name="experience_end[]"]').value;
+            const type = item.querySelector('select[name="experience_type[]"]').value;
+            const desc = item.querySelector('textarea[name="experience_desc[]"]').value;
+
+            if (!role || !org || !start || !type || !desc) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            const url = id === 'new' ? '{{ route('student.experiences.store') }}' :
+                `{{ route('student.experiences.update', ':id') }}`.replace(':id', id);
+            const method = id === 'new' ? 'POST' : 'PUT';
+
+            fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        role_position: role,
+                        organization: org,
+                        start_date: start,
+                        end_date: end || null,
+                        experience_type: type,
+                        description: desc
+                    })
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('✅ Experience saved!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('❌ Error: ' + (d.message || 'Failed to save'), 'error');
+                    }
+                })
+                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+        }
+
+        // Delete Experience
+        function deleteExperience(btn, id) {
+            if (!confirm('Delete this experience?')) return;
+
+            fetch(`{{ route('student.experiences.destroy', ':id') }}`.replace(':id', id), {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('✅ Experience deleted!', 'success');
+                        btn.closest('.experience-item').remove();
+                    } else {
+                        showToast('❌ Error deleting experience', 'error');
+                    }
+                })
+                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+        }
+
+        // Add Project
+        function addProject() {
+            const list = document.getElementById('projectsList');
+            const template = `
+                <div class="project-item border border-gray-200 rounded-lg p-4 sm:p-6" data-id="new">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project Title</label>
+                            <input type="text" name="project_title[]" required
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Project URL</label>
+                            <input type="url" name="project_url[]"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                placeholder="https://github.com/...">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mt-4">
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <input type="date" name="project_start[]" required
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                        <div class="min-w-0">
+                            <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <input type="date" name="project_end[]"
+                                class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea name="project_desc[]" rows="3" required
+                            class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm resize-none"></textarea>
+                    </div>
+                    <div class="mt-4 flex justify-end gap-2">
+                        <button type="button" onclick="submitProject(this)"
+                            class="px-3 py-1 bg-green-600 text-white hover:bg-green-700 text-xs sm:text-sm font-medium rounded">
+                            Save
+                        </button>
+                        <button type="button" onclick="this.closest('.project-item').remove()"
+                            class="px-3 py-1 text-red-600 hover:text-red-800 text-xs sm:text-sm font-medium">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+            list.insertAdjacentHTML('beforeend', template);
+        }
+
+        // Submit Project
+        function submitProject(btn) {
+            const item = btn.closest('.project-item');
+            const id = item.dataset.id;
+
+            const title = item.querySelector('input[name="project_title[]"]').value;
+            const url = item.querySelector('input[name="project_url[]"]').value;
+            const start = item.querySelector('input[name="project_start[]"]').value;
+            const end = item.querySelector('input[name="project_end[]"]').value;
+            const desc = item.querySelector('textarea[name="project_desc[]"]').value;
+
+            if (!title || !start || !desc) {
+                showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            const endpoint = id === 'new' ? '{{ route('student.projects.store') }}' :
+                `{{ route('student.projects.update', ':id') }}`.replace(':id', id);
+            const method = id === 'new' ? 'POST' : 'PUT';
+
+            fetch(endpoint, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        url: url || null,
+                        start_date: start,
+                        end_date: end || null,
+                        description: desc
+                    })
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('✅ Project saved!', 'success');
+                        setTimeout(() => window.location.reload(), 1500);
+                    } else {
+                        showToast('❌ Error: ' + (d.message || 'Failed to save'), 'error');
+                    }
+                })
+                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
+        }
+
+        // Delete Project
+        function deleteProject(btn, id) {
+            if (!confirm('Delete this project?')) return;
+
+            fetch(`{{ route('student.projects.destroy', ':id') }}`.replace(':id', id), {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(r => r.json())
+                .then(d => {
+                    if (d.success) {
+                        showToast('✅ Project deleted!', 'success');
+                        btn.closest('.project-item').remove();
+                    } else {
+                        showToast('❌ Error deleting project', 'error');
+                    }
+                })
+                .catch(e => showToast('❌ Error: ' + e.message, 'error'));
         }
     </script>
-
-
 @endsection

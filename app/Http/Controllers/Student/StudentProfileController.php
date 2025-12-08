@@ -76,28 +76,49 @@ class StudentProfileController extends Controller
                 'portfolio_url' => 'nullable|url|max:255',
                 'technical_skills' => 'nullable|string|max:1000',
                 'soft_skills' => 'nullable|string|max:1000',
-                'certifications' => 'nullable|string|max:1000',
                 'languages' => 'nullable|string|max:500',
                 'hobbies' => 'nullable|string|max:500',
-                'resume_path' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+
+                // Multiple file uploads
+                'resumes.*' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+                'certifications.*' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png,gif|max:5120',
             ]);
 
             // Handle profile photo
             if ($request->hasFile('profile_photo')) {
-                if ($profile->profile_photo && Storage::exists($profile->profile_photo)) {
-                    Storage::delete($profile->profile_photo);
+                if ($profile->profile_photo && Storage::disk('public')->exists($profile->profile_photo)) {
+                    Storage::disk('public')->delete($profile->profile_photo);
                 }
                 $path = $request->file('profile_photo')->store('student-photos', 'public');
                 $validated['profile_photo'] = $path;
             }
 
-            // Handle resume upload
-            if ($request->hasFile('resume_path')) {
-                if ($profile->resume_path && Storage::exists($profile->resume_path)) {
-                    Storage::delete($profile->resume_path);
+            // Handle multiple resumes upload
+            if ($request->hasFile('resumes')) {
+                $resumes = $profile->resumes ?? [];
+                foreach ($request->file('resumes') as $resume) {
+                    if ($resume) {
+                        $path = $resume->store('student-resumes', 'public');
+                        if (!in_array($path, $resumes)) {
+                            $resumes[] = $path;
+                        }
+                    }
                 }
-                $path = $request->file('resume_path')->store('student-resumes', 'public');
-                $validated['resume_path'] = $path;
+                $validated['resumes'] = $resumes;
+            }
+
+            // Handle multiple certifications upload
+            if ($request->hasFile('certifications')) {
+                $certifications = $profile->certifications ?? [];
+                foreach ($request->file('certifications') as $cert) {
+                    if ($cert) {
+                        $path = $cert->store('student-certifications', 'public');
+                        if (!in_array($path, $certifications)) {
+                            $certifications[] = $path;
+                        }
+                    }
+                }
+                $validated['certifications'] = $certifications;
             }
 
             // Update profile
@@ -136,6 +157,84 @@ class StudentProfileController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Failed to update profile: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete resume file
+     */
+    public function deleteResume(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $profile = $user->studentProfile;
+
+            $filePath = $request->input('file');
+
+            if (!$filePath) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File path not provided'
+                ], 400);
+            }
+
+            // Delete from storage
+            if (Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
+            }
+
+            // Remove from array
+            $profile->removeResume($filePath);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Resume deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting resume: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete certification file
+     */
+    public function deleteCertification(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $profile = $user->studentProfile;
+
+            $filePath = $request->input('file');
+
+            if (!$filePath) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File path not provided'
+                ], 400);
+            }
+
+            // Delete from storage
+            if (Storage::disk('public')->exists($filePath)) {
+                Storage::disk('public')->delete($filePath);
+            }
+
+            // Remove from array
+            $profile->removeCertification($filePath);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Certification deleted successfully'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting certification: ' . $e->getMessage()
             ], 500);
         }
     }

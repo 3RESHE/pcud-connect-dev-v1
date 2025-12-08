@@ -35,13 +35,13 @@ return new class extends Migration
             $table->string('github_url')->nullable();
             $table->string('portfolio_url')->nullable();
 
-            // Documents
-            $table->string('resume_path')->nullable(); // File path to resume
+            // Documents - UPDATED to support multiple files
+            $table->json('resumes')->nullable(); // Array of file paths
+            $table->json('certifications')->nullable(); // Array of file paths
 
             // Skills & Certifications
             $table->text('technical_skills')->nullable(); // Comma-separated or JSON
             $table->text('soft_skills')->nullable();
-            $table->text('certifications')->nullable();
             $table->text('languages')->nullable();
             $table->text('hobbies')->nullable();
 
