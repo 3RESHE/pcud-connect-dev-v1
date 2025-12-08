@@ -135,7 +135,7 @@ class AlumniJobController extends Controller
 
     /**
      * Apply for a job posting
-     * ✅ UPDATED: Now sends confirmation email
+     * ✅ UPDATED: Supports cover letter (write/upload) and resume (existing/upload)
      */
     public function apply(JobPosting $job, Request $request): RedirectResponse
     {
@@ -154,40 +154,80 @@ class AlumniJobController extends Controller
                 return redirect()->back()->with('warning', 'Already applied.');
             }
 
-            // Validate
+            // ✅ UPDATED VALIDATION: Support write/upload cover letter and existing/upload resume
             $validated = $request->validate([
-                'cover_letter' => 'required|string|min:50|max:5000',
+                'cover_letter_option' => 'required|in:write,upload',
+                'cover_letter_text' => 'nullable|string|min:50|max:5000',
+                'cover_letter_file' => 'nullable|mimes:pdf|max:5120',
                 'resume_option' => 'required|in:existing,upload',
+                'existing_resume' => 'nullable|string',
                 'resume_file' => 'nullable|mimes:pdf,doc,docx|max:5120',
                 'confirmApplication' => 'required|accepted',
             ]);
 
-            // Handle resume
+            // ✅ NEW: Handle cover letter - write or upload
+            $coverLetterContent = null;
+            $coverLetterPath = null;
+
+            if ($request->cover_letter_option === 'write') {
+                // Validate written cover letter
+                if (!$request->cover_letter_text || strlen($request->cover_letter_text) < 50) {
+                    return redirect()->back()
+                        ->with('error', 'Cover letter must be at least 50 characters.')
+                        ->withInput();
+                }
+                $coverLetterContent = $request->cover_letter_text;
+            } elseif ($request->cover_letter_option === 'upload') {
+                // Validate PDF cover letter file
+                if (!$request->hasFile('cover_letter_file')) {
+                    return redirect()->back()
+                        ->with('error', 'Please upload a PDF cover letter.')
+                        ->withInput();
+                }
+
+                $file = $request->file('cover_letter_file');
+                $filename = auth()->id() . '_cover_letter_' . time() . '.' . $file->getClientOriginalExtension();
+                $coverLetterPath = $file->storeAs('cover-letters/job-applications/' . auth()->id(), $filename, 'public');
+            }
+
+            // ✅ UPDATED: Handle resume - existing or upload
             $resumePath = null;
 
-            if ($request->resume_option === 'upload' && $request->hasFile('resume_file')) {
-                $file = $request->file('resume_file');
-                $filename = auth()->id() . '_' . time() . '_' . $file->getClientOriginalName();
-                $resumePath = $file->storeAs('resumes/job-applications/' . auth()->id(), $filename, 'public');
-            } else {
-                $alumniProfile = auth()->user()->alumniProfile;
-                if ($alumniProfile && $alumniProfile->resume_path) {
-                    $resumePath = $alumniProfile->resume_path;
-                } else {
-                    return redirect()->back()->with('error', 'No resume found.')->withInput();
+            if ($request->resume_option === 'existing') {
+                // Use existing resume from alumni profile
+                if (!$request->existing_resume) {
+                    return redirect()->back()
+                        ->with('error', 'Please select a resume from your profile.')
+                        ->withInput();
                 }
+                $resumePath = $request->existing_resume;
+            } elseif ($request->resume_option === 'upload') {
+                // Upload new resume
+                if (!$request->hasFile('resume_file')) {
+                    return redirect()->back()
+                        ->with('error', 'Please upload a resume file.')
+                        ->withInput();
+                }
+
+                $file = $request->file('resume_file');
+                $filename = auth()->id() . '_resume_' . time() . '.' . $file->getClientOriginalExtension();
+                $resumePath = $file->storeAs('resumes/job-applications/' . auth()->id(), $filename, 'public');
             }
 
+            // Ensure resume path exists
             if (!$resumePath) {
-                return redirect()->back()->with('error', 'Resume required.')->withInput();
+                return redirect()->back()
+                    ->with('error', 'Resume is required. Please select or upload one.')
+                    ->withInput();
             }
 
-            // Create application
+            // ✅ Create application with new fields
             $application = JobApplication::create([
                 'job_posting_id' => $job->id,
                 'applicant_id' => auth()->id(),
                 'applicant_type' => 'alumni',
-                'cover_letter' => $validated['cover_letter'],
+                'cover_letter' => $coverLetterContent,          // NULL if uploaded
+                'cover_letter_file' => $coverLetterPath,        // NULL if written
                 'resume_path' => $resumePath,
                 'status' => 'pending',
             ]);
@@ -211,7 +251,7 @@ class AlumniJobController extends Controller
                 // Don't fail the application if logging fails
             }
 
-            // ✅ NEW: SEND CONFIRMATION EMAIL
+            // ✅ SEND CONFIRMATION EMAIL
             try {
                 Mail::to(auth()->user()->email)->send(new JobApplicationConfirmation($application));
                 \Log::info('Confirmation email sent for application: ' . $application->id);
@@ -220,12 +260,14 @@ class AlumniJobController extends Controller
                 // Don't fail the application if email fails
             }
 
-            // ✅ FIXED: Using correct route name for alumni applications
+            // Redirect to applications page
             return redirect()->route('alumni.applications.show', $application->id)
                 ->with('success', 'Application submitted! Check your email for confirmation.');
         } catch (\Exception $e) {
             \Log::error('Apply error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+            return redirect()->back()
+                ->with('error', 'Error: ' . $e->getMessage())
+                ->withInput();
         }
     }
 
