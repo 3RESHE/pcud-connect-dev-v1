@@ -26,6 +26,9 @@
             <!-- Toast Container -->
             <div id="toastContainer" class="fixed bottom-4 right-4 z-50 max-w-xs mx-2 sm:max-w-sm"></div>
 
+            <!-- Error Messages Container -->
+            <div id="errorContainer" class="mb-6 space-y-2"></div>
+
             <!-- Profile Form -->
             <form id="profileForm" class="space-y-4 sm:space-y-6 md:space-y-8" enctype="multipart/form-data">
                 @csrf
@@ -44,20 +47,17 @@
                                 Photo</label>
                             <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
                                 <div class="flex-shrink-0">
-                                    @if ($profile && $profile->profile_photo)
-                                        <img src="{{ asset('storage/' . $profile->profile_photo) }}" alt="Profile Photo"
-                                            class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover">
-                                    @else
-                                        <div
-                                            class="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center">
-                                            <svg class="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" fill="none"
-                                                stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
-                                                </path>
-                                            </svg>
-                                        </div>
-                                    @endif
+                                    <img id="profilePhotoPreview" alt="Profile Photo"
+                                        class="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover">
+                                    <div id="profilePhotoPlaceholder"
+                                        class="w-20 h-20 sm:w-24 sm:h-24 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-10 h-10 sm:w-12 sm:h-12 text-gray-400" fill="none"
+                                            stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z">
+                                            </path>
+                                        </svg>
+                                    </div>
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <label class="inline-block">
@@ -69,6 +69,8 @@
                                         </span>
                                     </label>
                                     <p class="text-xs text-gray-500 mt-2 break-words">PNG, JPG up to 2MB</p>
+                                    <!-- Error message for photo -->
+                                    <p id="profile_photo_error" class="text-xs text-red-600 mt-1 hidden"></p>
                                 </div>
                             </div>
                         </div>
@@ -83,6 +85,7 @@
                                 <input type="text" id="headline" name="headline" value="{{ $profile?->headline ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="e.g., BSIT Student | Full-Stack Developer">
+                                <p id="headline_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                             <div class="min-w-0">
                                 <label for="personal_email"
@@ -93,6 +96,7 @@
                                     value="{{ $profile?->personal_email ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="your.email@example.com">
+                                <p id="personal_email_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                         </div>
 
@@ -106,6 +110,7 @@
                                 <input type="tel" id="phone" name="phone" value="{{ $profile?->phone ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="+63 9XX-XXXX-XXXX">
+                                <p id="phone_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                             <div class="min-w-0">
                                 <label for="date_of_birth"
@@ -115,6 +120,7 @@
                                 <input type="date" id="date_of_birth" name="date_of_birth"
                                     value="{{ $profile?->date_of_birth?->format('Y-m-d') ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm">
+                                <p id="date_of_birth_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                         </div>
 
@@ -134,6 +140,7 @@
                                     <option value="prefer_not_to_say" @selected($profile?->gender === 'prefer_not_to_say')>Prefer Not to Say
                                     </option>
                                 </select>
+                                <p id="gender_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                             <div class="min-w-0">
                                 <label for="emergency_contact"
@@ -144,6 +151,7 @@
                                     value="{{ $profile?->emergency_contact ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="Parent/Guardian name">
+                                <p id="emergency_contact_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                         </div>
 
@@ -156,6 +164,7 @@
                             <textarea id="address" name="address" rows="3"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                 placeholder="Your complete address...">{{ $profile?->address ?? '' }}</textarea>
+                            <p id="address_error" class="text-xs text-red-600 mt-1 hidden"></p>
                         </div>
                     </div>
                 </div>
@@ -177,6 +186,7 @@
                                     value="{{ $profile?->linkedin_url ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="https://linkedin.com/in/username">
+                                <p id="linkedin_url_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                             <div class="min-w-0">
                                 <label for="github_url"
@@ -187,6 +197,7 @@
                                     value="{{ $profile?->github_url ?? '' }}"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                     placeholder="https://github.com/username">
+                                <p id="github_url_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                         </div>
                         <div class="min-w-0">
@@ -198,6 +209,7 @@
                                 value="{{ $profile?->portfolio_url ?? '' }}"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                                 placeholder="https://yourportfolio.com">
+                            <p id="portfolio_url_error" class="text-xs text-red-600 mt-1 hidden"></p>
                         </div>
                     </div>
                 </div>
@@ -216,6 +228,7 @@
                             <textarea id="technical_skills" name="technical_skills" rows="3"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                 placeholder="e.g., HTML, CSS, JavaScript, Python, Java...">{{ $profile?->technical_skills ?? '' }}</textarea>
+                            <p id="technical_skills_error" class="text-xs text-red-600 mt-1 hidden"></p>
                         </div>
                         <div class="min-w-0">
                             <label for="soft_skills"
@@ -225,6 +238,7 @@
                             <textarea id="soft_skills" name="soft_skills" rows="3"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                 placeholder="e.g., Communication, Leadership, Problem Solving...">{{ $profile?->soft_skills ?? '' }}</textarea>
+                            <p id="soft_skills_error" class="text-xs text-red-600 mt-1 hidden"></p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                             <div class="min-w-0">
@@ -235,6 +249,7 @@
                                 <textarea id="languages" name="languages" rows="3"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                     placeholder="e.g., English, Filipino, Mandarin...">{{ $profile?->languages ?? '' }}</textarea>
+                                <p id="languages_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                             <div class="min-w-0">
                                 <label for="hobbies"
@@ -244,6 +259,7 @@
                                 <textarea id="hobbies" name="hobbies" rows="3"
                                     class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm resize-none"
                                     placeholder="e.g., Gaming, Reading, Photography...">{{ $profile?->hobbies ?? '' }}</textarea>
+                                <p id="hobbies_error" class="text-xs text-red-600 mt-1 hidden"></p>
                             </div>
                         </div>
                     </div>
@@ -262,6 +278,7 @@
                             <input type="file" id="resumes" name="resumes[]" multiple accept=".pdf,.doc,.docx"
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
                             <p class="text-xs text-gray-500 mt-2">PDF, DOC, DOCX files only. Max 5MB each.</p>
+                            <p id="resumes_error" class="text-xs text-red-600 mt-1 hidden"></p>
                         </div>
                         @if ($profile && $profile->resumes && is_array($profile->resumes) && count($profile->resumes) > 0)
                             <div class="mt-4">
@@ -310,6 +327,7 @@
                                 class="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg text-sm">
                             <p class="text-xs text-gray-500 mt-2">PDF, DOC, DOCX, JPG, PNG, GIF files only. Max 5MB each.
                             </p>
+                            <p id="certifications_error" class="text-xs text-red-600 mt-1 hidden"></p>
                         </div>
                         @if ($profile && $profile->certifications && is_array($profile->certifications) && count($profile->certifications) > 0)
                             <div class="mt-4">
@@ -516,9 +534,75 @@
     <script>
         const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
+        // ===== INITIALIZE PROFILE PHOTO PREVIEW =====
+        function initializeProfilePhoto() {
+            const preview = document.getElementById('profilePhotoPreview');
+            const placeholder = document.getElementById('profilePhotoPlaceholder');
+            const existingPhoto = "{{ $profile?->profile_photo ?? '' }}";
+
+            if (existingPhoto) {
+                preview.src = "{{ asset('storage/') }}" + "/" + existingPhoto;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else {
+                preview.style.display = 'none';
+                placeholder.style.display = 'flex';
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializeProfilePhoto);
+
+        // ===== PROFILE PHOTO FILE INPUT HANDLER =====
+        document.getElementById('profile_photo')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const errorElement = document.getElementById('profile_photo_error');
+            const preview = document.getElementById('profilePhotoPreview');
+            const placeholder = document.getElementById('profilePhotoPlaceholder');
+
+            // Clear previous error
+            errorElement.textContent = '';
+            errorElement.classList.add('hidden');
+
+            if (!file) return;
+
+            // Validation
+            const maxSize = 2 * 1024 * 1024; // 2MB
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+
+            if (!allowedTypes.includes(file.type)) {
+                errorElement.textContent = '❌ Invalid file type. Please upload a JPG, PNG, or GIF image.';
+                errorElement.classList.remove('hidden');
+                this.value = '';
+                placeholder.style.display = 'flex';
+                preview.style.display = 'none';
+                return;
+            }
+
+            if (file.size > maxSize) {
+                errorElement.textContent = '❌ File size exceeds 2MB limit.';
+                errorElement.classList.remove('hidden');
+                this.value = '';
+                placeholder.style.display = 'flex';
+                preview.style.display = 'none';
+                return;
+            }
+
+            // Display preview
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                preview.src = event.target.result;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        });
+
         // ===== PROFILE FORM SUBMISSION =====
         document.getElementById('profileForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            clearAllErrors();
+
             const form = e.target;
             const formData = new FormData(form);
             const submitBtn = document.getElementById('submitBtn');
@@ -535,13 +619,18 @@
                 });
 
                 const data = await response.json();
+
                 if (response.ok && data.success) {
                     showToast('✅ ' + data.message, 'success');
                     setTimeout(() => {
                         window.location.href = data.redirect;
                     }, 1500);
                 } else {
-                    showToast('❌ ' + (data.message || 'Failed'), 'error');
+                    // Display validation errors
+                    if (data.errors) {
+                        displayValidationErrors(data.errors);
+                    }
+                    showToast('❌ ' + (data.message || 'Failed to save'), 'error');
                 }
             } catch (error) {
                 showToast('❌ Error: ' + error.message, 'error');
@@ -549,6 +638,44 @@
                 submitBtn.disabled = false;
             }
         });
+
+        // ===== DISPLAY VALIDATION ERRORS =====
+        function displayValidationErrors(errors) {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = '';
+
+            Object.keys(errors).forEach(field => {
+                const messages = errors[field];
+                const errorElement = document.getElementById(field + '_error');
+
+                if (errorElement) {
+                    errorElement.textContent = '❌ ' + messages[0];
+                    errorElement.classList.remove('hidden');
+                }
+
+                // Add to error container for summary
+                messages.forEach(message => {
+                    const div = document.createElement('div');
+                    div.className = 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm';
+                    div.innerHTML = `<strong>${field}:</strong> ${message}`;
+                    errorContainer.appendChild(div);
+                });
+            });
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== CLEAR ALL ERRORS =====
+        function clearAllErrors() {
+            const errorContainer = document.getElementById('errorContainer');
+            errorContainer.innerHTML = '';
+
+            document.querySelectorAll('[id$="_error"]').forEach(el => {
+                el.textContent = '';
+                el.classList.add('hidden');
+            });
+        }
 
         // ===== TOAST NOTIFICATION =====
         function showToast(message, type = 'info') {
@@ -670,7 +797,7 @@
             const desc = item.querySelector('.experience_desc').value;
 
             if (!role || !org || !start || !type || !desc) {
-                showToast('Please fill all required fields', 'error');
+                showToast('❌ Please fill all required fields', 'error');
                 return;
             }
 
@@ -772,7 +899,7 @@
             const desc = item.querySelector('.project_desc').value;
 
             if (!title || !start || !desc) {
-                showToast('Please fill all required fields', 'error');
+                showToast('❌ Please fill all required fields', 'error');
                 return;
             }
 
