@@ -1,5 +1,6 @@
 @extends('layouts.partner')
 
+
 @section('content')
     <div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
         <!-- Back Link -->
@@ -9,6 +10,7 @@
             </svg>
             Back
         </a>
+
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <!-- Main Content -->
@@ -34,6 +36,7 @@
                     </div>
                 </div>
 
+
                 <!-- Applicant Profile Card -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Applicant Profile</h2>
@@ -50,6 +53,7 @@
                                     {{ substr($applicant->name, 0, 1) }}
                                 </div>
                             @endif
+
 
                             <div class="flex-1 min-w-0">
                                 <h3 class="text-lg font-bold text-gray-900 break-words">
@@ -72,6 +76,7 @@
                             </div>
                         </div>
 
+
                         <!-- Basic Information -->
                         @if ($applicantProfile)
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -81,6 +86,7 @@
                                         <p class="text-gray-900 break-words">{{ $applicant->department->title }}</p>
                                     </div>
                                 @endif
+
 
                                 @if ($application->applicant_type === 'student')
                                     @if ($applicantProfile->student_id)
@@ -118,6 +124,7 @@
                                 @endif
                             </div>
 
+
                             <!-- Contact Information -->
                             <div class="border-t pt-4">
                                 <h3 class="text-sm font-bold text-gray-900 mb-3">Contact Information</h3>
@@ -129,12 +136,14 @@
                                         </div>
                                     @endif
 
+
                                     @if ($applicantProfile->personal_email)
                                         <div>
                                             <p class="text-xs text-gray-500 uppercase tracking-wider">Personal Email</p>
                                             <p class="text-sm text-gray-900">{{ $applicantProfile->personal_email }}</p>
                                         </div>
                                     @endif
+
 
                                     @if ($application->applicant_type === 'student')
                                         @if ($applicantProfile->emergency_contact)
@@ -161,6 +170,7 @@
                                 </div>
                             </div>
 
+
                             <!-- Headline & Bio -->
                             <div class="border-t pt-4">
                                 @if ($applicantProfile->headline)
@@ -170,6 +180,7 @@
                                     </div>
                                 @endif
 
+
                                 @if ($application->applicant_type === 'alumni' && $applicantProfile->professional_summary)
                                     <div>
                                         <p class="text-sm font-medium text-gray-500 mb-2">Professional Summary</p>
@@ -178,6 +189,7 @@
                                     </div>
                                 @endif
                             </div>
+
 
                             <!-- Skills -->
                             @if ($applicantProfile->technical_skills)
@@ -195,6 +207,7 @@
                                 </div>
                             @endif
 
+
                             @if ($applicantProfile->soft_skills)
                                 <div class="border-t pt-4">
                                     <p class="text-sm font-medium text-gray-500 mb-3">Soft Skills</p>
@@ -209,6 +222,7 @@
                                     </div>
                                 </div>
                             @endif
+
 
                             <!-- Work Experience Section (Alumni & Students) -->
                             @if ($experiences->count() > 0)
@@ -241,6 +255,7 @@
                                     </div>
                                 </div>
                             @endif
+
 
                             <!-- Projects Section (Alumni & Students) -->
                             @if ($projects->count() > 0)
@@ -276,6 +291,7 @@
                                 </div>
                             @endif
 
+
                             <!-- Links -->
                             @if ($applicantProfile->linkedin_url || $applicantProfile->github_url || $applicantProfile->portfolio_url)
                                 <div class="border-t pt-4">
@@ -291,6 +307,7 @@
                                             </a>
                                         @endif
 
+
                                         @if ($applicantProfile->github_url)
                                             <a href="{{ $applicantProfile->github_url }}" target="_blank" rel="noopener"
                                                 class="flex items-center text-gray-800 hover:text-gray-600 text-sm break-words">
@@ -300,6 +317,7 @@
                                                 GitHub Profile
                                             </a>
                                         @endif
+
 
                                         @if ($applicantProfile->portfolio_url)
                                             <a href="{{ $applicantProfile->portfolio_url }}" target="_blank" rel="noopener"
@@ -317,14 +335,74 @@
                     </div>
                 </div>
 
-                <!-- Cover Letter Card -->
+
+                <!-- Cover Letter Card - FIXED: Shows both written and uploaded cover letters -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h2 class="text-xl font-bold text-gray-900 mb-4">Cover Letter</h2>
-                    <div class="bg-gray-50 p-4 rounded-lg overflow-auto max-h-96">
-                        <p class="text-gray-700 text-sm whitespace-pre-wrap break-words">
-                            {{ $application->cover_letter }}</p>
-                    </div>
+
+                    @if ($application->cover_letter)
+                        <!-- Written Cover Letter Display -->
+                        <div class="bg-gray-50 p-4 rounded-lg overflow-auto max-h-96">
+                            <p class="text-gray-700 text-sm whitespace-pre-wrap break-words">
+                                {{ $application->cover_letter }}
+                            </p>
+                        </div>
+                    @elseif ($application->cover_letter_file)
+                        <!-- Uploaded Cover Letter Display with Download Link -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <svg class="w-6 h-6 text-blue-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 4a2 2 0 012-2h6a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1H6a1 1 0 000 2h6v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path>
+                                    </svg>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-blue-900">Uploaded Cover Letter</p>
+                                        <p class="text-xs text-blue-700 break-all">{{ basename($application->cover_letter_file) }}</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('partner.applications.download-cover-letter', $application) }}"
+                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition flex-shrink-0 whitespace-nowrap">
+                                    📥 Download
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <p class="text-sm text-yellow-800">No cover letter provided.</p>
+                        </div>
+                    @endif
                 </div>
+
+
+                <!-- Resume Card - FIXED: Shows resume details with download button -->
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h2 class="text-xl font-bold text-gray-900 mb-4">Resume / CV</h2>
+
+                    @if ($application->resume_path)
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between gap-4">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <svg class="w-6 h-6 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M4 4a2 2 0 012-2h6a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1H6a1 1 0 000 2h6v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z"></path>
+                                    </svg>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-medium text-green-900">Resume Attached</p>
+                                        <p class="text-xs text-green-700 break-all">{{ basename($application->resume_path) }}</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('partner.applications.download-resume', $application) }}"
+                                    class="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition flex-shrink-0 whitespace-nowrap">
+                                    📥 Download
+                                </a>
+                            </div>
+                        </div>
+                    @else
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <p class="text-sm text-yellow-800">No resume found.</p>
+                        </div>
+                    @endif
+                </div>
+
 
                 <!-- Timeline Card -->
                 <div class="bg-white rounded-lg shadow p-6">
@@ -339,6 +417,7 @@
                             </div>
                         </div>
 
+
                         @if ($application->reviewed_at)
                             <div class="flex gap-4">
                                 <div class="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
@@ -349,6 +428,7 @@
                                 </div>
                             </div>
                         @endif
+
 
                         @if ($application->last_contacted_at)
                             <div class="flex gap-4">
@@ -364,11 +444,13 @@
                 </div>
             </div>
 
+
             <!-- Sidebar -->
             <div class="lg:col-span-1 space-y-6">
                 <!-- Status Card -->
                 <div class="bg-white rounded-lg shadow p-6">
                     <h3 class="text-lg font-bold text-gray-900 mb-4">Status</h3>
+
 
                     <div class="mb-6 p-4 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg text-center">
                         <p
@@ -384,6 +466,7 @@
                         </p>
                     </div>
 
+
                     <!-- Action Buttons -->
                     <div class="space-y-2">
                         {{-- Approve Button - Only show if pending or contacted --}}
@@ -398,6 +481,7 @@
                                 Approve
                             </button>
 
+
                             <button type="button"
                                 class="w-full reject-btn px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition flex items-center justify-center gap-2"
                                 data-application-id="{{ $application->id }}">
@@ -408,6 +492,7 @@
                                 Reject
                             </button>
                         @endif
+
 
                         {{-- Send Email Button - Only show if NOT approved or rejected --}}
                         @if ($application->status !== 'approved' && $application->status !== 'rejected')
@@ -423,13 +508,23 @@
                             </button>
                         @endif
 
+
                         {{-- Download Resume - Always visible --}}
                         <a href="{{ route('partner.applications.download-resume', $application) }}"
                             class="w-full block px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-lg transition text-center">
-                            Download Resume
+                            📥 Download Resume
                         </a>
+
+                        {{-- Download Cover Letter (if uploaded) - New button --}}
+                        @if ($application->cover_letter_file)
+                            <a href="{{ route('partner.applications.download-cover-letter', $application) }}"
+                                class="w-full block px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition text-center">
+                                📥 Download Cover Letter
+                            </a>
+                        @endif
                     </div>
                 </div>
+
 
                 <!-- Quick Info Card -->
                 <div class="bg-white rounded-lg shadow p-6">
@@ -463,8 +558,10 @@
         </div>
     </div>
 
+
     <!-- Contact Modal -->
     @include('users.partner.job-postings.contact-modal')
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -473,10 +570,12 @@
                 openContactModal(this.dataset.applicationId);
             });
 
+
             // Approve button
             document.querySelector('.approve-btn')?.addEventListener('click', function() {
                 approveApplication(this.dataset.applicationId);
             });
+
 
             // Reject button
             document.querySelector('.reject-btn')?.addEventListener('click', function() {
@@ -484,21 +583,27 @@
             });
         });
 
+
         function openContactModal(applicationId) {
             const modal = document.getElementById('contactModal');
             const applicationIdInput = document.getElementById('applicationId');
 
+
             console.log('Opening modal for application:', applicationId);
+
 
             if (applicationIdInput) {
                 applicationIdInput.value = applicationId;
             }
 
+
             modal.classList.remove('hidden');
         }
 
+
         function approveApplication(applicationId) {
             if (!confirm('Approve this application?')) return;
+
 
             fetch(`/partner/applications/${applicationId}/approve`, {
                     method: 'POST',
@@ -522,9 +627,11 @@
                 });
         }
 
+
         function rejectApplication(applicationId) {
             const reason = prompt('Rejection reason (optional):');
             if (reason === null) return;
+
 
             fetch(`/partner/applications/${applicationId}/reject`, {
                     method: 'POST',
@@ -551,12 +658,14 @@
                 });
         }
 
+
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
             toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-50 shadow-lg animate-pulse
             ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
             toast.textContent = message;
             document.body.appendChild(toast);
+
 
             setTimeout(() => {
                 toast.style.opacity = '0';

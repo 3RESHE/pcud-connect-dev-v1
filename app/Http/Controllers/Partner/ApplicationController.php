@@ -381,6 +381,68 @@ class ApplicationController extends Controller
     }
 
     /**
+     * Download applicant cover letter (if uploaded as PDF)
+     */
+    public function downloadCoverLetter(JobApplication $application)
+    {
+        try {
+            // ✅ Authorization check
+            if ($application->jobPosting->partner_id !== auth()->id()) {
+                abort(403, 'Unauthorized');
+            }
+
+            // ✅ Get cover letter file path
+            $coverLetterPath = $application->cover_letter_file;
+
+            // ✅ Check if cover letter file exists
+            if (!$coverLetterPath) {
+                return back()->with('error', 'No uploaded cover letter found for this application');
+            }
+
+            // ✅ Check if file exists in storage
+            if (!Storage::disk('public')->exists($coverLetterPath)) {
+                return back()->with('error', 'Cover letter file not found in storage');
+            }
+
+            // ✅ Get the full storage path
+            $fullPath = storage_path('app/public/' . $coverLetterPath);
+
+            // ✅ Verify file exists before download
+            if (!file_exists($fullPath)) {
+                return back()->with('error', 'Cover letter file is missing from the server');
+            }
+
+            // ✅ Get applicant info for download filename
+            $applicant = $application->applicant;
+            $extension = pathinfo($coverLetterPath, PATHINFO_EXTENSION);
+            $filename = $this->sanitizeFileName($applicant->name) . '_cover_letter_' . date('Y-m-d') . '.' . $extension;
+
+            // ✅ Log download
+            ActivityLog::create([
+                'user_id' => auth()->id(),
+                'action' => 'cover_letter_downloaded',
+                'description' => "Downloaded cover letter from {$applicant->name} for job application",
+                'subject_type' => JobApplication::class,
+                'subject_id' => $application->id,
+                'properties' => [
+                    'applicant_name' => $applicant->name,
+                    'applicant_email' => $applicant->email,
+                    'file_path' => $coverLetterPath,
+                ],
+            ]);
+
+            // ✅ Return file download
+            return response()->download($fullPath, $filename);
+        } catch (\Exception $e) {
+            \Log::error('Cover letter download error: ' . $e->getMessage(), [
+                'application_id' => $application->id,
+                'user_id' => auth()->id(),
+            ]);
+            return back()->with('error', 'Failed to download cover letter: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Update application status via PATCH
      */
     public function updateStatus(Request $request, JobApplication $application)
@@ -436,7 +498,7 @@ class ApplicationController extends Controller
     {
         // Remove special characters and replace spaces with underscores
         $filename = preg_replace('/[^A-Za-z0-9_\-]/', '', str_replace(' ', '_', $filename));
-        return trim($filename, '_') ?: 'resume';
+        return trim($filename, '_') ?: 'document';
     }
 }
 

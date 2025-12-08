@@ -365,10 +365,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
 
     Route::middleware('role:partner')->prefix('partner')->name('partner.')->group(function () {
 
+
         Route::get('/dashboard', [PartnerDashboardController::class, 'index'])
             ->name('dashboard');
         // ===== DASHBOARD =====
         Route::prefix('dashboard')->name('dashboard.')->group(function () {
+
 
 
             // Export endpoints - Dashboard reports
@@ -381,6 +383,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::get('/export/applications', [PartnerDashboardController::class, 'exportApplications'])
                 ->name('export-applications');
 
+
             // AJAX endpoints - Statistics
             Route::get('/stats/jobs', [PartnerDashboardController::class, 'jobStats'])
                 ->name('stats.jobs');
@@ -389,6 +392,7 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             Route::get('/activity-feed', [PartnerDashboardController::class, 'activityFeed'])
                 ->name('activity-feed');
         });
+
 
         // ===== PROFILE & SETTINGS (ALWAYS ACCESSIBLE - NO MIDDLEWARE) =====
         Route::prefix('profile')->name('profile.')->group(function () {
@@ -400,8 +404,10 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 ->name('update');
         });
 
+
         // ===== ROUTES REQUIRING COMPLETE PROFILE =====
         Route::middleware('partner.profile.complete')->group(function () {
+
 
             // ===== JOB POSTINGS =====
             Route::prefix('job-postings')->name('job-postings.')->group(function () {
@@ -426,14 +432,17 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                 Route::post('/{jobPosting}/close', [JobPostingController::class, 'close'])
                     ->name('close');
 
+
                 // ✅ APPLICATION ROUTES (Nested under job-postings)
                 Route::get('/{jobPosting}/applications', [JobPostingController::class, 'applications'])
                     ->name('applications');
+
 
                 // ✅ Export applications to Excel by job posting
                 Route::get('/{jobPosting}/applications/export', [ApplicationController::class, 'exportExcel'])
                     ->name('applications.export');
             });
+
 
             // ===== JOB APPLICATIONS =====
             Route::prefix('applications')->name('applications.')->group(function () {
@@ -447,9 +456,12 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
                     ->name('contact');
                 Route::get('/{application}/download-resume', [ApplicationController::class, 'downloadResume'])
                     ->name('download-resume');
+                Route::get('/{application}/download-cover-letter', [ApplicationController::class, 'downloadCoverLetter'])
+                    ->name('download-cover-letter');
                 Route::patch('/{application}/update-status', [ApplicationController::class, 'updateStatus'])
                     ->name('update-status');
             });
+
 
             // ===== PARTNERSHIPS =====
             Route::prefix('partnerships')->name('partnerships.')->group(function () {
