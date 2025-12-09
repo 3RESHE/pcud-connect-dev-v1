@@ -50,12 +50,6 @@ class AlumniProfileComplete
     {
         return 
                !empty($profile->personal_email) &&
-               !empty($profile->phone) &&
-               !empty($profile->current_location) &&
-               !empty($profile->degree_program) &&
-               !empty($profile->graduation_year) &&
-               !empty($profile->current_organization) &&
-               !empty($profile->current_position) &&
-               !empty($profile->technical_skills);
+               !empty($profile->phone);
     }
 }
