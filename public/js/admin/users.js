@@ -1,11 +1,20 @@
 let currentPage = 1;
 let currentDeleteId = null;
-let selectedUsers = new Set(); // Track selected user IDs
-let bulkAction = null; // Track which bulk action to perform
-let isProcessing = false; // Prevent duplicate submissions
+let selectedUsers = new Set();
+let bulkAction = null;
+let isProcessing = false;
+
+// Store original form HTML for restore
+let originalEditFormHTML = null;
 
 // Initialize
 document.addEventListener("DOMContentLoaded", function () {
+    // Store the original edit form HTML on page load
+    const editUserModal = document.getElementById("editUserModal");
+    if (editUserModal) {
+        originalEditFormHTML = editUserModal.querySelector(".p-6").innerHTML;
+    }
+    
     loadDepartments();
     loadStats();
     loadUsers();
@@ -14,18 +23,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // Setup event listeners
 function setupEventListeners() {
-    document
-        .getElementById("addUserForm")
-        .addEventListener("submit", handleAddUser);
-    document
-        .getElementById("editUserForm")
-        .addEventListener("submit", handleEditUser);
-    document
-        .getElementById("searchInput")
-        .addEventListener("keyup", function () {
+    const addUserForm = document.getElementById("addUserForm");
+    const editUserForm = document.getElementById("editUserForm");
+    const searchInput = document.getElementById("searchInput");
+    
+    if (addUserForm) {
+        addUserForm.addEventListener("submit", handleAddUser);
+    }
+    if (editUserForm) {
+        editUserForm.addEventListener("submit", handleEditUser);
+    }
+    if (searchInput) {
+        searchInput.addEventListener("keyup", function () {
             clearTimeout(window.searchTimeout);
             window.searchTimeout = setTimeout(() => filterUsers(), 500);
         });
+    }
 }
 
 // Load departments
@@ -42,15 +55,18 @@ function loadDepartments() {
                 const addSelect = document.getElementById("addDepartmentId");
                 const editSelect = document.getElementById("editDepartmentId");
 
-                data.data.forEach((dept) => {
-                    addSelect.innerHTML += `<option value="${dept.id}">${dept.title}</option>`;
-                    editSelect.innerHTML += `<option value="${dept.id}">${dept.title}</option>`;
-                });
+                if (addSelect && editSelect) {
+                    data.data.forEach((dept) => {
+                        addSelect.innerHTML += `<option value="${dept.id}">${dept.title}</option>`;
+                        editSelect.innerHTML += `<option value="${dept.id}">${dept.title}</option>`;
+                    });
+                }
             }
-        });
+        })
+        .catch((error) => console.error("Error loading departments:", error));
 }
 
-// Load statistics with loading skeleton
+// Load statistics
 function loadStats() {
     fetch("/admin/users/stats", {
         headers: {
@@ -74,7 +90,7 @@ function loadStats() {
         });
 }
 
-// Load users with loading spinner
+// Load users
 function loadUsers(page = 1) {
     const search = document.getElementById("searchInput").value;
     const role = document.getElementById("roleFilter").value;
@@ -87,7 +103,6 @@ function loadUsers(page = 1) {
     if (status) url += `&status=${status}`;
     if (search) url += `&search=${search}`;
 
-    // Show loading state
     showTableLoading();
 
     fetch(url, {
@@ -101,7 +116,7 @@ function loadUsers(page = 1) {
             if (data.success) {
                 displayUsers(data.data);
                 updatePagination(data.pagination);
-                clearSelection(); // Clear selections when loading new page
+                clearSelection();
             }
         })
         .catch((error) => {
@@ -129,7 +144,7 @@ function showTableLoading() {
     `;
 }
 
-// Display users with checkboxes
+// Display users
 function displayUsers(users) {
     const tbody = document.getElementById("userTableBody");
 
@@ -297,7 +312,6 @@ function confirmBulkStatusChange() {
     );
     const confirmModal = document.getElementById("bulkStatusModal");
 
-    // Show loading spinner in modal
     const modalContent = confirmModal.querySelector(".relative");
     const originalButtons = modalContent.querySelector(".flex.justify-center");
 
@@ -338,7 +352,6 @@ function confirmBulkStatusChange() {
                 loadUsers(currentPage);
             } else {
                 showToast(data.message || "Failed to update users", "error");
-                // Restore buttons
                 originalButtons.innerHTML = `
                     <button type="button" onclick="closeBulkStatusModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50">
                         Cancel
@@ -360,7 +373,8 @@ function confirmBulkStatusChange() {
         });
 }
 
-// Modal functions
+// ===== MODAL FUNCTIONS =====
+
 function openAddUserModal() {
     clearFormErrors("add");
     document.getElementById("addUserForm").reset();
@@ -371,6 +385,9 @@ function closeAddUserModal() {
     document.getElementById("addUserModal").classList.add("hidden");
 }
 
+/**
+ * FIXED: openEditUserModal - Now properly handles form restoration
+ */
 function openEditUserModal(id) {
     const modalLoadingSpinner = `
         <div class="flex items-center justify-center py-8">
@@ -384,9 +401,12 @@ function openEditUserModal(id) {
 
     const editModal = document.getElementById("editUserModal");
     const formContainer = editModal.querySelector(".p-6");
+    
+    // Show loading state
     formContainer.innerHTML = modalLoadingSpinner;
     editModal.classList.remove("hidden");
 
+    // Fetch user data
     fetch(`/admin/users/${id}`, {
         headers: {
             Accept: "application/json",
@@ -396,27 +416,36 @@ function openEditUserModal(id) {
         .then((response) => response.json())
         .then((data) => {
             if (data.success) {
+                // RESTORE the original form HTML
+                formContainer.innerHTML = originalEditFormHTML;
+                
+                // Now populate the restored form fields
                 const user = data.data;
                 document.getElementById("editId").value = user.id;
                 document.getElementById("editFirstName").value = user.first_name;
                 document.getElementById("editLastName").value = user.last_name;
-                document.getElementById("editMiddleName").value =
-                    user.middle_name || "";
-                document.getElementById("editNameSuffix").value =
-                    user.name_suffix || "";
+                document.getElementById("editMiddleName").value = user.middle_name || "";
+                document.getElementById("editNameSuffix").value = user.name_suffix || "";
                 document.getElementById("editEmail").value = user.email;
                 document.getElementById("editRole").value = user.role;
-                document.getElementById("editIsActive").value = user.is_active
-                    ? 1
-                    : 0;
+                document.getElementById("editIsActive").value = user.is_active ? 1 : 0;
 
                 if (user.department_id) {
-                    document.getElementById("editDepartmentId").value =
-                        user.department_id;
+                    document.getElementById("editDepartmentId").value = user.department_id;
                 }
 
                 toggleEditDepartmentField();
                 clearFormErrors("edit");
+                
+                // Re-attach event listener to the restored form
+                const editForm = document.getElementById("editUserForm");
+                if (editForm) {
+                    editForm.removeEventListener("submit", handleEditUser);
+                    editForm.addEventListener("submit", handleEditUser);
+                }
+            } else {
+                showToast("Failed to load user", "error");
+                closeEditUserModal();
             }
         })
         .catch((error) => {
@@ -430,14 +459,13 @@ function closeEditUserModal() {
     document.getElementById("editUserModal").classList.add("hidden");
 }
 
-// Handle form submissions with loading
+// Handle form submissions
 function handleAddUser(e) {
     e.preventDefault();
 
     const form = document.getElementById("addUserForm");
     const submitBtn = document.getElementById("addSubmitBtn");
 
-    // Show loading state
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
@@ -494,7 +522,6 @@ function handleEditUser(e) {
     const submitBtn = document.getElementById("editSubmitBtn");
     const id = document.getElementById("editId").value;
 
-    // Show loading state
     const originalText = submitBtn.innerHTML;
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
