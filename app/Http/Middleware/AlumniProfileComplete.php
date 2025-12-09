@@ -48,13 +48,12 @@ class AlumniProfileComplete
      */
     private function isProfileComplete($profile): bool
     {
-        return !empty($profile->headline) &&
+        return 
                !empty($profile->personal_email) &&
                !empty($profile->phone) &&
                !empty($profile->current_location) &&
                !empty($profile->degree_program) &&
                !empty($profile->graduation_year) &&
-               !empty($profile->professional_summary) &&
                !empty($profile->current_organization) &&
                !empty($profile->current_position) &&
                !empty($profile->technical_skills);
