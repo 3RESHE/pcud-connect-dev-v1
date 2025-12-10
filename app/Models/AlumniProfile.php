@@ -12,6 +12,7 @@ class AlumniProfile extends Model
 
     protected $fillable = [
         'user_id',
+        'department_id',
         'is_fresh_grad',
         'profile_photo',
         'headline',
@@ -65,6 +66,15 @@ class AlumniProfile extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the department this alumni graduated from.
+     * Note: This is optional - alumni may not have a department assigned.
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     /**
@@ -134,6 +144,30 @@ class AlumniProfile extends Model
     }
 
     /**
+     * Scope: Get alumni from a specific department.
+     */
+    public function scopeByDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
+
+    /**
+     * Scope: Get alumni without a department assigned.
+     */
+    public function scopeWithoutDepartment($query)
+    {
+        return $query->whereNull('department_id');
+    }
+
+    /**
+     * Scope: Get alumni with a department assigned.
+     */
+    public function scopeWithDepartment($query)
+    {
+        return $query->whereNotNull('department_id');
+    }
+
+    /**
      * Scope: Search alumni by name, organization, or skills.
      */
     public function scopeSearch($query, $keyword)
@@ -161,6 +195,22 @@ class AlumniProfile extends Model
     public function getEmail(): string
     {
         return $this->personal_email ?? $this->user->email ?? 'N/A';
+    }
+
+    /**
+     * Get alumni department name.
+     */
+    public function getDepartmentName(): string
+    {
+        return $this->department?->name ?? 'Not Assigned';
+    }
+
+    /**
+     * Check if alumni has a department assigned.
+     */
+    public function hasDepartment(): bool
+    {
+        return !is_null($this->department_id);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Alumni;
 
 use App\Http\Controllers\Controller;
 use App\Models\AlumniProfile;
+use App\Models\Department;
 use App\Models\Experience;
 use App\Models\Project;
 use Illuminate\Http\Request;
@@ -95,6 +96,10 @@ class AlumniProfileController extends Controller
             return redirect()->route('alumni.profile.select-type');
         }
 
+        // Get all active departments for the dropdown
+        $departments = Department::orderBy('title', 'asc')->get();
+
+
         $experiences = Experience::where('user_id', $user->id)
             ->where('user_type', 'alumni')
             ->orderByDesc('is_current')
@@ -106,7 +111,7 @@ class AlumniProfileController extends Controller
             ->orderByDesc('start_date')
             ->get();
 
-        return view('users.alumni.profile.edit', compact('profile', 'experiences', 'projects'));
+        return view('users.alumni.profile.edit', compact('profile', 'departments', 'experiences', 'projects'));
     }
 
     /**
@@ -120,6 +125,9 @@ class AlumniProfileController extends Controller
             $isFreshGrad = $profile->is_fresh_grad;
 
             $rules = [
+                // Department Selection (Optional for alumni)
+                'department_id' => 'nullable|exists:departments,id',
+
                 // Personal Information (Required for both)
                 'profile_photo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
                 'personal_email' => 'required|email|max:255',
