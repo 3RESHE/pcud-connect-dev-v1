@@ -147,10 +147,16 @@
                     <!-- Department & Experience Level -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="department" class="block text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
+                            <label for="department_id" class="block text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
                                 Department <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="department" name="department" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Engineering, Marketing">
+                            <select id="department_id" name="department_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="">Select Department</option>
+                                @foreach($departments as $department)
+                                    <option value="{{ $department->id }}">{{ $department->title }} ({{ $department->formatted_code }})</option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-sm text-gray-500">Choose the department this job posting belongs to.</p>
                         </div>
                         <div>
                             <label for="experience_level" class="block text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">

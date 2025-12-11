@@ -179,15 +179,17 @@ function previewJob() {
     const jobTypeSelect = document.querySelector('input[name="job_type"]:checked')?.value || 'N/A';
     document.getElementById('previewJobType').textContent = jobTypeSelect.charAt(0).toUpperCase() + jobTypeSelect.slice(1);
 
-    // Department
-    document.getElementById('previewDepartment').textContent = formData.get('department') || 'N/A';
+    // Department - Get selected department option text
+    const departmentSelect = document.getElementById('department_id');
+    const departmentText = departmentSelect.options[departmentSelect.selectedIndex]?.text || 'N/A';
+    document.getElementById('previewDepartment').textContent = departmentText;
 
     // Experience Level
     const expLevelMap = {
-        'entry': 'Entry Level',
-        'mid': 'Mid Level',
-        'senior': 'Senior',
-        'lead': 'Lead',
+        'entry': 'Entry Level (0-2 years)',
+        'mid': 'Mid Level (3-5 years)',
+        'senior': 'Senior Level (6+ years)',
+        'lead': 'Lead/Manager Level',
         'student': 'Student/Fresh Graduate'
     };
     document.getElementById('previewExperienceLevel').textContent = expLevelMap[formData.get('experience_level')] || 'N/A';

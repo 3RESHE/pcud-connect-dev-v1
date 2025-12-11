@@ -376,7 +376,11 @@
                     </div>
                     <div class="break-words">
                         <p class="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">Department</p>
-                        <p class="text-sm text-gray-600">{{ $jobPosting->department ?? 'N/A' }}</p>
+                        <p class="text-sm text-gray-600">{{ $jobPosting->department?->title ?? 'N/A' }}</p>
+                    </div>
+                    <div class="break-words">
+                        <p class="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">Department Code</p>
+                        <p class="text-sm text-gray-600">{{ $jobPosting->department?->formatted_code ?? 'N/A' }}</p>
                     </div>
                     <div class="break-words">
                         <p class="text-xs sm:text-sm font-medium text-gray-500 uppercase tracking-wide">Experience Level</p>

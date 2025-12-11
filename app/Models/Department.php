@@ -36,6 +36,14 @@ class Department extends Model
         return $this->hasMany(User::class, 'department_id');
     }
 
+    /**
+     * Get all job postings in this department. ✅ NEW
+     */
+    public function jobPostings(): HasMany
+    {
+        return $this->hasMany(JobPosting::class, 'department_id');
+    }
+
     // ===== SCOPES =====
 
     /**

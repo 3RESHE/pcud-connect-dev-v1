@@ -14,13 +14,12 @@ class JobPosting extends Model
 
     protected $fillable = [
         'partner_id',
+        'department_id', // ✅ CHANGED from 'department' & 'custom_department'
         'approved_by',
         'rejected_by',
-        'unpublished_by', // ✅ NEW
+        'unpublished_by',
         'job_type',
         'title',
-        'department',
-        'custom_department',
         'experience_level',
         'description',
         'benefits',
@@ -43,11 +42,11 @@ class JobPosting extends Model
         'status',
         'sub_status',
         'rejection_reason',
-        'unpublish_reason', // ✅ NEW
+        'unpublish_reason',
         'published_at',
         'approved_at',
         'rejected_at',
-        'unpublished_at', // ✅ NEW
+        'unpublished_at',
         'closed_at',
     ];
 
@@ -63,7 +62,7 @@ class JobPosting extends Model
         'published_at' => 'datetime',
         'approved_at' => 'datetime',
         'rejected_at' => 'datetime',
-        'unpublished_at' => 'datetime', // ✅ NEW
+        'unpublished_at' => 'datetime',
         'closed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -78,6 +77,14 @@ class JobPosting extends Model
     public function partner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'partner_id');
+    }
+
+    /**
+     * Get the department for this job posting. ✅ NEW
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class, 'department_id');
     }
 
     /**
@@ -188,6 +195,14 @@ class JobPosting extends Model
     }
 
     /**
+     * Scope: Get job postings by department. ✅ NEW
+     */
+    public function scopeByDepartment($query, $departmentId)
+    {
+        return $query->where('department_id', $departmentId);
+    }
+
+    /**
      * Scope: Get job postings by job type.
      */
     public function scopeByJobType($query, $jobType)
@@ -231,13 +246,16 @@ class JobPosting extends Model
     }
 
     /**
-     * Scope: Search by title, description, or department.
+     * Scope: Search by title, description, or department. ✅ UPDATED
      */
     public function scopeSearch($query, $keyword)
     {
         return $query->where('title', 'like', "%{$keyword}%")
             ->orWhere('description', 'like', "%{$keyword}%")
-            ->orWhere('department', 'like', "%{$keyword}%");
+            ->orWhereHas('department', function ($query) use ($keyword) {
+                $query->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('code', 'like', "%{$keyword}%");
+            });
     }
 
     // ===== HELPER METHODS =====
@@ -340,7 +358,7 @@ class JobPosting extends Model
             'pending' => 'Pending Approval',
             'approved' => $this->sub_status === 'paused' ? 'Paused' : 'Approved',
             'rejected' => 'Rejected',
-            'unpublished' => 'Unpublished', // ✅ NEW
+            'unpublished' => 'Unpublished',
             'completed' => 'Completed',
             default => ucfirst($this->status),
         };
@@ -439,7 +457,7 @@ class JobPosting extends Model
     }
 
     /**
-     * Unpublish this job posting. ✅ NEW
+     * Unpublish this job posting.
      */
     public function unpublish($adminId, $reason = null)
     {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Partner;
 
 use App\Http\Controllers\Controller;
 use App\Models\JobPosting;
+use App\Models\Department; // ✅ NEW
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ class JobPostingController extends Controller
         $partner = auth()->user();
 
         $jobs = JobPosting::where('partner_id', $partner->id)
-            ->with('applications')
+            ->with('applications', 'department') // ✅ CHANGED - Added department
             ->latest('created_at')
             ->paginate(20);
 
@@ -50,7 +51,12 @@ class JobPostingController extends Controller
      */
     public function create()
     {
-        return view('users.partner.job-postings.create');
+        // Get all departments for dropdown
+        $departments = Department::orderBy('title')->get(); // ✅ NEW
+
+        return view('users.partner.job-postings.create', [
+            'departments' => $departments, // ✅ NEW
+        ]);
     }
 
     /**
@@ -66,7 +72,7 @@ class JobPostingController extends Controller
                 'title' => 'required|string|max:255|min:5',
                 'job_type' => 'required|in:fulltime,parttime,internship,other',
                 'experience_level' => 'required|in:entry,mid,senior,lead,student',
-                'department' => 'nullable|string|max:255',
+                'department_id' => 'required|exists:departments,id', // ✅ CHANGED - Now required foreign key
                 'description' => 'required|string|min:50|max:5000',
                 'work_setup' => 'required|in:onsite,remote,hybrid',
                 'location' => 'nullable|string|max:255',
@@ -217,6 +223,9 @@ class JobPostingController extends Controller
                 ->with('error', 'This job posting cannot be edited');
         }
 
+        // Get all departments for dropdown
+        $departments = Department::orderBy('title')->get(); // ✅ NEW
+
         // Decode technical_skills for the form
         $technicalSkills = is_string($jobPosting->technical_skills)
             ? json_decode($jobPosting->technical_skills, true)
@@ -226,6 +235,7 @@ class JobPostingController extends Controller
         return view('users.partner.job-postings.edit', [
             'jobPosting' => $jobPosting,
             'technicalSkills' => $technicalSkills,
+            'departments' => $departments, // ✅ NEW
             'isEditing' => true,
         ]);
     }
@@ -253,7 +263,7 @@ class JobPostingController extends Controller
                 'title' => 'required|string|max:255',
                 'job_type' => 'required|in:fulltime,parttime,internship,other',
                 'experience_level' => 'required|in:entry,mid,senior,lead,student',
-                'department' => 'nullable|string|max:255',
+                'department_id' => 'required|exists:departments,id', // ✅ CHANGED - Now required foreign key
                 'description' => 'required|string|min:50|max:5000',
                 'work_setup' => 'required|in:onsite,remote,hybrid',
                 'location' => 'nullable|string|max:255',
@@ -494,7 +504,6 @@ class JobPostingController extends Controller
 
     /**
      * Display applications for a specific job posting
-     * ✅ FIXED: Added 'contacted' to stats array
      */
     public function applications(JobPosting $jobPosting)
     {
@@ -512,7 +521,7 @@ class JobPostingController extends Controller
         $stats = [
             'total' => $jobPosting->applications()->count(),
             'pending' => $jobPosting->applications()->where('status', 'pending')->count(),
-            'contacted' => $jobPosting->applications()->where('status', 'contacted')->count(),  // ✅ ADDED THIS LINE
+            'contacted' => $jobPosting->applications()->where('status', 'contacted')->count(),
             'reviewed' => $jobPosting->applications()->where('status', 'reviewed')->count(),
             'approved' => $jobPosting->applications()->where('status', 'approved')->count(),
             'rejected' => $jobPosting->applications()->where('status', 'rejected')->count(),

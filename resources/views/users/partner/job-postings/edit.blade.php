@@ -164,10 +164,18 @@
                     <!-- Department & Experience Level -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label for="department" class="block text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
+                            <label for="department_id" class="block text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
                                 Department <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="department" name="department" value="{{ old('department', $jobPosting->department) }}" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Engineering, Marketing">
+                            <select id="department_id" name="department_id" required class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                <option value="">Select Department</option>
+                                @foreach($departments as $department)
+                                    <option value="{{ $department->id }}" {{ old('department_id', $jobPosting->department_id) == $department->id ? 'selected' : '' }}>
+                                        {{ $department->title }} ({{ $department->formatted_code }})
+                                    </option>
+                                @endforeach
+                            </select>
+                            <p class="mt-1 text-sm text-gray-500">Choose the department this job posting belongs to.</p>
                         </div>
                         <div>
                             <label for="experience_level" class="block text-sm font-medium text-gray-500 uppercase tracking-wide mb-1">
@@ -376,16 +384,14 @@
 <script>
 let skillsList = [];
 
-// ✅ FIX: Initialize skills from existing data
+// ✅ Initialize skills from existing data
 function initializeSkills() {
     const skillsInput = document.getElementById('technical_skills');
     if (skillsInput && skillsInput.value) {
-        // Parse the skills - handle both comma-separated and JSON format
         try {
             const parsed = JSON.parse(skillsInput.value);
             skillsList = Array.isArray(parsed) ? parsed : [];
         } catch (e) {
-            // If not JSON, treat as comma-separated
             skillsList = skillsInput.value.split(',').map(s => s.trim()).filter(s => s);
         }
         updateSkillsTags();
@@ -411,14 +417,12 @@ function addSkill(skill) {
     updateHiddenSkillsInput();
 }
 
-// ✅ FIX: Properly escape quotes in skill name
 function removeSkill(skill) {
     skillsList = skillsList.filter(s => s !== skill);
     updateSkillsTags();
     updateHiddenSkillsInput();
 }
 
-// ✅ FIX: Show ONLY the skill text, proper X button functionality
 function updateSkillsTags() {
     const container = document.getElementById('skills_tags');
     container.innerHTML = '';
@@ -428,7 +432,7 @@ function updateSkillsTags() {
         tag.className = 'inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm';
 
         const skillText = document.createElement('span');
-        skillText.textContent = skill;  // ✅ Plain text only
+        skillText.textContent = skill;
 
         const button = document.createElement('button');
         button.type = 'button';
@@ -438,7 +442,7 @@ function updateSkillsTags() {
                 <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
             </svg>
         `;
-        button.onclick = () => removeSkill(skill);  // ✅ Direct function call
+        button.onclick = () => removeSkill(skill);
 
         tag.appendChild(skillText);
         tag.appendChild(button);
@@ -453,7 +457,6 @@ function updateHiddenSkillsInput() {
 // ===== JOB TYPE SELECTION =====
 document.querySelectorAll('input[name="job_type"]').forEach(radio => {
     radio.addEventListener('change', function() {
-        // ✅ FIX: Update visual indicators
         document.querySelectorAll('input[name="job_type"]').forEach(r => {
             const label = r.closest('label');
             if (r.checked) {
@@ -670,15 +673,11 @@ function showToast(message, type = 'info') {
 
 // ===== PAGE INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', function() {
-    // ✅ Initialize skills from existing data
     initializeSkills();
-
-    // ✅ Initialize job type fields
     toggleJobTypeFields();
     toggleLocationField();
     toggleAllowanceFields();
 
-    // ✅ Set visual indicators for selected job type
     document.querySelectorAll('input[name="job_type"]').forEach(radio => {
         if (radio.checked) {
             const label = radio.closest('label');
