@@ -270,7 +270,6 @@
             </form>
         </div>
 
-
         <!-- Job Postings List -->
         <div class="space-y-6">
             @forelse($jobPostings as $job)
@@ -296,12 +295,21 @@
                                     </span>
                                 </div>
 
-                                <!-- Company & Details (✅ FIXED) -->
+                                <!-- Company & Details (✅ UPDATED WITH DEPARTMENT) -->
                                 <p class="text-gray-700 font-semibold mb-2">
                                     {{ $job->partnerProfile->company_name ?? 'N/A' }}</p>
                                 <p class="text-gray-600 text-sm mb-3">
-                                    {{ $job->department ?? 'N/A' }} • {{ $job->getJobTypeDisplay() }} •
-                                    {{ $job->getExperienceLevelDisplay() }} • {{ $job->getWorkSetupDisplay() }}
+                                    <span class="font-medium">{{ $job->department?->title ?? 'N/A' }}</span>
+                                    @if($job->department)
+                                        <span class="text-gray-400 mx-1">•</span>
+                                        <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">{{ $job->department->formatted_code }}</span>
+                                    @endif
+                                    <span class="text-gray-400 mx-1">•</span>
+                                    <span>{{ $job->getJobTypeDisplay() }}</span>
+                                    <span class="text-gray-400 mx-1">•</span>
+                                    <span>{{ $job->getExperienceLevelDisplay() }}</span>
+                                    <span class="text-gray-400 mx-1">•</span>
+                                    <span>{{ $job->getWorkSetupDisplay() }}</span>
                                 </p>
 
                                 <!-- Salary -->
@@ -346,7 +354,7 @@
                             </div>
                         </div>
 
-                        <!-- Partner Information (✅ FIXED) -->
+                        <!-- Partner Information -->
                         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                             <h4 class="text-sm font-semibold text-blue-900 mb-2">Partner Company Details</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

@@ -17,20 +17,30 @@ class StudentJobController extends Controller
 {
     /**
      * Display list of job postings for students with enhanced filtering
+     * ✅ UPDATED: Prioritize jobs from student's department first
      */
     public function index(): View
     {
         try {
             $query = JobPosting::query()
                 ->where('status', 'approved')
-                ->where('sub_status', 'active');
+                ->where('sub_status', 'active')
+                ->with('department'); // ✅ Load department relationship
+
+            // ✅ PRIORITIZE DEPARTMENT JOBS - Students see their department first
+            if (auth()->check() && auth()->user()->department_id) {
+                $query->orderByRaw('CASE WHEN department_id = ? THEN 0 ELSE 1 END', 
+                    [auth()->user()->department_id]);
+            }
 
             // Search filtering
             if (request('search')) {
                 $search = request('search');
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('department', 'like', "%{$search}%")
+                        ->orWhereHas('department', function ($q) use ($search) {
+                            $q->where('title', 'like', "%{$search}%");
+                        })
                         ->orWhere('location', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
                 });
@@ -56,12 +66,12 @@ class StudentJobController extends Controller
                 $query->where('work_setup', request('work_setup'));
             }
 
-            // Filter by department
+            // Filter by department (by department_id, not string)
             if (request('department')) {
-                $query->where('department', 'like', '%' . request('department') . '%');
+                $query->where('department_id', request('department'));
             }
 
-            // Sorting
+            // Sorting (but maintain department priority at top)
             $sort = request('sort', 'newest');
             if ($sort === 'oldest') {
                 $query->orderBy('created_at', 'asc');
@@ -76,6 +86,7 @@ class StudentJobController extends Controller
             \Log::error('Student jobs index error: ' . $e->getMessage());
             $jobs = JobPosting::where('status', 'approved')
                 ->where('sub_status', 'active')
+                ->with('department')
                 ->paginate(10);
         }
 
@@ -86,7 +97,7 @@ class StudentJobController extends Controller
 
     /**
      * Display job posting details for students
-     * ✅ FIXED: Now passes $application and $applicationStatus to blade
+     * ✅ UPDATED: Now passes department relationship and application data to blade
      */
     public function show(JobPosting $job): View
     {
@@ -105,6 +116,7 @@ class StudentJobController extends Controller
             $relatedJobs = JobPosting::where('status', 'approved')
                 ->where('sub_status', 'active')
                 ->where('id', '!=', $job->id)
+                ->with('department')
                 ->where(function ($q) use ($job) {
                     $q->where('job_type', $job->job_type)
                         ->orWhere('partner_id', $job->partner_id);
@@ -116,7 +128,7 @@ class StudentJobController extends Controller
             // Get job applicant count
             $applicantCount = $job->applications()->count();
 
-            // ✅ FIXED: Get the application if it exists
+            // ✅ UPDATED: Get the application if it exists
             $application = null;
             $alreadyApplied = false;
             $applicationStatus = null;
@@ -290,20 +302,27 @@ class StudentJobController extends Controller
 
     /**
      * View student's job applications with search
+     * ✅ UPDATED: Filter only applications for approved job postings
      */
     public function applications(): View
     {
         try {
             $query = JobApplication::where('applicant_id', auth()->id())
                 ->where('applicant_type', 'student')
-                ->with(['jobPosting', 'applicant']);
+                ->with(['jobPosting', 'applicant'])
+                // ✅ Filter by approved job postings only
+                ->whereHas('jobPosting', function ($q) {
+                    $q->where('status', 'approved');
+                });
 
             // Search by job title or company name
             if (request('search')) {
                 $search = request('search');
                 $query->whereHas('jobPosting', function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('department', 'like', "%{$search}%");
+                        ->orWhereHas('department', function ($q) use ($search) {
+                            $q->where('title', 'like', "%{$search}%");
+                        });
                 });
             }
 
@@ -314,23 +333,35 @@ class StudentJobController extends Controller
 
             $applications = $query->orderBy('created_at', 'desc')->paginate(10);
 
-            // Count by status
+            // Count by status (only for approved job postings)
             $statuses = [
                 'pending' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'student')
                     ->where('status', 'pending')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
                     ->count(),
                 'contacted' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'student')
                     ->where('status', 'contacted')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
                     ->count(),
                 'approved' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'student')
                     ->where('status', 'approved')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
                     ->count(),
                 'rejected' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'student')
                     ->where('status', 'rejected')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
                     ->count(),
             ];
 

@@ -266,10 +266,6 @@
                             <p class="text-sm font-medium text-gray-900">Phone</p>
                             <p class="text-sm text-gray-600">{{ $jobPosting->partnerProfile->phone ?? 'N/A' }}</p>
                         </div>
-                        <div>
-                            <p class="text-sm font-medium text-gray-900">Partnership Status</p>
-                            <span class="text-sm text-gray-600 px-2 py-1 bg-green-100 text-green-800 rounded">Active Partner</span>
-                        </div>
                     </div>
                 </div>
 
@@ -283,7 +279,12 @@
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Department</p>
-                            <p class="text-sm text-gray-600">{{ $jobPosting->department ?? 'N/A' }}</p>
+                            <div class="flex items-center gap-2 flex-wrap mt-1">
+                                <span class="text-sm text-gray-600">{{ $jobPosting->department?->title ?? 'N/A' }}</span>
+                                @if($jobPosting->department)
+                                    <span class="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">{{ $jobPosting->department->formatted_code }}</span>
+                                @endif
+                            </div>
                         </div>
                         <div>
                             <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Experience Level</p>

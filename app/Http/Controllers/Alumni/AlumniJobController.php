@@ -17,20 +17,30 @@ class AlumniJobController extends Controller
 {
     /**
      * Display list of job postings for alumni with enhanced filtering
+     * ✅ UPDATED: Prioritize jobs from alumni's department first
      */
     public function index(): View
     {
         try {
             $query = JobPosting::query()
                 ->where('status', 'approved')
-                ->where('sub_status', 'active');
+                ->where('sub_status', 'active')
+                ->with('department'); // ✅ Load department relationship
+
+            // ✅ PRIORITIZE DEPARTMENT JOBS - Alumni see their department first
+            if (auth()->check() && auth()->user()->alumniProfile?->department_id) {
+                $query->orderByRaw('CASE WHEN department_id = ? THEN 0 ELSE 1 END', 
+                    [auth()->user()->alumniProfile->department_id]);
+            }
 
             // Search filtering
             if (request('search')) {
                 $search = request('search');
                 $query->where(function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('department', 'like', "%{$search}%")
+                        ->orWhereHas('department', function ($q) use ($search) {
+                            $q->where('title', 'like', "%{$search}%");
+                        })
                         ->orWhere('location', 'like', "%{$search}%")
                         ->orWhere('description', 'like', "%{$search}%");
                 });
@@ -56,12 +66,12 @@ class AlumniJobController extends Controller
                 $query->where('work_setup', request('work_setup'));
             }
 
-            // Filter by department
+            // Filter by department (by department_id, not string)
             if (request('department')) {
-                $query->where('department', 'like', '%' . request('department') . '%');
+                $query->where('department_id', request('department'));
             }
 
-            // Sorting
+            // Sorting (but maintain department priority at top)
             $sort = request('sort', 'newest');
             if ($sort === 'oldest') {
                 $query->orderBy('created_at', 'asc');
@@ -76,6 +86,7 @@ class AlumniJobController extends Controller
             \Log::error('Alumni jobs index error: ' . $e->getMessage());
             $jobs = JobPosting::where('status', 'approved')
                 ->where('sub_status', 'active')
+                ->with('department')
                 ->paginate(10);
         }
 
@@ -104,6 +115,7 @@ class AlumniJobController extends Controller
             $relatedJobs = JobPosting::where('status', 'approved')
                 ->where('sub_status', 'active')
                 ->where('id', '!=', $job->id)
+                ->with('department')
                 ->where(function ($q) use ($job) {
                     $q->where('job_type', $job->job_type)
                         ->orWhere('partner_id', $job->partner_id);
@@ -291,7 +303,9 @@ class AlumniJobController extends Controller
                 $search = request('search');
                 $query->whereHas('jobPosting', function ($q) use ($search) {
                     $q->where('title', 'like', "%{$search}%")
-                        ->orWhere('department', 'like', "%{$search}%");
+                        ->orWhereHas('department', function ($q) use ($search) {
+                            $q->where('title', 'like', "%{$search}%");
+                        });
                 });
             }
 
@@ -321,6 +335,13 @@ class AlumniJobController extends Controller
                 'rejected' => JobApplication::where('applicant_id', auth()->id())
                     ->where('applicant_type', 'alumni')
                     ->where('status', 'rejected')
+                    ->whereHas('jobPosting', function ($q) {
+                        $q->where('status', 'approved');
+                    })
+                    ->count(),
+                'contacted' => JobApplication::where('applicant_id', auth()->id())
+                    ->where('applicant_type', 'alumni')
+                    ->where('status', 'contacted')
                     ->whereHas('jobPosting', function ($q) {
                         $q->where('status', 'approved');
                     })
