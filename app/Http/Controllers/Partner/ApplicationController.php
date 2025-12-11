@@ -504,6 +504,7 @@ class ApplicationController extends Controller
 
 /**
  * ✅ Excel Export Class for Job Applications
+ * UPDATED: Removed Department column from export
  */
 class ApplicationExcelExport implements FromArray, WithHeadings, ShouldAutoSize
 {
@@ -549,7 +550,6 @@ class ApplicationExcelExport implements FromArray, WithHeadings, ShouldAutoSize
                 $applicant->name,
                 $applicant->email,
                 ucfirst($application->applicant_type),
-                $applicant->department?->title ?? 'N/A',
                 $profile?->phone ?? 'N/A',
                 $profile?->personal_email ?? 'N/A',
                 ucfirst(str_replace('_', ' ', $application->status)),
@@ -569,7 +569,6 @@ class ApplicationExcelExport implements FromArray, WithHeadings, ShouldAutoSize
             'Applicant Name',
             'University Email',
             'Type',
-            'Department',
             'Phone',
             'Personal Email',
             'Status',

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin\Analytics;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\JobPosting;
+use App\Models\JobApplication;
 use App\Models\Event;
 use App\Models\NewsArticle;
 use App\Models\Partnership;
@@ -41,6 +42,13 @@ class ReportController extends Controller
             'total_jobs' => JobPosting::count() ?? 0,
             'published_jobs' => JobPosting::where('status', 'approved')->count() ?? 0,
             'featured_jobs' => JobPosting::where('is_featured', true)->count() ?? 0,
+
+            // Job Applications Statistics
+            'total_applications' => JobApplication::count() ?? 0,
+            'approved_applications' => JobApplication::where('status', 'approved')->count() ?? 0,
+            'rejected_applications' => JobApplication::where('status', 'rejected')->count() ?? 0,
+            'contacted_applications' => JobApplication::where('status', 'contacted')->count() ?? 0,
+            'pending_applications' => JobApplication::where('status', 'pending')->count() ?? 0,
 
             // Event Statistics
             'total_events' => Event::count() ?? 0,
@@ -101,6 +109,31 @@ class ReportController extends Controller
         } catch (\Exception $e) {
             \Log::error('Excel export failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Failed to export report: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export job applications to Excel by status
+     * Usage: ?status=approved|rejected|contacted|all
+     */
+    public function exportApplicationsExcel(Request $request)
+    {
+        try {
+            // ✅ Validate status parameter
+            $request->validate([
+                'status' => 'nullable|in:approved,rejected,contacted,pending,all',
+            ]);
+
+            $status = $request->query('status', 'all');
+            $fileName = "job-applications-{$status}-" . now()->format('Y-m-d-His') . ".xlsx";
+
+            return Excel::download(
+                new ApplicationsExcelExport($status),
+                $fileName
+            );
+        } catch (\Exception $e) {
+            \Log::error('Applications export failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to export applications: ' . $e->getMessage());
         }
     }
 
@@ -309,11 +342,10 @@ class ComprehensiveExcelExport implements FromArray, WithHeadings, ShouldAutoSiz
             'jobs' => ['Job Title', 'Company', 'Status', 'Featured', 'Posted By', 'Created At'],
             'events' => ['Event Title', 'Status', 'Format', 'Created By', 'Created At'],
             'news' => ['Article Title', 'Status', 'Featured', 'Created By', 'Views', 'Created At'],
-            'partnerships' => ['Activity Title', 'Partner', 'Status', 'Created At'], // ✅ Removed dates
+            'partnerships' => ['Activity Title', 'Partner', 'Status', 'Created At'],
             default => ['Category', 'Count'],
         };
     }
-
 
     private function getComprehensiveData(): array
     {
@@ -337,6 +369,15 @@ class ComprehensiveExcelExport implements FromArray, WithHeadings, ShouldAutoSiz
         $data[] = ['Pending Approval', JobPosting::where('status', 'pending')->count() ?? 0];
         $data[] = ['Rejected Jobs', JobPosting::where('status', 'rejected')->count() ?? 0];
         $data[] = ['Featured Jobs', JobPosting::where('is_featured', true)->count() ?? 0];
+        $data[] = [];
+
+        // Job Applications Statistics
+        $data[] = ['JOB APPLICATIONS STATISTICS'];
+        $data[] = ['Total Applications', JobApplication::count() ?? 0];
+        $data[] = ['Approved Applications', JobApplication::where('status', 'approved')->count() ?? 0];
+        $data[] = ['Rejected Applications', JobApplication::where('status', 'rejected')->count() ?? 0];
+        $data[] = ['Contacted Applications', JobApplication::where('status', 'contacted')->count() ?? 0];
+        $data[] = ['Pending Applications', JobApplication::where('status', 'pending')->count() ?? 0];
         $data[] = [];
 
         // Event Statistics
@@ -477,5 +518,82 @@ class ComprehensiveExcelExport implements FromArray, WithHeadings, ShouldAutoSiz
         }
 
         return $data;
+    }
+}
+
+/**
+ * Excel Export Class for Job Applications
+ * ✅ Exports applicants with status filter (Approved, Rejected, Contacted, Pending, All)
+ */
+class ApplicationsExcelExport implements FromArray, WithHeadings, ShouldAutoSize
+{
+    private $status;
+
+    public function __construct($status = 'all')
+    {
+        $this->status = $status;
+    }
+
+    public function array(): array
+    {
+        // ✅ Build query based on status
+        $query = JobApplication::with('applicant', 'applicant.studentProfile', 'applicant.alumniProfile', 'jobPosting')
+            ->orderBy('created_at', 'desc');
+
+        // ✅ Filter by status if not 'all'
+        if ($this->status !== 'all') {
+            $query->where('status', $this->status);
+        }
+
+        $applications = $query->get();
+
+        $data = [];
+
+        // ✅ Add title row
+        $data[] = ["Job Applications Report"];
+        $data[] = ["Status: " . ucfirst($this->status === 'all' ? 'All' : $this->status)];
+        $data[] = ["Generated: " . now()->format('M d, Y H:i A')];
+        $data[] = [];
+
+        // ✅ Add data rows
+        foreach ($applications as $application) {
+            $applicant = $application->applicant;
+            $profile = $application->applicant_type === 'student'
+                ? $applicant->studentProfile
+                : $applicant->alumniProfile;
+
+            $data[] = [
+                $applicant->name,
+                $applicant->email,
+                ucfirst($application->applicant_type),
+                $profile?->phone ?? 'N/A',
+                $profile?->personal_email ?? 'N/A',
+                $application->jobPosting?->title ?? 'N/A',
+                ucfirst(str_replace('_', ' ', $application->status)),
+                $application->created_at->format('M d, Y H:i'),
+                $application->reviewed_at ? $application->reviewed_at->format('M d, Y H:i') : 'N/A',
+                $application->last_contacted_at ? $application->last_contacted_at->format('M d, Y H:i') : 'N/A',
+                $application->rejection_reason ?? 'N/A',
+            ];
+        }
+
+        return $data;
+    }
+
+    public function headings(): array
+    {
+        return [
+            'Applicant Name',
+            'University Email',
+            'Type',
+            'Phone',
+            'Personal Email',
+            'Job Title',
+            'Status',
+            'Applied Date',
+            'Reviewed Date',
+            'Last Contacted',
+            'Rejection Reason',
+        ];
     }
 }

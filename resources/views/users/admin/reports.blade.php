@@ -54,6 +54,48 @@
     </div>
 </div>
 
+<!-- Job Applications Export Section -->
+<div class="mb-8 bg-white rounded-lg shadow-sm p-6">
+    <div class="flex justify-between items-center mb-4">
+        <div>
+            <h2 class="text-xl font-bold text-gray-900">Job Applications Export</h2>
+            <p class="text-sm text-gray-600 mt-1">Export applicant records by status</p>
+        </div>
+    </div>
+    <div class="flex flex-wrap gap-2">
+        <button onclick="exportApplications('approved')" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 18H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Approved ({{ $approved_applications ?? 0 }})
+        </button>
+        <button onclick="exportApplications('rejected')" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 18H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Rejected ({{ $rejected_applications ?? 0 }})
+        </button>
+        <button onclick="exportApplications('contacted')" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 18H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Contacted ({{ $contacted_applications ?? 0 }})
+        </button>
+        <button onclick="exportApplications('pending')" class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 18H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Pending ({{ $pending_applications ?? 0 }})
+        </button>
+        <button onclick="exportApplications('all')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 18H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            All Applications ({{ $total_applications ?? 0 }})
+        </button>
+    </div>
+</div>
+
 <!-- Success/Error Messages -->
 @if(session('success'))
     <div class="mb-4 p-4 bg-green-50 border border-green-200 text-green-700 rounded-lg animate-fade-in">
@@ -89,7 +131,7 @@
 @endif
 
 <!-- KPI Cards Section -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
     <!-- Total Users Card -->
     <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-blue-500 hover:shadow-md transition">
         <div class="flex items-center justify-between">
@@ -103,6 +145,24 @@
             <div class="bg-blue-100 p-4 rounded-lg">
                 <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Applications Card -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border-t-4 border-indigo-500 hover:shadow-md transition">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Job Applications</p>
+                <p class="text-3xl font-bold text-gray-900 mt-2">{{ $total_applications ?? 0 }}</p>
+                <p class="text-xs text-gray-500 mt-2">
+                    Approved: <span class="font-semibold text-green-600">{{ $approved_applications ?? 0 }}</span>
+                </p>
+            </div>
+            <div class="bg-indigo-100 p-4 rounded-lg">
+                <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
         </div>
@@ -500,6 +560,21 @@
         url.searchParams.append('range', dateRange);
 
         window.location.href = url.toString();
+    }
+
+    function exportApplications(status) {
+        const url = `{{ route('admin.reports.export-applications') }}?status=${status}`;
+        showToast(`Downloading ${status === 'all' ? 'all' : status} applications...`, 'info');
+        window.location.href = url;
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-4 right-4 px-6 py-3 rounded-lg text-white z-50 shadow-lg
+        ${type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500'}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
     }
 
     function initializeCharts() {

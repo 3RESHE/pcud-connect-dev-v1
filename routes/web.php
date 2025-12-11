@@ -270,6 +270,19 @@ Route::middleware(['auth', 'verified', 'password.changed', 'active'])->group(fun
             ->name('reports');
         Route::get('/reports/export-excel', [ReportController::class, 'exportExcel'])
             ->name('reports.export-excel');
+        Route::get('/reports/export-applications', [ReportController::class, 'exportApplicationsExcel'])
+            ->name('reports.export-applications');
+
+        // AJAX endpoints for charts
+        Route::get('/reports/user-growth', [ReportController::class, 'getUserGrowth'])
+            ->name('reports.user-growth');
+        Route::get('/reports/approval-stats', [ReportController::class, 'getApprovalStats'])
+            ->name('reports.approval-stats');
+        Route::get('/reports/activity-heatmap', [ReportController::class, 'getActivityHeatmap'])
+            ->name('reports.activity-heatmap');
+        Route::get('/reports/content-distribution', [ReportController::class, 'getContentDistribution'])
+            ->name('reports.content-distribution');
+
 
         // AJAX endpoints for charts
         Route::get('/reports/user-growth', [ReportController::class, 'getUserGrowth'])
